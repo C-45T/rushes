@@ -30,41 +30,44 @@ SOURCES += \
         mainwindow.cpp \
     database.cpp \
     catalogmodel.cpp \
-    catalogitemdelegate.cpp \
     libvlcplayerwidget.cpp \
-    catalogview.cpp \
     catalogfilterwidget.cpp \
     catalogfilter.cpp \
     faces.cpp \
     facetagwidget.cpp \
     cataloggraphicsview.cpp \
     videothumbnailgraphicitem.cpp \
-    cataloggraphicsscene.cpp
+    cataloggraphicsscene.cpp \
+    proc/ffmpegparser.cpp
 
 HEADERS += \
         mainwindow.h \
     database.h \
     catalogmodel.h \
-    catalogitemdelegate.h \
     libvlcplayerwidget.h \
-    catalogview.h \
     catalogfilterwidget.h \
     catalogfilter.h \
     faces.h \
     facetagwidget.h \
     cataloggraphicsview.h \
     videothumbnailgraphicitem.h \
-    cataloggraphicsscene.h
+    cataloggraphicsscene.h \
+    proc/ffmpegparser.h
 
 # Libvlc
+INCLUDEPATH += "D:/Dev/ThirdParty/vlc-2.2.1/sdk/include"
 LIBS += -L"D:/Dev/ThirdParty/vlc-2.2.1/sdk/lib" #if you are at windows os
 LIBS += -lvlc
 
-INCLUDEPATH += "D:/Dev/ThirdParty/vlc-2.2.1/sdk/include"
-
 # opencv
+INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"
 LIBS += -L"D:/Dev/ThirdParty/opencv-3.3.0/release_contrib/lib"
 LIBS += -lopencv_video330 -lopencv_core330 -lopencv_videoio330 -lopencv_imgproc330 -lopencv_highgui330 \
         -lopencv_ml330 -lopencv_face330 -lopencv_objdetect330 -lopencv_imgcodecs330
 
-INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"
+# ffmpeg
+INCLUDEPATH += "D:/Dev/ThirdParty/ffmpeg-3.3.2-desktop-MINGW32/include"
+LIBS += -L"D:/Dev/ThirdParty/ffmpeg-3.3.2-desktop-MINGW32/lib"
+LIBS += -lavutil -lavformat -lavcodec
+
+

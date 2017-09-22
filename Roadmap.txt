@@ -4,20 +4,17 @@ Fixes :
 - gestion memoire cv::Mat avec release en fin d'utilisation
 
 En cours :
-- remplacer tableview par graphicsview
+
 
 Evol :
 - gestion reconnaissance des visages
 - Ajout écran de setting et fichier
 - stockage au choix image en BLOB dans la BDD
-- Utilisation qpixmapcache dans le delegate
-- Rajout tags
-- Ajout index sur champs recherchés
+- Utilisation qpixmapcache pour affichage vignette ?
+- Ajout index dans la bdd sur champs recherchés pour améliorer requetes
 - ne pas rejouer les query a chaque changement de note
-- dimenssionement des différentes zones
 - gestion version
 - maj bdd en fonction de la version
-- export selection
 - transcode selection
 - clone clip
 - selection in/out
@@ -34,6 +31,9 @@ Evol :
 - Rajouter un logger
 - Travail collaboratif (rajout utilisateurs, attribut user pour les modification, table d'historique de modif ?, synchro pour travail simultané (socket? attribut dans base?)
 - option (click droit "display same day") pour afficher video du meme jour (par exemple si une personne est taguée sur une video, elle est probablement sur d'autres du meme jour)
+- faire des familles de tag (les prenoms pour la famille personne, "mer" "montagne" "vallée" -> famille paysage, etc...)
+- creer des gifs de chaque video pour l'apercu
+- barre de progression jobs
 
 
 Done :
@@ -42,3 +42,7 @@ Done :
 - nombre de vignette en fonction de la largeur de la fenetre
 - filtre sur le rating
 - Rajout detection de visage
+- remplacer tableview par graphicsview
+- Rajout tags
+- dimensionnement des différentes zones
+- export selection en prores

@@ -3,6 +3,8 @@
 #include <QVBoxLayout>
 #include <QGuiApplication>
 #include <QDebug>
+#include <QInputDialog>
+#include <QFileDialog>
 
 #include "faces.h"
 #include "videothumbnailgraphicitem.h"
@@ -23,6 +25,12 @@ CatalogGraphicsView::CatalogGraphicsView(CatalogGraphicsScene *scene, QWidget *p
 
     m_thumbnail_size_slider->setOrientation(Qt::Horizontal);
     m_thumbnail_size_slider->setRange(1, 5);
+    m_thumbnail_size_slider->setValue(3);
+    m_graphics_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_graphics_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_graphics_view->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    m_graphics_view->setContentsMargins(10, 10, 10, 10);
+    m_graphics_view->setMinimumWidth(480);
 
     connect(m_thumbnail_size_slider, SIGNAL(valueChanged(int)), this, SLOT(onThumbnailSizeChanged(int)));
 
@@ -76,6 +84,21 @@ void CatalogGraphicsView::keyPressEvent(QKeyEvent *event)
         {
             if (QGuiApplication::keyboardModifiers() == Qt::ControlModifier)
             {
+                QString tags = QInputDialog::getText(this, "Add Tags", "tags");
+                CatalogModel *catalog_model = m_scene->model();
+                if (catalog_model)
+                {
+                    //QStringList files_to_update = selectedFiles();
+                    foreach (QString filename, selectedFiles())
+                    {
+                        qDebug() << tags;
+                        catalog_model->addTags(filename, tags.split(","));
+                    }
+                }
+            }
+
+            if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier && QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+            {
                 CatalogModel *catalog_model = m_scene->model();
                 if (catalog_model)
                 {
@@ -93,7 +116,6 @@ void CatalogGraphicsView::keyPressEvent(QKeyEvent *event)
                 }
             }
         }
-
     }
 
     return QWidget::keyPressEvent(event);
@@ -104,12 +126,15 @@ void CatalogGraphicsView::updateView()
     int margin = 20;
     float ratio = m_graphics_view->width() / m_graphics_view->height();
     m_graphics_view->setSceneRect(m_scene->itemsBoundingRect());
-    m_graphics_view->fitInView(-margin, 0, m_scene->itemsBoundingRect().width() + margin, (m_scene->itemsBoundingRect().width() + 2*margin) * ratio, Qt::KeepAspectRatioByExpanding);
+    m_graphics_view->fitInView(0, 0, m_scene->itemsBoundingRect().width(), (m_scene->itemsBoundingRect().width()) * ratio, Qt::KeepAspectRatioByExpanding);
 }
 
 QStringList CatalogGraphicsView::selectedFiles() const
 {
     QStringList selection;
+
+    if (!m_scene)
+        return selection;
 
     foreach (QGraphicsItem *item, m_scene->selectedItems())
     {

@@ -118,11 +118,11 @@ void LibvlcPlayerWidget::playFile(QString file)
         /* Play */
         libvlc_media_player_play (_mp );
 
-        libvlc_time_t length = libvlc_media_player_get_length(_mp);
-        int width = libvlc_video_get_width(_mp);
-        int height = libvlc_video_get_height(_mp);
+//        libvlc_time_t length = libvlc_media_player_get_length(_mp);
+//        int width = libvlc_video_get_width(_mp);
+//        int height = libvlc_video_get_height(_mp);
 
-        qDebug() << "media : " << width << height << length;
+//        qDebug() << "media : " << width << height << length;
 
 //    libvlc_media_release(_m);
 //    fclose(video_file);

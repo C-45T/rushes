@@ -29,7 +29,7 @@ void CatalogGraphicsScene::updateScene()
 
     int item_by_line = qMax(1, m_scene_width / (m_item_size + 10)); // TODO : hardcoded value for margin
 
-    qDebug() << "CatalogGraphicsScene::updateScene - item by line" << item_by_line;
+    //qDebug() << "CatalogGraphicsScene::updateScene - item by line" << item_by_line;
 
     for (int i=0; i<m_model->itemCount(); i++)
     {

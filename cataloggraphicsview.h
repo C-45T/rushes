@@ -19,13 +19,12 @@ public:
     void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
-    void updateView();
-
     QStringList selectedFiles() const;
 
 signals:
 
 public slots:
+    void updateView();
     void onThumbnailSizeChanged(int);
 
 private:

@@ -214,17 +214,24 @@ void CatalogModel::addTags(const QString &filename, const QStringList &tags)
 {
     // retrieve video id
     qint64 video_id = getVideoId(filename);
+    QStringList previous_tags = getVideoTags(filename);
 
-    // if no video id exit
-    if (video_id < 0 || tags.empty())
+    QSet<QString> new_tags;
+    foreach (QString tag, tags) {
+        if (!tag.isEmpty() && !previous_tags.contains(tag.trimmed()))
+            new_tags.insert(tag.trimmed());
+    }
+
+    // if no video id exit or no tag to add
+    if (video_id < 0 || new_tags.empty())
         return;
 
     // create insert query
     QSqlQuery add_tag_query;
     QString querystr = QString("INSERT INTO Tag (name, video_id) VALUES");
-    foreach (QString tag, tags)
+    foreach (QString tag, new_tags)
     {
-        querystr += QString("('%1',%2),").arg(tag, QString::number(video_id));
+        querystr += QString("('%1',%2),").arg(tag.trimmed(), QString::number(video_id));
     }
 
     // remove last coma

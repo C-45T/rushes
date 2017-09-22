@@ -6,8 +6,8 @@
 
 #include "database.h"
 #include "catalogmodel.h"
+#include "cataloggraphicsview.h"
 #include "libvlcplayerwidget.h"
-#include "catalogview.h"
 
 class MainWindow : public QMainWindow
 {
@@ -21,11 +21,16 @@ public slots:
     void addVideo();
     void playVideo(const QString& filepath);
 
+    void exportToProres();
+
 private:
+
+    void createMenus();
+
     Database m_db;
     CatalogModel *m_catalog;
     LibvlcPlayerWidget *m_player;
-    CatalogView *m_catalogView;
+    CatalogGraphicsView *m_view;
 };
 
 #endif // MAINWINDOW_H

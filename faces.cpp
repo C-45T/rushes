@@ -37,11 +37,11 @@ Faces::Faces(QObject *parent) : QObject(parent)
 void Faces::clear()
 {
     // release images
-    for (int i=0; i< m_images.size(); i++)
+    for (unsigned int i=0; i< m_images.size(); i++)
         m_images[i].release();
 
     // release strangers
-    for (int i=0; i< m_strangers_imgs.size(); i++)
+    for (unsigned int i=0; i< m_strangers_imgs.size(); i++)
         m_strangers_imgs[i].release();
 
     m_images.clear();
