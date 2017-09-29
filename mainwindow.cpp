@@ -24,6 +24,8 @@
 #include "cataloggraphicsscene.h"
 #include "proc/ffmpegparser.h"
 
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -36,8 +38,8 @@ MainWindow::MainWindow(QWidget *parent)
     QSplitter *right_splitter = new QSplitter(this);
     QWidget *layoutWidget = new QWidget(this);
     QVBoxLayout *leftPanelLayout = new QVBoxLayout(layoutWidget);
-    main_splitter->setOrientation(Qt::Vertical);
-    right_splitter->setOrientation(Qt::Horizontal);
+    main_splitter->setOrientation(Qt::Horizontal);
+    right_splitter->setOrientation(Qt::Vertical);
 
     // data
     m_catalog = new CatalogModel(m_db, this);
@@ -45,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_catalog->setFilter(catalogFilter);
 
     // widgets
-    m_player = new LibvlcPlayerWidget();
+    m_player = new PlayerWidget();
     m_media_info = new MediaInfoWidget(this);
     CatalogFilterWidget *catalogFilterWidget = new CatalogFilterWidget(this);
     catalogFilterWidget->setFilter(catalogFilter);
@@ -58,8 +60,8 @@ MainWindow::MainWindow(QWidget *parent)
     leftPanelLayout->addWidget(catalogFilterWidget);
     leftPanelLayout->addWidget(m_view);
 
-    main_splitter->addWidget(right_splitter);
     main_splitter->addWidget(layoutWidget);
+    main_splitter->addWidget(right_splitter);
 
     right_splitter->addWidget(m_player);
     right_splitter->addWidget(m_media_info);
@@ -107,7 +109,7 @@ void MainWindow::addVideo()
 void MainWindow::playVideo(const QString &filepath)
 {
     qDebug() << "play" << filepath;
-    m_player->playFile(filepath);
+    m_player->openMedia(filepath);
 }
 
 void MainWindow::addTags()

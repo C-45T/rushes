@@ -7,8 +7,9 @@
 #include "database.h"
 #include "catalogmodel.h"
 #include "catalogwidget.h"
-#include "libvlcplayerwidget.h"
+
 #include "gui/mediainfowidget.h"
+#include "gui/playerwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -33,7 +34,7 @@ private:
 
     Database m_db;
     CatalogModel *m_catalog;
-    LibvlcPlayerWidget *m_player;
+    PlayerWidget *m_player;
     CatalogWidget *m_view;
     MediaInfoWidget *m_media_info;
 };

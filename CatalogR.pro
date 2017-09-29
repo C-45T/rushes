@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui sql
+QT       += avwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,7 +31,6 @@ SOURCES += \
         mainwindow.cpp \
     database.cpp \
     catalogmodel.cpp \
-    libvlcplayerwidget.cpp \
     catalogfilterwidget.cpp \
     catalogfilter.cpp \
     faces.cpp \
@@ -41,13 +41,13 @@ SOURCES += \
     gui/cataloggraphicsview.cpp \
     catalogwidget.cpp \
     gui/mediainfowidget.cpp \
-    mediainfo.cpp
+    mediainfo.cpp \
+    gui/playerwidget.cpp
 
 HEADERS += \
         mainwindow.h \
     database.h \
     catalogmodel.h \
-    libvlcplayerwidget.h \
     catalogfilterwidget.h \
     catalogfilter.h \
     faces.h \
@@ -58,12 +58,8 @@ HEADERS += \
     gui/cataloggraphicsview.h \
     catalogwidget.h \
     gui/mediainfowidget.h \
-    mediainfo.h
-
-# Libvlc
-INCLUDEPATH += "D:/Dev/ThirdParty/vlc-2.2.1/sdk/include"
-LIBS += -L"D:/Dev/ThirdParty/vlc-2.2.1/sdk/lib" #if you are at windows os
-LIBS += -lvlc
+    mediainfo.h \
+    gui/playerwidget.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

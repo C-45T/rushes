@@ -109,9 +109,13 @@ void CatalogWidget::keyPressEvent(QKeyEvent *event)
 void CatalogWidget::updateView()
 {
     int margin = 20;
-    float ratio = m_graphics_view->width() / m_graphics_view->height();
+    float ratio = float(m_graphics_view->width()) / float(m_graphics_view->height());
+    //qDebug() << "update view - ratio" << ratio;
     m_graphics_view->setSceneRect(m_scene->itemsBoundingRect());
-    m_graphics_view->fitInView(0, 0, m_scene->itemsBoundingRect().width(), (m_scene->itemsBoundingRect().width()) * ratio, Qt::KeepAspectRatioByExpanding);
+    if (ratio > 1.0)
+        m_graphics_view->fitInView(0, 0, m_scene->itemsBoundingRect().width(), (m_scene->itemsBoundingRect().width()) * ratio, Qt::KeepAspectRatioByExpanding);
+    else
+        m_graphics_view->fitInView(0, 0, m_scene->itemsBoundingRect().width(), (m_scene->itemsBoundingRect().width()) * ratio, Qt::KeepAspectRatio);
 }
 
 QStringList CatalogWidget::selectedFiles() const

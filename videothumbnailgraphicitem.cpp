@@ -21,7 +21,7 @@ QRectF VideoThumbnailGraphicItem::boundingRect() const
     return QRectF(0, 0, 480, 320); // TODO : remove hardcoded values
 }
 
-void VideoThumbnailGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void VideoThumbnailGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     if (option->state & QStyle::State_Selected)
         painter->fillRect(option->rect, option->palette.highlight());

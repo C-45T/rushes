@@ -328,7 +328,7 @@ QStringList Faces::parseVideo(const QString &filename)
 
 
     // release strangers
-    for (int i=0; i< m_strangers_imgs.size(); i++)
+    for (uint i=0; i< m_strangers_imgs.size(); i++)
         m_strangers_imgs[i].release();
 
 

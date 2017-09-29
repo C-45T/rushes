@@ -119,7 +119,7 @@ void CatalogGraphicsScene::onFocusItemChanged(QGraphicsItem *newFocusItem, QGrap
 //    }
 }
 
-void CatalogGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
+void CatalogGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
 {
     VideoThumbnailGraphicItem *thumbnail_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(focusItem());
     if (thumbnail_item)
