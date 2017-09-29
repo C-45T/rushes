@@ -7,6 +7,8 @@
 MediaInfoWidget::MediaInfoWidget(QWidget *parent) : QWidget(parent)
 {
     QFormLayout *layout = new QFormLayout(this);
+    layout->setFormAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    layout->setLabelAlignment(Qt::AlignRight);
 
     m_name_lbl = new QLabel(this);
     m_length_lbl = new QLabel(this);
@@ -26,7 +28,7 @@ MediaInfoWidget::MediaInfoWidget(QWidget *parent) : QWidget(parent)
 
 void MediaInfoWidget::setMediaInfo(const MediaInfo &info)
 {
-    info.debug();
+    //info.debug();
 
     QFileInfo file_info = QFileInfo(info.filename);
     QTime length(0, 0, 0);
@@ -37,7 +39,7 @@ void MediaInfoWidget::setMediaInfo(const MediaInfo &info)
     m_name_lbl->setText(file_info.baseName());
     m_length_lbl->setText(length.toString("hh:mm:ss"));
     m_resolution_lbl->setText(QString::number(info.width) + "x" + QString::number(info.height));
-    m_vcodec_lbl->setText(info.video_codec + "\n" + QString::number(info.bitrate / 1000.0) + "Mb/s");
-    m_acodec_lbl->setText(info.audio_codec + "\n" + QString::number(info.audio_bitrate) + "Kb/s");
+    m_vcodec_lbl->setText(info.video_codec + "\n" + QString::number(info.bitrate / 1000.0) + " Mb/s");
+    m_acodec_lbl->setText(info.audio_codec + "\n" + QString::number(info.audio_bitrate) + " Kb/s");
     m_date_lbl->setText(creation_date.toString("dd/MM/yyyy - hh:mm:ss"));
 }

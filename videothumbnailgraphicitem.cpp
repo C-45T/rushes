@@ -5,15 +5,17 @@
 
 #include <QDebug>
 
-VideoThumbnailGraphicItem::VideoThumbnailGraphicItem(const QSqlRecord& record)
+VideoThumbnailGraphicItem::VideoThumbnailGraphicItem(const MediaInfo &info)
     : QGraphicsItem()
 {
-    m_record = record;
-    m_thumbnail = QImage(m_record.value(3).toString());
+    m_media_info = info;
+    m_thumbnail = QImage(m_media_info.thumbnail_filename);
     m_mouse_pressed = false;
 
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsFocusable, true);
+
+    m_rating = StarRating(m_media_info.rating, 5);
 }
 
 QRectF VideoThumbnailGraphicItem::boundingRect() const
@@ -23,28 +25,34 @@ QRectF VideoThumbnailGraphicItem::boundingRect() const
 
 void VideoThumbnailGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
+    // set backgroung color
     if (option->state & QStyle::State_Selected)
         painter->fillRect(option->rect, option->palette.highlight());
     else
-        painter->fillRect(option->rect, QColor("darkGray").darker());
+        painter->fillRect(option->rect, QColor(Qt::gray).darker());
 
-    if (m_record.value(1).isNull())
+    if (m_media_info.filename.isEmpty())
         return;
 
-    painter->drawImage(option->rect.adjusted(2, 2, -2, -52), m_thumbnail ); // TODO : remove hardcoded values
+    // paint thumbnail
+    painter->drawImage(option->rect.adjusted(0, 0, 0, -50), m_thumbnail ); // TODO : remove hardcoded values
 
     //qDebug() << index.row() << index.column() << index.data().toString() << index.data(Qt::UserRole + 1).toString();
 
-    QRect rectangle = option->rect.adjusted(0, 240, -10, 0); // TODO : remove hardcoded values
-    painter->setFont(QFont("Arial", 72, QFont::Bold ));
-    painter->setPen(QColor("gray"));
+//    // draw rating
+//    QRect rectangle = option->rect.adjusted(0, 240, -10, 0); // TODO : remove hardcoded values
+//    painter->setFont(QFont("Arial", 72, QFont::Bold ));
+//    painter->setPen(QColor("gray"));
+//    painter->drawText(rectangle, Qt::AlignRight, QString::number(m_media_info.rating));
 
-    painter->drawText(rectangle, Qt::AlignRight, m_record.value(4).toString());
+    // draw filename
+    QRect rectangle = option->rect.adjusted(0, 270, 0, 0); // TODO : remove hardcoded values
+    painter->setFont(QFont("Arial", 16, QFont::Bold ));
+    painter->setPen(Qt::white);
+    painter->drawText(rectangle, Qt::AlignCenter, m_media_info.filename.split("/").last());
 
-    rectangle = option->rect.adjusted(0, 270, 0, 0); // TODO : remove hardcoded values
-    painter->setFont(QFont("Arial", 14, QFont::Bold ));
-    painter->setPen(QColor("white"));
-    painter->drawText(rectangle, Qt::AlignCenter, m_record.value(2).toString().split("/").last());
+    // draw stars
+    m_rating.paint(painter, option->rect.adjusted(5, 0, 0, -270), option->palette, StarRating::ReadOnly);
 }
 
 int VideoThumbnailGraphicItem::type() const
@@ -53,7 +61,7 @@ int VideoThumbnailGraphicItem::type() const
     return Type;
 }
 
-QString VideoThumbnailGraphicItem::itemData() const
+const MediaInfo &VideoThumbnailGraphicItem::itemData() const
 {
-    return m_record.value(2).toString();
+    return m_media_info;
 }

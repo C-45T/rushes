@@ -145,6 +145,28 @@ void Database::addVideo(const MediaInfo &media, const QString& catalog)
 
 }
 
+MediaInfo Database::getMediaInfo(const QSqlRecord &record)
+{
+    MediaInfo info;
+
+    info.filename = record.value("filename").toString();
+    info.thumbnail_filename = record.value("thumbnail").toString();
+    info.length = record.value("length").toInt();
+    info.width = record.value("width").toInt();
+    info.height = record.value("height").toInt();
+    info.fps = record.value("fps").toInt();
+    info.bitrate = record.value("bitrate").toInt();
+    info.video_codec = record.value("video_codec").toString();
+    info.audio_codec = record.value("audio_codec").toString();
+    info.sample_rate = record.value("sample_rate").toInt();
+    info.channel = record.value("channel").toString();
+    info.audio_bitrate = record.value("audio_bitrate").toInt();
+    info.utc_creation_time = record.value("utc_creation_time").toLongLong();
+    info.rating = record.value("rating").toInt();
+
+    return info;
+}
+
 MediaInfo Database::getVideo(const QString &filename) const
 {
     MediaInfo res;
@@ -154,7 +176,7 @@ MediaInfo Database::getVideo(const QString &filename) const
     QString querystr = QString("SELECT catalog, filename, thumbnail, "
                                "length, width, height, fps, bitrate, video_codec, "
                                "audio_codec, sample_rate, channel, audio_bitrate,"
-                               "utc_creation_time "
+                               "utc_creation_time, rating "
                                "FROM Videos "
                                "WHERE filename = '%1' "
                                "LIMIT 1").arg(filename);
@@ -163,24 +185,10 @@ MediaInfo Database::getVideo(const QString &filename) const
     qDebug() << query.lastQuery() << query.lastError().text();
 
     // execute and get result
-        if (query.first())
-        {
-            qDebug() << query.value(0) << query.value(1) << query.value(2);
-
-            res.filename = query.value(1).toString();
-            res.thumbnail_filename = query.value(2).toString();
-            res.length = query.value(3).toInt();
-            res.width = query.value(4).toInt();
-            res.height = query.value(5).toInt();
-            res.fps = query.value(6).toInt();
-            res.bitrate = query.value(7).toInt();
-            res.video_codec = query.value(8).toString();
-            res.audio_codec = query.value(9).toString();
-            res.sample_rate = query.value(10).toInt();
-            res.channel = query.value(11).toString();
-            res.audio_bitrate = query.value(12).toInt();
-            res.utc_creation_time = query.value(13).toLongLong();
-        }
+    if (query.first())
+    {
+        return getMediaInfo(query.record());
+    }
 
 
     return res;

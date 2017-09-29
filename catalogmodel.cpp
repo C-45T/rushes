@@ -91,7 +91,7 @@ void CatalogModel::updateCatalog()
     if (!filterTagStr.isEmpty())
         filterTagStr.prepend(" AND t.name IN ");
 
-    QString select_part = "SELECT DISTINCT v.id, v.catalog, v.filename, v.thumbnail, v.rating ";
+    QString select_part = "SELECT DISTINCT v.* ";
     QString from_part = "FROM Videos v LEFT JOIN Tag t ON (v.id = t.video_id) ";
     QString cond_part = "WHERE 1=1" + filterRatingStr + filterTagStr;
     QString order_part = " ORDER BY v.utc_creation_time" + filterRatingStr + filterTagStr;
@@ -267,6 +267,7 @@ MediaInfo CatalogModel::getMediaInfo(const QString &filename) const
     return m_db.getVideo(filename);
 }
 
+// TODO : move query to Database class !
 QStringList CatalogModel::getVideoTags(const QString &filename) const
 {
     // retrieve video id
@@ -287,6 +288,8 @@ QStringList CatalogModel::getVideoTags(const QString &filename) const
             tags.append(get_tags_query.value(0).toString());
         }
     }
+
+    qDebug() << "tags" << tags;
 
     return tags;
 }

@@ -80,35 +80,25 @@ void CatalogWidget::keyPressEvent(QKeyEvent *event)
             }
         }
         break;
-        case Qt::Key_T:
-        {
-            if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier && QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
-            {
-                CatalogModel *catalog_model = m_scene->model();
-                if (catalog_model)
-                {
-                    //QStringList files_to_update = selectedFiles();
-                    foreach (QString filename, selectedFiles())
-                    {
-                        Faces f;
-                        QStringList tags = f.parseVideo(filename);
-                        tags.append(f.tagUnknwonFaces());
-
-                        qDebug() << tags;
-
-                        catalog_model->addTags(filename, tags);
-                    }
-                }
-            }
-        }
     }
 
     return QWidget::keyPressEvent(event);
 }
 
+void CatalogWidget::wheelEvent(QWheelEvent *event)
+{
+//    QPoint numDegrees = event->angleDelta() / 8;
+
+//    if (!numDegrees.isNull()) {
+//        QPoint numSteps = numDegrees / 15;
+//        m_thumbnail_size_slider->setValue(m_thumbnail_size_slider->value() + (1 * numSteps.y()));
+//    }
+
+//    event->accept();
+}
+
 void CatalogWidget::updateView()
 {
-    int margin = 20;
     float ratio = float(m_graphics_view->width()) / float(m_graphics_view->height());
     //qDebug() << "update view - ratio" << ratio;
     m_graphics_view->setSceneRect(m_scene->itemsBoundingRect());
@@ -130,7 +120,7 @@ QStringList CatalogWidget::selectedFiles() const
         VideoThumbnailGraphicItem *thumbnail_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(item);
         if (thumbnail_item)
         {
-            selection.append(thumbnail_item->itemData());
+            selection.append(thumbnail_item->itemData().filename);
         }
     }
 

@@ -2,25 +2,30 @@
 #define VIDEOTHUMBNAILGRAPHICITEM_H
 
 #include <QGraphicsItem>
-#include <QSqlRecord>
+
+#include "thirdParty/starrating.h"
+#include "mediainfo.h"
 
 class VideoThumbnailGraphicItem : public QGraphicsItem
 {
 public:
     enum { Type = UserType + 1 };
 
-    VideoThumbnailGraphicItem(const QSqlRecord& record);
+    VideoThumbnailGraphicItem(const MediaInfo& info);
 
     QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
 
     int type() const;
 
-    QString itemData() const;
+
+    const MediaInfo& itemData() const;
 
 private:
-    QSqlRecord m_record;
+    MediaInfo m_media_info;
     QImage m_thumbnail;
+
+    StarRating m_rating;
 
     bool m_mouse_pressed;
 };

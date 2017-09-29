@@ -42,7 +42,9 @@ SOURCES += \
     catalogwidget.cpp \
     gui/mediainfowidget.cpp \
     mediainfo.cpp \
-    gui/playerwidget.cpp
+    gui/playerwidget.cpp \
+    thirdParty/starrating.cpp \
+    gui/tagswidget.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -59,7 +61,9 @@ HEADERS += \
     catalogwidget.h \
     gui/mediainfowidget.h \
     mediainfo.h \
-    gui/playerwidget.h
+    gui/playerwidget.h \
+    thirdParty/starrating.h \
+    gui/tagswidget.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

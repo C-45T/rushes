@@ -19,6 +19,7 @@ public:
 
     void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
     QStringList selectedFiles() const;
 

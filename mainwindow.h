@@ -10,6 +10,7 @@
 
 #include "gui/mediainfowidget.h"
 #include "gui/playerwidget.h"
+#include "gui/tagswidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -25,6 +26,7 @@ public slots:
 
     void addTags();
     void exportToProres();
+    void faceRecognition();
 
     void onSelectionChanged();
 
@@ -37,6 +39,7 @@ private:
     PlayerWidget *m_player;
     CatalogWidget *m_view;
     MediaInfoWidget *m_media_info;
+    TagsWidget *m_tag_widget;
 };
 
 #endif // MAINWINDOW_H

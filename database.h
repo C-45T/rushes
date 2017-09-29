@@ -2,6 +2,8 @@
 #define DATABASE_H
 
 #include <QSqlDatabase>
+#include <QSqlRecord>
+
 #include "mediainfo.h"
 
 class Database
@@ -23,6 +25,8 @@ public:
     void createVideoTable();
     void createCatalogTable();
     void createTagTable();
+
+    static MediaInfo getMediaInfo(const QSqlRecord& record);
 
 private:
     QSqlDatabase m_database;

@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_media_info = new MediaInfoWidget(this);
     CatalogFilterWidget *catalogFilterWidget = new CatalogFilterWidget(this);
     catalogFilterWidget->setFilter(catalogFilter);
+    m_tag_widget = new TagsWidget(this);
 
     // graphics
     CatalogGraphicsScene *scene = new CatalogGraphicsScene(m_catalog);
@@ -65,13 +66,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     right_splitter->addWidget(m_player);
     right_splitter->addWidget(m_media_info);
+    right_splitter->addWidget(m_tag_widget);
 
     this->setCentralWidget(main_splitter);
+
+    m_player->resize(320, 240);
+    resize(800, 600);
 
     // signals
 
     connect(catalogFilter, SIGNAL(valueChanged()), m_catalog, SLOT(updateCatalog()));
-    connect(m_catalog, SIGNAL(catalogChanged()), m_view, SLOT(updateScene()));
+    connect(m_catalog, SIGNAL(catalogChanged()), scene, SLOT(updateScene()));
     connect(m_catalog, SIGNAL(catalogChanged()), m_view, SLOT(updateView()));
     //connect(catalogFilter, SIGNAL(valueChanged()), scene, SLOT(updateScene()));
 
@@ -138,6 +143,21 @@ void MainWindow::exportToProres()
     }
 }
 
+void MainWindow::faceRecognition()
+{
+    //QStringList files_to_update = selectedFiles();
+    foreach (QString filename, m_view->selectedFiles())
+    {
+        Faces f;
+        QStringList tags = f.parseVideo(filename);
+        tags.append(f.tagUnknwonFaces());
+
+        qDebug() << tags;
+
+        m_catalog->addTags(filename, tags);
+    }
+}
+
 void MainWindow::onSelectionChanged()
 {
     MediaInfo infos;
@@ -148,6 +168,7 @@ void MainWindow::onSelectionChanged()
     infos = m_view->focusedItem();
     m_media_info->setMediaInfo(infos);
 
+    m_tag_widget->setTags(m_catalog->getVideoTags(infos.filename));
 
 }
 
