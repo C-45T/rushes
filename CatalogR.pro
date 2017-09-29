@@ -35,10 +35,13 @@ SOURCES += \
     catalogfilter.cpp \
     faces.cpp \
     facetagwidget.cpp \
-    cataloggraphicsview.cpp \
     videothumbnailgraphicitem.cpp \
     cataloggraphicsscene.cpp \
-    proc/ffmpegparser.cpp
+    proc/ffmpegparser.cpp \
+    gui/cataloggraphicsview.cpp \
+    catalogwidget.cpp \
+    gui/mediainfowidget.cpp \
+    mediainfo.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -49,10 +52,13 @@ HEADERS += \
     catalogfilter.h \
     faces.h \
     facetagwidget.h \
-    cataloggraphicsview.h \
     videothumbnailgraphicitem.h \
     cataloggraphicsscene.h \
-    proc/ffmpegparser.h
+    proc/ffmpegparser.h \
+    gui/cataloggraphicsview.h \
+    catalogwidget.h \
+    gui/mediainfowidget.h \
+    mediainfo.h
 
 # Libvlc
 INCLUDEPATH += "D:/Dev/ThirdParty/vlc-2.2.1/sdk/include"

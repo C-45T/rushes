@@ -1,4 +1,4 @@
-#include "cataloggraphicsview.h"
+#include "catalogwidget.h"
 
 #include <QVBoxLayout>
 #include <QGuiApplication>
@@ -9,13 +9,13 @@
 #include "faces.h"
 #include "videothumbnailgraphicitem.h"
 
-CatalogGraphicsView::CatalogGraphicsView(CatalogGraphicsScene *scene, QWidget *parent)
+CatalogWidget::CatalogWidget(CatalogGraphicsScene *scene, QWidget *parent)
     : QWidget(parent)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(0);
     layout->setContentsMargins(0, 0, 0, 0);
-    m_graphics_view = new QGraphicsView(scene, this);
+    m_graphics_view = new CatalogGraphicsView(scene, this);
     m_thumbnail_size_slider = new QSlider(this);
 
     m_scene = scene;
@@ -37,12 +37,12 @@ CatalogGraphicsView::CatalogGraphicsView(CatalogGraphicsScene *scene, QWidget *p
     onThumbnailSizeChanged(m_thumbnail_size_slider->value());
 }
 
-QGraphicsView *CatalogGraphicsView::view()
+QGraphicsView *CatalogWidget::view()
 {
     return m_graphics_view;
 }
 
-void CatalogGraphicsView::resizeEvent(QResizeEvent *event)
+void CatalogWidget::resizeEvent(QResizeEvent *event)
 {
     m_scene->setSceneWidth(event->size().width());
 
@@ -51,7 +51,7 @@ void CatalogGraphicsView::resizeEvent(QResizeEvent *event)
     updateView();
 }
 
-void CatalogGraphicsView::keyPressEvent(QKeyEvent *event)
+void CatalogWidget::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key())
     {
@@ -82,21 +82,6 @@ void CatalogGraphicsView::keyPressEvent(QKeyEvent *event)
         break;
         case Qt::Key_T:
         {
-            if (QGuiApplication::keyboardModifiers() == Qt::ControlModifier)
-            {
-                QString tags = QInputDialog::getText(this, "Add Tags", "tags");
-                CatalogModel *catalog_model = m_scene->model();
-                if (catalog_model)
-                {
-                    //QStringList files_to_update = selectedFiles();
-                    foreach (QString filename, selectedFiles())
-                    {
-                        qDebug() << tags;
-                        catalog_model->addTags(filename, tags.split(","));
-                    }
-                }
-            }
-
             if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier && QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
             {
                 CatalogModel *catalog_model = m_scene->model();
@@ -121,7 +106,7 @@ void CatalogGraphicsView::keyPressEvent(QKeyEvent *event)
     return QWidget::keyPressEvent(event);
 }
 
-void CatalogGraphicsView::updateView()
+void CatalogWidget::updateView()
 {
     int margin = 20;
     float ratio = m_graphics_view->width() / m_graphics_view->height();
@@ -129,7 +114,7 @@ void CatalogGraphicsView::updateView()
     m_graphics_view->fitInView(0, 0, m_scene->itemsBoundingRect().width(), (m_scene->itemsBoundingRect().width()) * ratio, Qt::KeepAspectRatioByExpanding);
 }
 
-QStringList CatalogGraphicsView::selectedFiles() const
+QStringList CatalogWidget::selectedFiles() const
 {
     QStringList selection;
 
@@ -148,7 +133,15 @@ QStringList CatalogGraphicsView::selectedFiles() const
     return selection;
 }
 
-void CatalogGraphicsView::onThumbnailSizeChanged(int value)
+MediaInfo CatalogWidget::focusedItem() const
+{
+    if (!m_scene)
+        return MediaInfo();
+
+    return m_scene->focusedItem();
+}
+
+void CatalogWidget::onThumbnailSizeChanged(int value)
 {
     m_scene->setItemSize(value);
 

@@ -11,6 +11,7 @@
 #include <QTimer>
 #include <QMenuBar>
 #include <QMenu>
+#include <QInputDialog>
 
 #include "catalogfilter.h"
 #include "catalogfilterwidget.h"
@@ -31,44 +32,52 @@ MainWindow::MainWindow(QWidget *parent)
     // layout
     //QWidget *mainWidget = new QWidget(this);
     //QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    QSplitter *splitter = new QSplitter(this);
+    QSplitter *main_splitter = new QSplitter(this);
+    QSplitter *right_splitter = new QSplitter(this);
     QWidget *layoutWidget = new QWidget(this);
     QVBoxLayout *leftPanelLayout = new QVBoxLayout(layoutWidget);
-    splitter->setOrientation(Qt::Horizontal);
+    main_splitter->setOrientation(Qt::Vertical);
+    right_splitter->setOrientation(Qt::Horizontal);
 
     // data
-    m_catalog = new CatalogModel(m_db.sqlDatabase(), this);
+    m_catalog = new CatalogModel(m_db, this);
     CatalogFilter *catalogFilter = new CatalogFilter(this);
     m_catalog->setFilter(catalogFilter);
 
     // widgets
     m_player = new LibvlcPlayerWidget();
+    m_media_info = new MediaInfoWidget(this);
     CatalogFilterWidget *catalogFilterWidget = new CatalogFilterWidget(this);
     catalogFilterWidget->setFilter(catalogFilter);
 
     // graphics
     CatalogGraphicsScene *scene = new CatalogGraphicsScene(m_catalog);
-    m_view = new CatalogGraphicsView(scene, this);
+    m_view = new CatalogWidget(scene, this);
 
     // layouts
     leftPanelLayout->addWidget(catalogFilterWidget);
     leftPanelLayout->addWidget(m_view);
 
-    splitter->addWidget(layoutWidget);
-    splitter->addWidget(m_player);
+    main_splitter->addWidget(right_splitter);
+    main_splitter->addWidget(layoutWidget);
 
-    this->setCentralWidget(splitter);
+    right_splitter->addWidget(m_player);
+    right_splitter->addWidget(m_media_info);
+
+    this->setCentralWidget(main_splitter);
 
     // signals
 
     connect(catalogFilter, SIGNAL(valueChanged()), m_catalog, SLOT(updateCatalog()));
-    connect(m_catalog, SIGNAL(catalogChanged()), scene, SLOT(updateScene()));
+    connect(m_catalog, SIGNAL(catalogChanged()), m_view, SLOT(updateScene()));
+    connect(m_catalog, SIGNAL(catalogChanged()), m_view, SLOT(updateView()));
     //connect(catalogFilter, SIGNAL(valueChanged()), scene, SLOT(updateScene()));
 
     connect(scene, SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
+    connect(scene, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
 
     // display
-    splitter->show();
+    main_splitter->show();
 
     // database
     m_db.createCatalogTable();
@@ -101,6 +110,20 @@ void MainWindow::playVideo(const QString &filepath)
     m_player->playFile(filepath);
 }
 
+void MainWindow::addTags()
+{
+        QString tags = QInputDialog::getText(this, "Add Tags", "tags");
+        if (!tags.isEmpty() && m_catalog)
+        {
+            //QStringList files_to_update = selectedFiles();
+            foreach (QString filename, m_view->selectedFiles())
+            {
+                qDebug() << tags;
+                m_catalog->addTags(filename, tags.split(","));
+            }
+        }
+}
+
 void MainWindow::exportToProres()
 {
     QString output_folder = QFileDialog::getExistingDirectory();
@@ -111,6 +134,19 @@ void MainWindow::exportToProres()
             FFMpegParser::exportProres(filename, output_folder);
         }
     }
+}
+
+void MainWindow::onSelectionChanged()
+{
+    MediaInfo infos;
+
+    if (m_view->selectedFiles().isEmpty())
+        return;
+
+    infos = m_view->focusedItem();
+    m_media_info->setMediaInfo(infos);
+
+
 }
 
 void MainWindow::createMenus()

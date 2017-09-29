@@ -10,7 +10,7 @@ FFMpegParser::FFMpegParser()
     av_register_all();
 }
 
-int FFMpegParser::openVideo(const QString &filename)
+int FFMpegParser::openVideo(const QString &filename, MediaInfo &media)
 {
     AVFormatContext *pFormatCtx = NULL;
     AVDictionary *pDictionary = NULL;
@@ -61,7 +61,7 @@ int FFMpegParser::openVideo(const QString &filename)
     if(avcodec_open2(pCodecCtx, pCodec, &pDictionary)<0)
       return -1; // Could not open codec
 
-    metadata(pFormatCtx, pCodecCtx);
+    metadata(pFormatCtx, pCodecCtx, media);
 
     // Close the codecs
     avcodec_close(pCodecCtx);
@@ -73,10 +73,8 @@ int FFMpegParser::openVideo(const QString &filename)
     return 0;
 }
 
-void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *codec_ctx)
+void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *codec_ctx, MediaInfo& media)
 {
-    Media media;
-
     if (context->duration != AV_NOPTS_VALUE)
     {
         int hours, mins, secs, us;
@@ -89,7 +87,7 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *codec_ctx)
         mins %= 60;
 
         //qDebug() << "duration :" << hours << ":" << mins << ":" << secs;
-        media.length = secs;
+        media.length = duration / AV_TIME_BASE;
     }
 
     if (context->bit_rate)
@@ -116,9 +114,9 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *codec_ctx)
             continue;
 
         if (avctx->codec_type == AVMEDIA_TYPE_VIDEO)
-            media.video_codec = std::string(av_get_media_type_string(avctx->codec_type)) + " " + avcodec_get_name(avctx->codec_id) + "(" + avcodec_profile_name(avctx->codec_id, avctx->profile) + ")";
+            media.video_codec = QString(/*av_get_media_type_string(avctx->codec_type)) + " " +*/ avcodec_get_name(avctx->codec_id)) + "(" + avcodec_profile_name(avctx->codec_id, avctx->profile) + ")";
         else if (avctx->codec_type == AVMEDIA_TYPE_AUDIO)
-            media.audio_codec = std::string(av_get_media_type_string(avctx->codec_type)) + " " + avcodec_get_name(avctx->codec_id);
+            media.audio_codec = QString(/*av_get_media_type_string(avctx->codec_type)) + " " +*/ avcodec_get_name(avctx->codec_id));
 
 //        if (avctx->field_order != AV_FIELD_UNKNOWN) {
 //            const char *field_order = "progressive";
@@ -166,9 +164,9 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *codec_ctx)
             media.audio_bitrate = (int64_t)avctx->rc_max_rate / 1000;
 
         avcodec_free_context(&avctx);
-
-        media.debug();
     }
+
+    //media.debug();
 }
 
 void FFMpegParser::transcode(const QString &src, const QString &destination)

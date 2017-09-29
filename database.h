@@ -2,6 +2,7 @@
 #define DATABASE_H
 
 #include <QSqlDatabase>
+#include "mediainfo.h"
 
 class Database
 { 
@@ -14,8 +15,9 @@ public:
     QSqlDatabase& sqlDatabase() { return m_database; }
 
     void addCatalog(const QString& catalog);
-    void addVideo(const QString& path, const QString& catalog = "default");
+    void addVideo(const MediaInfo& media, const QString& catalog = "default");
 
+    MediaInfo getVideo(const QString& filename) const;
     QStringList getVideos() const;
 
     void createVideoTable();

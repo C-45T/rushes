@@ -4,13 +4,16 @@
 #include <QStandardItemModel>
 #include <QSqlQueryModel>
 #include "catalogfilter.h"
+#include "database.h"
+
+#include "mediainfo.h"
 
 class CatalogModel : public QSqlQueryModel
 {
     Q_OBJECT
 
 public:
-    CatalogModel(QSqlDatabase &db, QObject *parent = 0);
+    CatalogModel(Database &db, QObject *parent = 0);
 
     QString catalog() const;
 
@@ -29,6 +32,7 @@ public:
     void updateRating(const QStringList &files, int rating);
     void addTags(const QString &filename, const QStringList &tags);
     int getVideoId(const QString &filename) const;
+    MediaInfo getMediaInfo(const QString &filename) const;
     QStringList getVideoTags(const QString &filename) const;
 
     void processQueue();
@@ -41,7 +45,7 @@ public slots:
     void updateCatalog();
 
 private:
-    QSqlDatabase &m_db;
+    Database &m_db;
     QString m_catalog;
     QStringList m_queue;
     QString m_processingFile;

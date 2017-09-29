@@ -2,6 +2,7 @@ Fixes :
 - suppression thumbnail en meme temps que bdd
 - valeurs de tables hardcodées dans CatalogModel::data
 - gestion memoire cv::Mat avec release en fin d'utilisation
+- gestion des noms de fichiers/dossiers avec espace
 
 En cours :
 
@@ -21,7 +22,6 @@ Evol :
 - ajout attribut "face recognation incomplete" quand visages non reconnus dans la video pour pouvoir reanalyser plus tard
 - enregistrer les images en taille reelles si inferieur à taille de référence et resize au chargement
 - définir image de référence pour afficher liste des personnes
-- récupérer info sur la video (codec, bitrate, fps, ...)
 - remplacer les 2 QMaps pour la definition des personnes de Face par une bimap boost
 - ajout zoom in lors d'un clique sur l'image ssur faceTagWidget pour afficher le visage en gros plan
 - ajout sauvegarde et restauration du modele de reconnaissance facial (save et load au format yaml)
@@ -34,7 +34,10 @@ Evol :
 - faire des familles de tag (les prenoms pour la famille personne, "mer" "montagne" "vallée" -> famille paysage, etc...)
 - creer des gifs de chaque video pour l'apercu
 - barre de progression jobs
-
+- gestion des jpbs avec barre de progress liste de job en attente, ...
+- ecrire les metadonnées directement dans le fichiers (tags, ratings, auteur, ...)
+- remplacer libvlc par QtAv
+- import/export de bibliothèque/catalogue avec option copie des fichiers
 
 Done :
 - Ajout multiple au catalogue
@@ -46,3 +49,4 @@ Done :
 - Rajout tags
 - dimensionnement des différentes zones
 - export selection en prores
+- récupérer info sur la video (codec, bitrate, fps, ...)

@@ -2,7 +2,9 @@
 #define CATALOGGRAPHICSSCENE_H
 
 #include <QGraphicsScene>
+
 #include "catalogmodel.h"
+#include "mediainfo.h"
 
 class CatalogGraphicsScene : public QGraphicsScene
 {
@@ -20,7 +22,12 @@ public slots:
     void setItemSize(int value);
     void setSceneWidth(int value);
 
+    void shiftSelect(QGraphicsItem *item);
+
     CatalogModel* model() { return m_model; }
+    CatalogModel* model() const { return m_model; }
+
+    MediaInfo focusedItem() const;
 
 signals:
     void itemDoubleClicked(QString);
@@ -31,6 +38,7 @@ private:
     int m_scene_width;
 
     QVector<int> m_thumbnail_sizes;
+    QGraphicsItem *m_last_selected_item;
 };
 
 #endif // CATALOGGRAPHICSSCENE_H

@@ -1,18 +1,19 @@
-#ifndef CATALOGGRAPHICSVIEW_H
-#define CATALOGGRAPHICSVIEW_H
+#ifndef CATALOGWIDGET_H
+#define CATALOGWIDGET_H
 
 #include <QWidget>
-#include <QGraphicsView>
+#include <gui/cataloggraphicsview.h>
 #include <QSlider>
 #include <QResizeEvent>
 
 #include "cataloggraphicsscene.h"
+#include "mediainfo.h"
 
-class CatalogGraphicsView : public QWidget
+class CatalogWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit CatalogGraphicsView(CatalogGraphicsScene *scene, QWidget *parent = nullptr);
+    explicit CatalogWidget(CatalogGraphicsScene *scene, QWidget *parent = nullptr);
 
     QGraphicsView *view();
 
@@ -21,6 +22,8 @@ public:
 
     QStringList selectedFiles() const;
 
+    MediaInfo focusedItem() const;
+
 signals:
 
 public slots:
@@ -28,9 +31,9 @@ public slots:
     void onThumbnailSizeChanged(int);
 
 private:
-    QGraphicsView *m_graphics_view;
+    CatalogGraphicsView *m_graphics_view;
     QSlider *m_thumbnail_size_slider;
     CatalogGraphicsScene *m_scene;
 };
 
-#endif // CATALOGGRAPHICSVIEW_H
+#endif // CATALOGWIDGET_H

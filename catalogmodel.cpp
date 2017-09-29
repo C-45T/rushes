@@ -6,9 +6,12 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QSqlRecord>
+#include <QFileInfo>
 
 #include "opencv2/opencv.hpp"
 #include <iostream>
+
+#include "proc/ffmpegparser.h"
 
 QImage getThumbnailFromFile(QString filename) {
 
@@ -45,7 +48,7 @@ QImage getThumbnailFromFile(QString filename) {
 
 }
 
-CatalogModel::CatalogModel(QSqlDatabase &db, QObject *parent) :
+CatalogModel::CatalogModel(Database &db, QObject *parent) :
     QSqlQueryModel(parent),
     m_db(db)
 {
@@ -89,8 +92,9 @@ void CatalogModel::updateCatalog()
         filterTagStr.prepend(" AND t.name IN ");
 
     QString select_part = "SELECT DISTINCT v.id, v.catalog, v.filename, v.thumbnail, v.rating ";
-    QString from_part = "FROM Videos v LEFT JOIN Tag t ON (v.id = t.video_id)";
+    QString from_part = "FROM Videos v LEFT JOIN Tag t ON (v.id = t.video_id) ";
     QString cond_part = "WHERE 1=1" + filterRatingStr + filterTagStr;
+    QString order_part = " ORDER BY v.utc_creation_time" + filterRatingStr + filterTagStr;
 
     QSqlQuery countQuery;
     countQuery.exec("SELECT count(DISTINCT v.id) " + from_part + cond_part );
@@ -103,9 +107,9 @@ void CatalogModel::updateCatalog()
         m_rows = countQuery.value(0).toLongLong();
     }
 
-    QString querystr = select_part + from_part + cond_part;
+    QString querystr = select_part + from_part + cond_part + order_part;
 
-    setQuery(querystr, m_db);
+    setQuery(querystr, m_db.sqlDatabase());
     if (lastError().isValid())
         qDebug() << "error on" << query().lastQuery() << lastError().text();
 
@@ -258,6 +262,11 @@ int CatalogModel::getVideoId(const QString &filename) const
     return video_id;
 }
 
+MediaInfo CatalogModel::getMediaInfo(const QString &filename) const
+{
+    return m_db.getVideo(filename);
+}
+
 QStringList CatalogModel::getVideoTags(const QString &filename) const
 {
     // retrieve video id
@@ -334,18 +343,29 @@ void CatalogModel::processQueue()
 
 void CatalogModel::onVideoFrameExtracted(/*const QtAV::VideoFrame& frame*/)
 {
-    QString filename = m_queue.first();
-    QImage thumbnail = getThumbnailFromFile(filename);
-    QString thumbnail_filename = filename + "_tn.png";
+    MediaInfo media;
 
-    qDebug() << "save thumbnail" << thumbnail_filename;
-    thumbnail.save(thumbnail_filename);
+    media.filename = m_queue.first();
+    QImage thumbnail = getThumbnailFromFile(media.filename);
+    media.thumbnail_filename = media.filename + "_tn.png";
 
-    QSqlQuery insert_query;
-    QString querystr = QString("INSERT INTO Videos (catalog, filename, thumbnail) VALUES ('%1', '%2', '%3')").arg(m_catalog, filename, thumbnail_filename);
-    insert_query.exec(querystr);
+    qDebug() << "save thumbnail" << media.thumbnail_filename;
+    thumbnail.save(media.thumbnail_filename);
 
-    qDebug() << "CatalogModel::onVideoFrameExtracted" << insert_query.lastQuery() << insert_query.lastError().text();
+    FFMpegParser parser;
+    parser.openVideo(media.filename, media);
+
+    // add creation time
+    QFileInfo file_info(media.filename);
+    media.utc_creation_time = qMin(file_info.created().toSecsSinceEpoch(), file_info.lastModified().toSecsSinceEpoch());
+
+    m_db.addVideo(media);
+
+//    QSqlQuery insert_query;
+//    QString querystr = QString("INSERT INTO Videos (catalog, filename, thumbnail) VALUES ('%1', '%2', '%3')").arg(m_catalog, filename, thumbnail_filename);
+//    insert_query.exec(querystr);
+
+//    qDebug() << "CatalogModel::onVideoFrameExtracted" << insert_query.lastQuery() << insert_query.lastError().text();
 
     m_queue.pop_front();
     m_processingFile = "";
