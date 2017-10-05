@@ -76,8 +76,6 @@ void CatalogGraphicsScene::updateScene()
 
 void CatalogGraphicsScene::onSelectionChanged()
 {
-    qDebug() << "selection changed" << selectedItems().size();
-
 //    foreach (QGraphicsItem *item, selectedItems())
 //    {
 //        VideoThumbnailGraphicItem *thumbnail_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(item);
@@ -106,9 +104,6 @@ void CatalogGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
 void CatalogGraphicsScene::setItemSize(int value)
 {
     m_item_size = m_thumbnail_sizes[value-1];
-
-    qDebug() << "CatalogGraphicsScene::setItemSize" << m_item_size;
-
     updateScene();
 }
 
@@ -120,13 +115,8 @@ void CatalogGraphicsScene::setSceneWidth(int value)
 
 void CatalogGraphicsScene::shiftSelect(QGraphicsItem *item)
 {
-
-    qDebug() << "CatalogGraphicsScene::shiftSelect" << item << m_last_selected_item << itemsBoundingRect().width();
-
     if (item && m_last_selected_item)
     {
-        qDebug() << "CatalogGraphicsScene::shiftSelect" << item->pos() << m_last_selected_item->pos();
-
         QVector<QPointF> selected_points;
 
         // get upper left and bottom right points
@@ -144,15 +134,12 @@ void CatalogGraphicsScene::shiftSelect(QGraphicsItem *item)
              cycle_x < bottom_right.x() || cycle_y < bottom_right.y() ;
             )
         {
-            qDebug() << "CatalogGraphicsScene::shiftSelect" << QPointF(cycle_x, cycle_y);
-
             // select item at position cycle_x, cycle_y
             QGraphicsItem *item = itemAt(QPointF(cycle_x, cycle_y), QTransform());
             if (item)
             {
                 selected_points.append(QPointF(cycle_x, cycle_y));
                 VideoThumbnailGraphicItem *selected_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(item);
-                qDebug() << "CatalogGraphicsScene::shiftSelect" << selected_item->itemData().filename;
                 item->setSelected(true);
             }
 
@@ -178,7 +165,6 @@ MediaInfo CatalogGraphicsScene::focusedItem() const
     VideoThumbnailGraphicItem *thumbnail_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(focusItem());
     if (thumbnail_item)
     {
-        qDebug() << "focused item" << thumbnail_item->itemData().filename;
         return thumbnail_item->itemData();
     }
     else

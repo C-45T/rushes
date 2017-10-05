@@ -44,7 +44,13 @@ SOURCES += \
     mediainfo.cpp \
     gui/playerwidget.cpp \
     thirdParty/starrating.cpp \
-    gui/tagswidget.cpp
+    gui/tagswidget.cpp \
+    proc/jobsmaster.cpp \
+    proc/exportjob.cpp \
+    gui/jobswidget.cpp \
+    gui/jobstatuswidget.cpp \
+    gui/basedialog.cpp \
+    proc/importjob.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -63,7 +69,13 @@ HEADERS += \
     mediainfo.h \
     gui/playerwidget.h \
     thirdParty/starrating.h \
-    gui/tagswidget.h
+    gui/tagswidget.h \
+    proc/jobsmaster.h \
+    proc/exportjob.h \
+    gui/jobswidget.h \
+    gui/jobstatuswidget.h \
+    gui/basedialog.h \
+    proc/importjob.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

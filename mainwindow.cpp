@@ -12,6 +12,7 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QInputDialog>
+#include <QSettings>
 
 #include "catalogfilter.h"
 #include "catalogfilterwidget.h"
@@ -24,7 +25,11 @@
 #include "cataloggraphicsscene.h"
 #include "proc/ffmpegparser.h"
 
+#include "proc/exportjob.h"
+#include "proc/importjob.h"
 
+#include "gui/jobswidget.h"
+#include "gui/basedialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -52,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     CatalogFilterWidget *catalogFilterWidget = new CatalogFilterWidget(this);
     catalogFilterWidget->setFilter(catalogFilter);
     m_tag_widget = new TagsWidget(this);
+    JobsWidget *small_job_widget = new JobsWidget(m_job_master, true, this);
 
     // graphics
     CatalogGraphicsScene *scene = new CatalogGraphicsScene(m_catalog);
@@ -60,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
     // layouts
     leftPanelLayout->addWidget(catalogFilterWidget);
     leftPanelLayout->addWidget(m_view);
+    leftPanelLayout->addWidget(small_job_widget);
 
     main_splitter->addWidget(layoutWidget);
     main_splitter->addWidget(right_splitter);
@@ -70,8 +77,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     this->setCentralWidget(main_splitter);
 
-    m_player->resize(320, 240);
-    resize(800, 600);
+    //m_player->resize(320, 240);
+    //resize(800, 600);
 
     // signals
 
@@ -91,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_db.createVideoTable();
     m_db.createTagTable();
 
-    m_catalog->setCatalog("default");
+    readSettings();
 
     QTimer::singleShot(0, m_view, SLOT(updateView()));
 }
@@ -101,6 +108,47 @@ MainWindow::~MainWindow()
 
 }
 
+void MainWindow::writeSettings()
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
+
+    settings.beginGroup("App");
+    settings.setValue("currentCatalog", m_catalog->catalog());
+    settings.endGroup();
+
+    settings.beginGroup("MainWindow");
+    //settings.setValue("size", size());
+    //settings.setValue("pos", pos());
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("windowState", saveState());
+
+    settings.endGroup();
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
+
+    settings.beginGroup("App");
+    m_catalog->setCatalog(settings.value("currentCatalog", "default").toString());
+    settings.endGroup();
+
+    settings.beginGroup("MainWindow");
+//    resize(settings.value("size", QSize(400, 400)).toSize());
+  //  move(settings.value("pos", QPoint(200, 200)).toPoint());
+
+    restoreState(settings.value("windowState").toByteArray());
+    restoreGeometry(settings.value("geometry").toByteArray());
+    settings.endGroup();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    writeSettings();
+    QMainWindow::closeEvent(event);
+}
+
+
 void MainWindow::addVideo()
 {
     QStringList filenames = QFileDialog::getOpenFileNames(this, "Add to catalog", QString(), "Videos (*.mp4 *.avi *.mov *.m4v *.mts)");
@@ -108,7 +156,11 @@ void MainWindow::addVideo()
     if (filenames.isEmpty())
          return;
 
-    m_catalog->addToCatalog("default", filenames);
+    ImportJob *job = new ImportJob(m_db, filenames, "default");
+    m_job_master.addJob(job);
+
+    connect(job, SIGNAL(finished()), m_catalog, SLOT(updateCatalog()));
+
 }
 
 void MainWindow::playVideo(const QString &filepath)
@@ -136,9 +188,11 @@ void MainWindow::exportToProres()
     QString output_folder = QFileDialog::getExistingDirectory();
     if (m_view && !output_folder.isEmpty())
     {
-        foreach (QString filename, m_view->selectedFiles())
+        foreach (MediaInfo media, m_view->selectedMedia())
         {
-            FFMpegParser::exportProres(filename, output_folder);
+            ExportJob *job = new ExportJob(media, output_folder);
+            m_job_master.addJob(job);
+            //FFMpegParser::exportProres(filename, output_folder);
         }
     }
 }
@@ -172,6 +226,13 @@ void MainWindow::onSelectionChanged()
 
 }
 
+void MainWindow::onShowJobsProgress()
+{
+    JobsWidget *job_widget = new JobsWidget(m_job_master, false, this);
+    BaseDialog *dlg = new BaseDialog(job_widget, this);
+    dlg->show();
+}
+
 void MainWindow::createMenus()
 {
     QMenu *file_menu = menuBar()->addMenu(tr("&File"));
@@ -181,5 +242,8 @@ void MainWindow::createMenus()
     QMenu *edit_menu = menuBar()->addMenu(tr("&Edit"));
     edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));
     edit_menu->addAction("Facial Recognition", this, SLOT(faceRecognition()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_T));
+
+    QMenu *view_menu = menuBar()->addMenu(tr("&View"));
+    view_menu->addAction("Jobs Progress Window", this, SLOT(onShowJobsProgress()), QKeySequence(Qt::Key_F8));
 }
 

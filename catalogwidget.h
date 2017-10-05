@@ -22,6 +22,7 @@ public:
     void wheelEvent(QWheelEvent *event);
 
     QStringList selectedFiles() const;
+    QList<MediaInfo> selectedMedia() const;
 
     MediaInfo focusedItem() const;
 

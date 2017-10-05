@@ -26,11 +26,11 @@ CatalogWidget::CatalogWidget(CatalogGraphicsScene *scene, QWidget *parent)
     m_thumbnail_size_slider->setOrientation(Qt::Horizontal);
     m_thumbnail_size_slider->setRange(1, 5);
     m_thumbnail_size_slider->setValue(3);
+    m_thumbnail_size_slider->hide();
     m_graphics_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     m_graphics_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_graphics_view->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     m_graphics_view->setContentsMargins(10, 10, 10, 10);
-    m_graphics_view->setMinimumWidth(480);
 
     connect(m_thumbnail_size_slider, SIGNAL(valueChanged(int)), this, SLOT(onThumbnailSizeChanged(int)));
 
@@ -64,7 +64,7 @@ void CatalogWidget::keyPressEvent(QKeyEvent *event)
                 catalog_model->deleteFromCatalog(files_to_delete);
             }
         }
-        break;
+            break;
         case Qt::Key_0:
         case Qt::Key_1:
         case Qt::Key_2:
@@ -79,10 +79,21 @@ void CatalogWidget::keyPressEvent(QKeyEvent *event)
                 catalog_model->updateRating(files_to_update, event->text().toInt());
             }
         }
-        break;
+            break;
+        case Qt::Key_Plus:
+        {
+            m_thumbnail_size_slider->setValue(m_thumbnail_size_slider->value() + 1);
+            break;
+        }
+        case Qt::Key_Minus:
+        {
+            m_thumbnail_size_slider->setValue(m_thumbnail_size_slider->value() - 1);
+            break;
+        }
     }
 
     return QWidget::keyPressEvent(event);
+
 }
 
 void CatalogWidget::wheelEvent(QWheelEvent *event)
@@ -121,6 +132,25 @@ QStringList CatalogWidget::selectedFiles() const
         if (thumbnail_item)
         {
             selection.append(thumbnail_item->itemData().filename);
+        }
+    }
+
+    return selection;
+}
+
+QList<MediaInfo> CatalogWidget::selectedMedia() const
+{
+    QList<MediaInfo> selection;
+
+    if (!m_scene)
+        return selection;
+
+    foreach (QGraphicsItem *item, m_scene->selectedItems())
+    {
+        VideoThumbnailGraphicItem *thumbnail_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(item);
+        if (thumbnail_item)
+        {
+            selection.append(thumbnail_item->itemData());
         }
     }
 

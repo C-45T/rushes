@@ -26,7 +26,6 @@ int FFMpegParser::openVideo(const QString &filename, MediaInfo &media)
     // Dump information about file onto standard error
     av_dump_format(pFormatCtx, 0, filename.toStdString().c_str(), 0);
 
-    int i;
     AVCodecContext *pCodecCtxOrig = NULL;
     AVCodecContext *pCodecCtx = NULL;
 
@@ -73,7 +72,7 @@ int FFMpegParser::openVideo(const QString &filename, MediaInfo &media)
     return 0;
 }
 
-void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *codec_ctx, MediaInfo& media)
+void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, MediaInfo& media)
 {
     if (context->duration != AV_NOPTS_VALUE)
     {
@@ -93,7 +92,7 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *codec_ctx,
     if (context->bit_rate)
         media.bitrate = (int64_t)context->bit_rate / 1000;
 
-    for (int i = 0; i < context->nb_streams; i++)
+    for (uint i = 0; i < context->nb_streams; i++)
     {
         AVStream *st = context->streams[i];
         AVCodecContext *avctx;
@@ -175,7 +174,7 @@ void FFMpegParser::transcode(const QString &src, const QString &destination)
     QProcess::execute(cmd);
 }
 
-void FFMpegParser::exportProres(const QString &filename, const QString &path)
+QProcess* FFMpegParser::exportProres(const QString &filename, const QString &path)
 {   
     // build output filename
     QFileInfo file_info = QFileInfo(filename);
@@ -191,5 +190,8 @@ void FFMpegParser::exportProres(const QString &filename, const QString &path)
 
     // call to ffmpeg
     QString cmd = QString("ffmpeg -y -i %1 -c:v prores -profile:v 1 %2").arg(filename, output_filename);
-    QProcess::execute(cmd);
+    QProcess *export_process = new QProcess();
+    export_process->start(cmd);
+
+    return export_process;
 }

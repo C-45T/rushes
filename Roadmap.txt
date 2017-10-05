@@ -27,17 +27,17 @@ Evol :
 - ajout sauvegarde et restauration du modele de reconnaissance facial (save et load au format yaml)
 - se debarrasser des noms de table hardcodées
 - multithreader la detection de visage
-- ajout d'un recognizer temporaire sur l'analyse d'une video pour regrouper les personnes identiques en sortie d'algo (john doe 1, john doe 2, ...) avant de les tager manuellement
 - Rajouter un logger
 - Travail collaboratif (rajout utilisateurs, attribut user pour les modification, table d'historique de modif ?, synchro pour travail simultané (socket? attribut dans base?)
 - option (click droit "display same day") pour afficher video du meme jour (par exemple si une personne est taguée sur une video, elle est probablement sur d'autres du meme jour)
 - faire des familles de tag (les prenoms pour la famille personne, "mer" "montagne" "vallée" -> famille paysage, etc...)
 - creer des gifs de chaque video pour l'apercu
-- barre de progression jobs
 - gestion des jpbs avec barre de progress liste de job en attente, ...
 - ecrire les metadonnées directement dans le fichiers (tags, ratings, auteur, ...)
-- remplacer libvlc par QtAv
 - import/export de bibliothèque/catalogue avec option copie des fichiers
+- ajouter profils d'export (prores proxy, hq, lq, mp4, ...)
+- creation de subclips avec ctrl+1, ctrl+2, ... plusieurs subclips sur une video, structure en base, ... (DB : subclis : ref clip, start frame, stop frame, rating)
+- detection de portrait : critère taille minimum par rapport à l'image (1/4 ?) temps supérieurs à X images (25?)
 
 Done :
 - Ajout multiple au catalogue
@@ -50,3 +50,6 @@ Done :
 - dimensionnement des différentes zones
 - export selection en prores
 - récupérer info sur la video (codec, bitrate, fps, ...)
+- ajout d'un recognizer temporaire sur l'analyse d'une video pour regrouper les personnes identiques en sortie d'algo (john doe 1, john doe 2, ...) avant de les tager manuellement
+- barre de progression jobs
+- remplacer libvlc par QtAv

@@ -26,7 +26,6 @@ public:
 
     void setFilter(CatalogFilter *filter);
     void setCatalog(const QString &catalog);
-    void addToCatalog(const QString &catalog, const QStringList &filenames);
     void deleteFromCatalog(const QStringList &files);
 
     void updateRating(const QStringList &files, int rating);
@@ -35,19 +34,15 @@ public:
     MediaInfo getMediaInfo(const QString &filename) const;
     QStringList getVideoTags(const QString &filename) const;
 
-    void processQueue();
-
 signals:
     void catalogChanged();
 
 public slots:
-    void onVideoFrameExtracted(/*const QtAV::VideoFrame& frame*/);
     void updateCatalog();
 
 private:
     Database &m_db;
     QString m_catalog;
-    QStringList m_queue;
     QString m_processingFile;
     qlonglong m_rows;
     int m_thumbnail_column_number;

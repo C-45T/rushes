@@ -12,6 +12,8 @@
 #include "gui/playerwidget.h"
 #include "gui/tagswidget.h"
 
+#include "proc/jobsmaster.h"
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -19,6 +21,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    void closeEvent(QCloseEvent *event);
 
 public slots:
     void addVideo();
@@ -29,6 +33,11 @@ public slots:
     void faceRecognition();
 
     void onSelectionChanged();
+    void onShowJobsProgress();
+
+protected:
+    void readSettings();
+    void writeSettings();
 
 private:
 
@@ -40,6 +49,9 @@ private:
     CatalogWidget *m_view;
     MediaInfoWidget *m_media_info;
     TagsWidget *m_tag_widget;
+
+    JobsMaster m_job_master;
+
 };
 
 #endif // MAINWINDOW_H

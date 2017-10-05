@@ -3,50 +3,9 @@
 #include <QSqlQuery>
 #include <QDebug>
 #include <QSqlError>
-#include <QDateTime>
 #include <QTimer>
 #include <QSqlRecord>
-#include <QFileInfo>
 
-#include "opencv2/opencv.hpp"
-#include <iostream>
-
-#include "proc/ffmpegparser.h"
-
-QImage getThumbnailFromFile(QString filename) {
-
-    int default_image_width = 480;
-    int default_image_height = 270;
-
-    QImage emptyImage = QImage(default_image_width, default_image_height, QImage::Format_RGB888);
-
-    // Create a VideoCapture object and open the input file
-    // If the input is the web camera, pass 0 instead of the video file name
-    cv::VideoCapture cap(filename.toStdString());
-
-    // Check if camera opened successfully
-    if(!cap.isOpened()){
-        qWarning() << "Error opening video stream or file" << filename;
-        return emptyImage;
-    }
-
-    double count = cap.get(CV_CAP_PROP_FRAME_COUNT); //get the frame count
-    cap.set(CV_CAP_PROP_POS_FRAMES,count/2); //Set index to middle frame
-
-    cv::Mat frame;
-    // Capture frame
-    cap >> frame;
-
-    // save image
-    if (!frame.empty()) {
-        QImage qImage = QImage((const unsigned char*)(frame.data), frame.cols, frame.rows, QImage::Format_RGB888).rgbSwapped();
-        frame.release();
-        return qImage.scaledToWidth(default_image_width);
-    }
-
-    return emptyImage;
-
-}
 
 CatalogModel::CatalogModel(Database &db, QObject *parent) :
     QSqlQueryModel(parent),
@@ -320,60 +279,3 @@ void CatalogModel::deleteFromCatalog(const QStringList &files)
     updateCatalog();
 }
 
-void CatalogModel::addToCatalog(const QString &catalog, const QStringList &filenames)
-{
-    const QString timestamp = QDateTime::currentDateTime().toString(Qt::ISODate);
-
-    m_catalog = catalog;
-
-    foreach (QString filename, filenames)
-        m_queue.push_back(filename);
-
-    if (m_processingFile.isEmpty())
-        processQueue();
-}
-
-void CatalogModel::processQueue()
-{
-    const QString timestamp = QDateTime::currentDateTime().toString(Qt::ISODate);
-
-    m_processingFile = m_queue.first();
-
-    qDebug() << "extract frame from " << m_processingFile;
-
-    QTimer::singleShot(0, this, SLOT(onVideoFrameExtracted()));
-}
-
-void CatalogModel::onVideoFrameExtracted(/*const QtAV::VideoFrame& frame*/)
-{
-    MediaInfo media;
-
-    media.filename = m_queue.first();
-    QImage thumbnail = getThumbnailFromFile(media.filename);
-    media.thumbnail_filename = media.filename + "_tn.png";
-
-    qDebug() << "save thumbnail" << media.thumbnail_filename;
-    thumbnail.save(media.thumbnail_filename);
-
-    FFMpegParser parser;
-    parser.openVideo(media.filename, media);
-
-    // add creation time
-    QFileInfo file_info(media.filename);
-    media.utc_creation_time = qMin(file_info.created().toSecsSinceEpoch(), file_info.lastModified().toSecsSinceEpoch());
-
-    m_db.addVideo(media);
-
-//    QSqlQuery insert_query;
-//    QString querystr = QString("INSERT INTO Videos (catalog, filename, thumbnail) VALUES ('%1', '%2', '%3')").arg(m_catalog, filename, thumbnail_filename);
-//    insert_query.exec(querystr);
-
-//    qDebug() << "CatalogModel::onVideoFrameExtracted" << insert_query.lastQuery() << insert_query.lastError().text();
-
-    m_queue.pop_front();
-    m_processingFile = "";
-    if (!m_queue.isEmpty())
-        processQueue();
-    else
-        updateCatalog();
-}
