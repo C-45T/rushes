@@ -37,7 +37,7 @@ CatalogWidget::CatalogWidget(CatalogGraphicsScene *scene, QWidget *parent)
     onThumbnailSizeChanged(m_thumbnail_size_slider->value());
 }
 
-QGraphicsView *CatalogWidget::view()
+CatalogGraphicsView *CatalogWidget::view()
 {
     return m_graphics_view;
 }

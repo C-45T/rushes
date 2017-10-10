@@ -17,11 +17,13 @@ public slots:
     void updateScene();
     void onSelectionChanged();
     void onFocusItemChanged(QGraphicsItem *newFocusItem, QGraphicsItem *oldFocusItem, Qt::FocusReason reason);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
     void setItemSize(int value);
     void setSceneWidth(int value);
 
+    void selectCloseItem(int right, int down);
     void shiftSelect(QGraphicsItem *item);
 
     CatalogModel* model() { return m_model; }

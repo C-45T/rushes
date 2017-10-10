@@ -4,7 +4,17 @@ Fixes :
 - gestion memoire cv::Mat avec release en fin d'utilisation
 - gestion des noms de fichiers/dossiers avec espace
 
-En cours :
+Objectif POC :
+- gestion des catalogues (changement bdd pour associer un clip à plusieurs catalogues ? )
+- changement selection avec les fleches
+- click droit menu contextuel
+- preset pour export
+- export catalog en csv ou autres
+- import catalog depuis csv ou autres
+- progression thread dans status bar de la mainwindow
+- job face detection
+- Amélioration GUI (affichage métadonnées, affichage tags, affichage étoile, ...)
+- enregistrer thumbnail dans cache
 
 
 Evol :
@@ -38,6 +48,8 @@ Evol :
 - ajouter profils d'export (prores proxy, hq, lq, mp4, ...)
 - creation de subclips avec ctrl+1, ctrl+2, ... plusieurs subclips sur une video, structure en base, ... (DB : subclis : ref clip, start frame, stop frame, rating)
 - detection de portrait : critère taille minimum par rapport à l'image (1/4 ?) temps supérieurs à X images (25?)
+- enregistrement job dans la bdd ?
+- configuration multithreading pour lancer X jobs en fonction du nombre de threads autorisés
 
 Done :
 - Ajout multiple au catalogue

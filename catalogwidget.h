@@ -15,7 +15,7 @@ class CatalogWidget : public QWidget
 public:
     explicit CatalogWidget(CatalogGraphicsScene *scene, QWidget *parent = nullptr);
 
-    QGraphicsView *view();
+    CatalogGraphicsView *view();
 
     void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *event);

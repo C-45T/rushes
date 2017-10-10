@@ -34,8 +34,6 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    createMenus();
-
     // layout
     //QWidget *mainWidget = new QWidget(this);
     //QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -77,11 +75,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     this->setCentralWidget(main_splitter);
 
-    //m_player->resize(320, 240);
-    //resize(800, 600);
+    // menu and context actions
+    createMenus();
 
     // signals
-
     connect(catalogFilter, SIGNAL(valueChanged()), m_catalog, SLOT(updateCatalog()));
     connect(m_catalog, SIGNAL(catalogChanged()), scene, SLOT(updateScene()));
     connect(m_catalog, SIGNAL(catalogChanged()), m_view, SLOT(updateView()));
@@ -101,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
     readSettings();
 
     QTimer::singleShot(0, m_view, SLOT(updateView()));
+
 }
 
 MainWindow::~MainWindow()
@@ -224,6 +222,8 @@ void MainWindow::onSelectionChanged()
 
     m_tag_widget->setTags(m_catalog->getVideoTags(infos.filename));
 
+    m_view->view()->onScrollToFocusedItem();
+
 }
 
 void MainWindow::onShowJobsProgress()
@@ -237,13 +237,18 @@ void MainWindow::createMenus()
 {
     QMenu *file_menu = menuBar()->addMenu(tr("&File"));
     file_menu->addAction("Add to Catalog", this, SLOT(addVideo()), QKeySequence(Qt::CTRL + Qt::Key_O));
-    file_menu->addAction("Export selection to Prores", this, SLOT(exportToProres()), QKeySequence(Qt::CTRL + Qt::Key_E));
+    QAction *export_action = file_menu->addAction("Export selection to Prores", this, SLOT(exportToProres()), QKeySequence(Qt::CTRL + Qt::Key_E));
 
     QMenu *edit_menu = menuBar()->addMenu(tr("&Edit"));
-    edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));
-    edit_menu->addAction("Facial Recognition", this, SLOT(faceRecognition()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_T));
+    QAction *tag_action = edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));
+    QAction *facial_recognition_action = edit_menu->addAction("Facial Recognition", this, SLOT(faceRecognition()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_T));
 
     QMenu *view_menu = menuBar()->addMenu(tr("&View"));
     view_menu->addAction("Jobs Progress Window", this, SLOT(onShowJobsProgress()), QKeySequence(Qt::Key_F8));
+
+    m_context_actions.append(export_action);
+    m_context_actions.append(tag_action);
+    m_context_actions.append(facial_recognition_action);
+    m_view->view()->setContextActions(m_context_actions);
 }
 

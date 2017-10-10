@@ -43,6 +43,8 @@ private:
 
     void createMenus();
 
+    QList<QAction *> m_context_actions;
+
     Database m_db;
     CatalogModel *m_catalog;
     PlayerWidget *m_player;

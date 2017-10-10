@@ -3,6 +3,7 @@
 
 #include <QDebug>
 #include <QApplication>
+#include <QGraphicsSceneMouseEvent>
 
 // TODO :  set as class attributes ?
 #define ITEMS_WIDTH 480
@@ -91,6 +92,15 @@ void CatalogGraphicsScene::onFocusItemChanged(QGraphicsItem *, QGraphicsItem *ol
     m_last_selected_item = oldFocusItem;
 }
 
+void CatalogGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() != Qt::LeftButton) {
+        event->accept();
+        return;
+    }
+    QGraphicsScene::mousePressEvent(event);
+}
+
 void CatalogGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
 {
     VideoThumbnailGraphicItem *thumbnail_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(focusItem());
@@ -113,11 +123,48 @@ void CatalogGraphicsScene::setSceneWidth(int value)
     updateScene();
 }
 
+void CatalogGraphicsScene::selectCloseItem(int right, int down)
+{
+    QGraphicsItem *selected_item = focusItem();
+    if (!selected_item)
+        return;
+
+    float targetted_x = selected_item->pos().x() + (right * (ITEMS_WIDTH + HORIZONTAL_MARGIN));
+    float targetted_y = selected_item->pos().y() + (down * (ITEMS_HEIGHT + VERTICAL_MARGIN));
+
+    if (targetted_x > itemsBoundingRect().width())
+    {
+        targetted_x = 0.0;
+        targetted_y += ITEMS_HEIGHT + VERTICAL_MARGIN;
+    }
+
+    if (targetted_x < 0.0)
+    {
+        targetted_x = itemsBoundingRect().width();
+        targetted_y -= ITEMS_HEIGHT + VERTICAL_MARGIN;
+    }
+
+    QGraphicsItem *item = itemAt(QPointF(targetted_x, targetted_y), QTransform());
+    if (item) {
+
+        m_last_selected_item = selected_item;
+        if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
+        {
+            shiftSelect(item);
+        }
+        else
+        {
+            clearSelection();
+            item->setFocus();
+            item->setSelected(true);
+        }
+    }
+}
+
 void CatalogGraphicsScene::shiftSelect(QGraphicsItem *item)
 {
     if (item && m_last_selected_item)
     {
-        QVector<QPointF> selected_points;
 
         // get upper left and bottom right points
         QPointF upper_left = m_last_selected_item->pos();
@@ -138,8 +185,6 @@ void CatalogGraphicsScene::shiftSelect(QGraphicsItem *item)
             QGraphicsItem *item = itemAt(QPointF(cycle_x, cycle_y), QTransform());
             if (item)
             {
-                selected_points.append(QPointF(cycle_x, cycle_y));
-                VideoThumbnailGraphicItem *selected_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(item);
                 item->setSelected(true);
             }
 
@@ -156,7 +201,10 @@ void CatalogGraphicsScene::shiftSelect(QGraphicsItem *item)
 
         QGraphicsItem *item = itemAt(bottom_right, QTransform());
         if (item)
+        {
+            item->setFocus();
             item->setSelected(true);
+        }
     }
 }
 
