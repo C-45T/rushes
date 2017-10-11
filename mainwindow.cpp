@@ -13,6 +13,7 @@
 #include <QMenu>
 #include <QInputDialog>
 #include <QSettings>
+#include <QSignalMapper>
 
 #include "catalogfilter.h"
 #include "catalogfilterwidget.h"
@@ -76,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->setCentralWidget(main_splitter);
 
     // menu and context actions
+    createTranscodingActions();
     createMenus();
 
     // signals
@@ -129,15 +131,57 @@ void MainWindow::readSettings()
 
     settings.beginGroup("App");
     m_catalog->setCatalog(settings.value("currentCatalog", "default").toString());
+    // check if thumbnail folder exists or create it at first start
+    QString thumnbnail_folder = settings.value("thumbnailFolder", "").toString();
+    if (thumnbnail_folder.isEmpty())
+    {
+        QDir path = QDir::currentPath();
+        // create path if not exists
+        path.mkdir("cache");
+        settings.setValue("thumbnailFolder", QDir::currentPath() + "/cache/");
+    }
+
     settings.endGroup();
 
     settings.beginGroup("MainWindow");
-//    resize(settings.value("size", QSize(400, 400)).toSize());
-  //  move(settings.value("pos", QPoint(200, 200)).toPoint());
-
+    //resize(settings.value("size", QSize(400, 400)).toSize());
+    //move(settings.value("pos", QPoint(200, 200)).toPoint());
     restoreState(settings.value("windowState").toByteArray());
     restoreGeometry(settings.value("geometry").toByteArray());
     settings.endGroup();
+}
+
+
+void MainWindow::createTranscodingActions()
+{
+    QFile file("ffmpeg_presets.txt"); // TODO : hardcoded value!
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    QMap<QString,QString> presets;
+    while (!file.atEnd()) {
+        QString line = file.readLine();
+        QStringList args = line.split("::");
+        if (args.size() == 2)
+        {
+            presets[args[0]]=args[1];
+        }
+    }
+
+    QSignalMapper *signal_mapper = new QSignalMapper(this);
+    for (int i=0; i<presets.size(); i++)
+    {
+        QString preset_key = presets.keys()[i];
+        QAction *action = new QAction(preset_key, this);
+        connect(action, SIGNAL(triggered()), signal_mapper, SLOT(map()));
+        signal_mapper->setMapping(action, presets[preset_key]);
+        m_transcode_actions.append(action);
+    }
+
+    connect(signal_mapper, SIGNAL(mapped(QString)), this, SLOT(transcode(QString)));
+
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -181,16 +225,15 @@ void MainWindow::addTags()
         }
 }
 
-void MainWindow::exportToProres()
+void MainWindow::transcode(const QString &command_preset)
 {
     QString output_folder = QFileDialog::getExistingDirectory();
     if (m_view && !output_folder.isEmpty())
     {
         foreach (MediaInfo media, m_view->selectedMedia())
         {
-            ExportJob *job = new ExportJob(media, output_folder);
+            ExportJob *job = new ExportJob(media, output_folder, command_preset);
             m_job_master.addJob(job);
-            //FFMpegParser::exportProres(filename, output_folder);
         }
     }
 }
@@ -237,7 +280,6 @@ void MainWindow::createMenus()
 {
     QMenu *file_menu = menuBar()->addMenu(tr("&File"));
     file_menu->addAction("Add to Catalog", this, SLOT(addVideo()), QKeySequence(Qt::CTRL + Qt::Key_O));
-    QAction *export_action = file_menu->addAction("Export selection to Prores", this, SLOT(exportToProres()), QKeySequence(Qt::CTRL + Qt::Key_E));
 
     QMenu *edit_menu = menuBar()->addMenu(tr("&Edit"));
     QAction *tag_action = edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));
@@ -246,9 +288,12 @@ void MainWindow::createMenus()
     QMenu *view_menu = menuBar()->addMenu(tr("&View"));
     view_menu->addAction("Jobs Progress Window", this, SLOT(onShowJobsProgress()), QKeySequence(Qt::Key_F8));
 
-    m_context_actions.append(export_action);
+    QMenu *context_menu = new QMenu(m_view->view());
     m_context_actions.append(tag_action);
     m_context_actions.append(facial_recognition_action);
-    m_view->view()->setContextActions(m_context_actions);
+    context_menu->addActions(m_context_actions);
+    QMenu *transcode_menu = context_menu->addMenu(tr("&Transcode"));
+    transcode_menu->addActions(m_transcode_actions);
+    m_view->view()->setContextMenu(context_menu);
 }
 

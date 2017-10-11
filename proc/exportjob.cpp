@@ -4,9 +4,10 @@
 #include <QDebug>
 #include <QRegularExpression>
 
-ExportJob::ExportJob(const MediaInfo &media, const QString &output_folder)
+ExportJob::ExportJob(const MediaInfo &media, const QString &output_folder, const QString& ffmpeg_command_line)
     : m_media(media),
-      m_output_folder(output_folder)
+      m_output_folder(output_folder),
+      m_command_line(ffmpeg_command_line)
 {
     setDescription(QString("Export %1 to Prores. Output to %2").arg(media.filename, output_folder));
     m_export_process = 0;
@@ -18,7 +19,7 @@ void ExportJob::run()
 {
     setStatus(Job::STARTED);
     emit progress(0, m_total_fps);
-    m_export_process = FFMpegParser::exportProres(m_media.filename, m_output_folder);
+    m_export_process = FFMpegParser::transcode(m_media.filename, m_output_folder, m_command_line);
 
     connect(m_export_process, SIGNAL(readyReadStandardOutput()), this, SLOT(checkProgress()));
     connect(m_export_process, SIGNAL(readyReadStandardError()), this, SLOT(checkProgress()));
@@ -46,4 +47,6 @@ void ExportJob::checkProgress()
 
     if (match.captured(1).toInt() > 0)
         emit progress(match.captured(1).toInt(), m_total_fps);
+
+    qDebug() << output;
 }

@@ -96,18 +96,6 @@ void CatalogWidget::keyPressEvent(QKeyEvent *event)
 
 }
 
-void CatalogWidget::wheelEvent(QWheelEvent *event)
-{
-//    QPoint numDegrees = event->angleDelta() / 8;
-
-//    if (!numDegrees.isNull()) {
-//        QPoint numSteps = numDegrees / 15;
-//        m_thumbnail_size_slider->setValue(m_thumbnail_size_slider->value() + (1 * numSteps.y()));
-//    }
-
-//    event->accept();
-}
-
 void CatalogWidget::updateView()
 {
     float ratio = float(m_graphics_view->width()) / float(m_graphics_view->height());

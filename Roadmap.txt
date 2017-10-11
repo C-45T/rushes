@@ -6,15 +6,15 @@ Fixes :
 
 Objectif POC :
 - gestion des catalogues (changement bdd pour associer un clip à plusieurs catalogues ? )
-- changement selection avec les fleches
-- click droit menu contextuel
-- preset pour export
-- export catalog en csv ou autres
-- import catalog depuis csv ou autres
 - progression thread dans status bar de la mainwindow
 - job face detection
+- export catalog en csv ou autres
+- import catalog depuis csv ou autres
 - Amélioration GUI (affichage métadonnées, affichage tags, affichage étoile, ...)
-- enregistrer thumbnail dans cache
+- check cache integrity, rebuild thumbnail
+
+Optimisation:
+- à l'import lire d'abord les fichiers et metadata puis dans un deuxième temps créer les images
 
 
 Evol :
@@ -65,3 +65,7 @@ Done :
 - ajout d'un recognizer temporaire sur l'analyse d'une video pour regrouper les personnes identiques en sortie d'algo (john doe 1, john doe 2, ...) avant de les tager manuellement
 - barre de progression jobs
 - remplacer libvlc par QtAv
+- changement selection avec les fleches
+- click droit menu contextuel
+- preset pour export (prores, h264, ...)
+- enregistrer thumbnail dans un dossier special cache et pas avec les fichiers directement

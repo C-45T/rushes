@@ -13,6 +13,11 @@ CatalogGraphicsView::CatalogGraphicsView(CatalogGraphicsScene *scene, QWidget *p
     connect(m_scene, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
 }
 
+void CatalogGraphicsView::setContextMenu(QMenu *menu)
+{
+    m_context_menu = menu;
+}
+
 void CatalogGraphicsView::setContextActions(const QList<QAction *> &actions)
 {
     m_context_actions = actions;
@@ -65,10 +70,7 @@ void CatalogGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 
 void CatalogGraphicsView::contextMenuEvent(QContextMenuEvent *event)
 {
-    QMenu menu(this);
-    menu.addActions(m_context_actions);
-    menu.exec(event->globalPos());
-
+    m_context_menu->exec(event->globalPos());
 }
 
 void CatalogGraphicsView::keyPressEvent(QKeyEvent *event)

@@ -1,0 +1,7 @@
+PRORES (Proxy)::ffmpeg -y -i %1 -c:v prores -profile:v 0 %2.mov
+PRORES::ffmpeg -y -i %1 -c:v prores -profile:v 1 %2.mov
+PRORES (HQ)::ffmpeg -y -i %1 -c:v prores -profile:v 3 %2.mov
+OGG::ffmpeg -y -i %1 -vn %2.ogg
+FLAC::ffmpeg -y -i %1 -vn %2.flac
+H264::ffmpeg -y -i %1 -c:v libx264 -preset medium -crf 27 -acodec aac %2.mp4
+H264 (720p)::ffmpeg -y -i %1 -c:v libx264 -preset medium -crf 27 -s 1280x720 -acodec aac %2.mp4

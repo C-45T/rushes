@@ -3,6 +3,8 @@
 #include <QImage>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QDir>
+#include <QSettings>
 
 #include "opencv2/opencv.hpp"
 #include <iostream>
@@ -78,7 +80,22 @@ void ImportJob::run()
         // fill filename and build thumbnail
         media.filename = m_import_list[i];
         QImage thumbnail = getThumbnailFromFile(media.filename);
-        media.thumbnail_filename = media.filename + "_tn.png";
+
+        // save thumbnail to cache
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
+        settings.beginGroup("App");
+        QDir output_path = QDir(settings.value("thumbnailFolder").toString());
+        settings.endGroup();
+
+        media.thumbnail_filename = output_path.filePath(QFileInfo(media.filename).baseName() + ".png");
+
+        // make sure no file with same name is arlready generated
+        int suffix=0;
+        while (QFile(media.thumbnail_filename).exists()) {
+            media.thumbnail_filename = output_path.filePath(QFileInfo(media.filename).baseName() + QString("_%1.png").arg(suffix));
+            suffix++;
+        }
+
         thumbnail.save(media.thumbnail_filename);
 
         // get metadata

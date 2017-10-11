@@ -20,9 +20,7 @@ public:
 
     int openVideo( const QString& filename, MediaInfo &media );
 
-    void transcode( const QString& src, const QString& destination );
-
-    static QProcess* exportProres(const QString& filename, const QString& path );
+    static QProcess* transcode(const QString& input_filename, const QString& destination_path , const QString &preset);
 
 private:
     void metadata(AVFormatContext *context, AVCodecContext *codec_ctx, MediaInfo &media);   

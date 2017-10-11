@@ -29,7 +29,7 @@ public slots:
     void playVideo(const QString& filepath);
 
     void addTags();
-    void exportToProres();
+    void transcode(const QString& command_preset);
     void faceRecognition();
 
     void onSelectionChanged();
@@ -39,11 +39,14 @@ protected:
     void readSettings();
     void writeSettings();
 
+    void createTranscodingActions();
+
 private:
 
     void createMenus();
 
     QList<QAction *> m_context_actions;
+    QList<QAction *> m_transcode_actions;
 
     Database m_db;
     CatalogModel *m_catalog;

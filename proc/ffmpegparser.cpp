@@ -168,30 +168,20 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, MediaInf
     //media.debug();
 }
 
-void FFMpegParser::transcode(const QString &src, const QString &destination)
+QProcess* FFMpegParser::transcode(const QString &input_filename, const QString &destination_path, const QString& preset)
 {
-    QString cmd = QString("ffmpeg -y -i %1 %2").arg(src, destination);
-    QProcess::execute(cmd);
-}
+    // get output filename
+    QFileInfo file_info = QFileInfo(input_filename);
+    QString output_filename = QDir(destination_path).absoluteFilePath(file_info.baseName());
 
-QProcess* FFMpegParser::exportProres(const QString &filename, const QString &path)
-{   
-    // build output filename
-    QFileInfo file_info = QFileInfo(filename);
+    // create transcoding command
+    QString cmd = QString(preset).arg(input_filename, output_filename);
+    qDebug() << "FFMpegParser::transcode :" << cmd;
 
-    qDebug() << "transcode to prores" << filename << path << file_info.baseName();
-
-    QString output_filename = QDir(path).absoluteFilePath(file_info.baseName() + ".mov");
-
-    if (output_filename == filename)
-        output_filename.replace(".mov", "_2.mov");
-
-    qDebug() << "transcode to prores" << filename << output_filename;
-
-    // call to ffmpeg
-    QString cmd = QString("ffmpeg -y -i %1 -c:v prores -profile:v 1 %2").arg(filename, output_filename);
+    // start process and return
     QProcess *export_process = new QProcess();
     export_process->start(cmd);
 
     return export_process;
 }
+
