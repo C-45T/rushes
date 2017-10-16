@@ -5,7 +5,6 @@ Fixes :
 - gestion des noms de fichiers/dossiers avec espace
 
 Objectif POC :
-- gestion des catalogues (changement bdd pour associer un clip à plusieurs catalogues ? )
 - progression thread dans status bar de la mainwindow
 - job face detection
 - export catalog en csv ou autres
@@ -50,6 +49,7 @@ Evol :
 - detection de portrait : critère taille minimum par rapport à l'image (1/4 ?) temps supérieurs à X images (25?)
 - enregistrement job dans la bdd ?
 - configuration multithreading pour lancer X jobs en fonction du nombre de threads autorisés
+- creer des filtres de recherches ("5 etoiles 2017", "sophie portrait", ...)
 
 Done :
 - Ajout multiple au catalogue
@@ -69,3 +69,4 @@ Done :
 - click droit menu contextuel
 - preset pour export (prores, h264, ...)
 - enregistrer thumbnail dans un dossier special cache et pas avec les fichiers directement
+- gestion des catalogues (changement bdd pour associer un clip à plusieurs catalogues ? )

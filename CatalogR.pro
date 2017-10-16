@@ -50,7 +50,8 @@ SOURCES += \
     gui/jobswidget.cpp \
     gui/jobstatuswidget.cpp \
     gui/basedialog.cpp \
-    proc/importjob.cpp
+    proc/importjob.cpp \
+    gui/catalogtreewidget.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -75,7 +76,8 @@ HEADERS += \
     gui/jobswidget.h \
     gui/jobstatuswidget.h \
     gui/basedialog.h \
-    proc/importjob.h
+    proc/importjob.h \
+    gui/catalogtreewidget.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

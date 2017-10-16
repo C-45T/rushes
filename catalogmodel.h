@@ -25,7 +25,6 @@ public:
     void setThumbnailColumnNumber(int nb);
 
     void setFilter(CatalogFilter *filter);
-    void setCatalog(const QString &catalog);
     void deleteFromCatalog(const QStringList &files);
 
     void updateRating(const QStringList &files, int rating);
@@ -38,6 +37,7 @@ signals:
     void catalogChanged();
 
 public slots:
+    void setCatalog(const QString &catalog);
     void updateCatalog();
 
 private:

@@ -3,6 +3,7 @@
 
 #include <QSqlDatabase>
 #include <QSqlRecord>
+#include <QPair>
 
 #include "mediainfo.h"
 
@@ -16,17 +17,28 @@ public:
 
     QSqlDatabase& sqlDatabase() { return m_database; }
 
-    void addCatalog(const QString& catalog);
+    void addCatalog(const QString& catalog, const QString& parent = "");
+    void deleteCatalog(const QString& catalog);
+    QStringList getCatalogChildren(int catalog_id);
+    void catalogRush(const QString& catalog_name, const MediaInfo& media);
+    void removeRushFromCatalog(const QString& catalog_name, const MediaInfo& media);
+
     void addVideo(const MediaInfo& media, const QString& catalog = "default");
 
-    MediaInfo getVideo(const QString& filename) const;
-    QStringList getVideos() const;
+    QStringList catalogs(const QString& parent_name) const;
 
-    void createVideoTable();
+    qint64 getIdFromAttributeValue(const QString& table_name, const QString& attr_name, const QString& attr_value) const;
+
+    MediaInfo getVideo(const QString& filename) const;
+
+    void createRushTable();
     void createCatalogTable();
     void createTagTable();
+    void createRushCatalogTable();
 
     static MediaInfo getMediaInfo(const QSqlRecord& record);
+
+
 
 private:
     QSqlDatabase m_database;

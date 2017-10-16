@@ -31,10 +31,17 @@
 
 #include "gui/jobswidget.h"
 #include "gui/basedialog.h"
+#include "gui/catalogtreewidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    // database
+    m_db.createCatalogTable();
+    m_db.createRushTable();
+    m_db.createTagTable();
+    m_db.createRushCatalogTable();
+
     // layout
     //QWidget *mainWidget = new QWidget(this);
     //QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -57,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent)
     catalogFilterWidget->setFilter(catalogFilter);
     m_tag_widget = new TagsWidget(this);
     JobsWidget *small_job_widget = new JobsWidget(m_job_master, true, this);
+    CatalogTreeWidget *catalog_list_widget = new CatalogTreeWidget(&m_db, this);
 
     // graphics
     CatalogGraphicsScene *scene = new CatalogGraphicsScene(m_catalog);
@@ -72,6 +80,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     right_splitter->addWidget(m_player);
     right_splitter->addWidget(m_media_info);
+    right_splitter->addWidget(catalog_list_widget);
     right_splitter->addWidget(m_tag_widget);
 
     this->setCentralWidget(main_splitter);
@@ -89,13 +98,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(scene, SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
     connect(scene, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
 
+    connect(catalog_list_widget, SIGNAL(catalogSelected(const QString&)), m_catalog, SLOT(setCatalog(const QString&)));
+
     // display
     main_splitter->show();
-
-    // database
-    m_db.createCatalogTable();
-    m_db.createVideoTable();
-    m_db.createTagTable();
 
     readSettings();
 
@@ -213,16 +219,16 @@ void MainWindow::playVideo(const QString &filepath)
 
 void MainWindow::addTags()
 {
-        QString tags = QInputDialog::getText(this, "Add Tags", "tags");
-        if (!tags.isEmpty() && m_catalog)
+    QString tags = QInputDialog::getText(this, "Add Tags", "tags (separates with commas (,))");
+    if (!tags.isEmpty() && m_catalog)
+    {
+        //QStringList files_to_update = selectedFiles();
+        foreach (QString filename, m_view->selectedFiles())
         {
-            //QStringList files_to_update = selectedFiles();
-            foreach (QString filename, m_view->selectedFiles())
-            {
-                qDebug() << tags;
-                m_catalog->addTags(filename, tags.split(","));
-            }
+            qDebug() << tags;
+            m_catalog->addTags(filename, tags.split(","));
         }
+    }
 }
 
 void MainWindow::transcode(const QString &command_preset)
@@ -250,6 +256,31 @@ void MainWindow::faceRecognition()
         qDebug() << tags;
 
         m_catalog->addTags(filename, tags);
+    }
+}
+
+void MainWindow::addRushToCatalog()
+{
+    QString catalog_name = QInputDialog::getText(this, "Add Rushs to Catalog", "catalog name");
+    if (m_db.getIdFromAttributeValue("Catalog", "name", catalog_name) >= 0 && m_catalog)
+    {
+        //QStringList files_to_update = selectedFiles();
+        foreach (MediaInfo media, m_view->selectedMedia())
+        {
+            m_db.catalogRush(catalog_name, media);
+        }
+    }
+}
+
+void MainWindow::removeRushFromCatalog()
+{
+    if (m_catalog)
+    {
+        //QStringList files_to_update = selectedFiles();
+        foreach (MediaInfo media, m_view->selectedMedia())
+        {
+            m_db.removeRushFromCatalog(m_catalog->catalog(), media);
+        }
     }
 }
 
@@ -284,6 +315,8 @@ void MainWindow::createMenus()
     QMenu *edit_menu = menuBar()->addMenu(tr("&Edit"));
     QAction *tag_action = edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));
     QAction *facial_recognition_action = edit_menu->addAction("Facial Recognition", this, SLOT(faceRecognition()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_T));
+    QAction *add_rush_to_catalog = edit_menu->addAction("Add selected Rush(s) to Catalog", this, SLOT(addRushToCatalog()), QKeySequence(Qt::CTRL + Qt::Key_Plus));
+    QAction *remove_rush_from_catalog = edit_menu->addAction("Remove selected Rush(s) from Catalog", this, SLOT(removeRushFromCatalog()), QKeySequence(Qt::CTRL + Qt::Key_Delete));
 
     QMenu *view_menu = menuBar()->addMenu(tr("&View"));
     view_menu->addAction("Jobs Progress Window", this, SLOT(onShowJobsProgress()), QKeySequence(Qt::Key_F8));
@@ -291,6 +324,8 @@ void MainWindow::createMenus()
     QMenu *context_menu = new QMenu(m_view->view());
     m_context_actions.append(tag_action);
     m_context_actions.append(facial_recognition_action);
+    m_context_actions.append(add_rush_to_catalog);
+    m_context_actions.append(remove_rush_from_catalog);
     context_menu->addActions(m_context_actions);
     QMenu *transcode_menu = context_menu->addMenu(tr("&Transcode"));
     transcode_menu->addActions(m_transcode_actions);

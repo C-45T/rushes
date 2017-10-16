@@ -14,7 +14,7 @@ CatalogModel::CatalogModel(Database &db, QObject *parent) :
     m_rows = 0;
     m_thumbnail_column_number = 4;
     m_selection_filter = NULL;
-    setCatalog("default");
+    setCatalog("");
 }
 
 
@@ -38,6 +38,8 @@ void CatalogModel::updateCatalog()
 
     QString filterRatingStr = "";
     QString filterTagStr = "";
+    QString filterCatalogStr = "";
+    int catalog_id = m_db.getIdFromAttributeValue("Catalog", "name", m_catalog);
 
     if (m_selection_filter) {
         filterRatingStr = m_selection_filter->sqlRatingCondition();
@@ -50,13 +52,21 @@ void CatalogModel::updateCatalog()
     if (!filterTagStr.isEmpty())
         filterTagStr.prepend(" AND t.name IN ");
 
-    QString select_part = "SELECT DISTINCT v.* ";
-    QString from_part = "FROM Videos v LEFT JOIN Tag t ON (v.id = t.video_id) ";
-    QString cond_part = "WHERE 1=1" + filterRatingStr + filterTagStr;
-    QString order_part = " ORDER BY v.utc_creation_time" + filterRatingStr + filterTagStr;
+    if (m_catalog != "All" and !m_catalog.isEmpty())
+        filterCatalogStr = QString(" AND rc.catalog_id IN ('%1')").arg(m_db.getCatalogChildren(catalog_id).join("','"));
 
-    QSqlQuery countQuery;
-    countQuery.exec("SELECT count(DISTINCT v.id) " + from_part + cond_part );
+    QString select_part = "SELECT DISTINCT r.* ";
+    QString from_part = "FROM Rush r "
+                        "LEFT JOIN Tag t ON (r.id = t.rush_id) ";
+
+   if (!filterCatalogStr.isEmpty())
+       from_part += "LEFT JOIN RushCatalog rc ON (r.id = rc.rush_id) ";
+
+    QString cond_part = "WHERE 1=1" + filterRatingStr + filterTagStr + filterCatalogStr;
+    QString order_part = " ORDER BY r.utc_creation_time" + filterRatingStr + filterTagStr;
+
+    QSqlQuery countQuery(m_db.sqlDatabase());
+    countQuery.exec("SELECT count(DISTINCT r.id) " + from_part + cond_part );
     if (countQuery.lastError().isValid()) {
         qDebug() << "error on" <<countQuery.lastQuery() << countQuery.lastError().text();
         m_rows = 0;
@@ -163,8 +173,8 @@ void CatalogModel::updateRating(const QStringList &files, int rating)
     file_list.chop(1);
 
     // update database
-    QSqlQuery update_query;
-    QString querystr = QString("UPDATE Videos SET rating=%1 WHERE filename in (%2)").arg(QString::number(rating), file_list);
+    QSqlQuery update_query(m_db.sqlDatabase());
+    QString querystr = QString("UPDATE Rush SET rating=%1 WHERE filename in (%2)").arg(QString::number(rating), file_list);
     update_query.exec(querystr);
 
     qDebug() << "CatalogModel::updateRating" << update_query.lastQuery() << update_query.lastError().text();
@@ -176,7 +186,7 @@ void CatalogModel::updateRating(const QStringList &files, int rating)
 void CatalogModel::addTags(const QString &filename, const QStringList &tags)
 {
     // retrieve video id
-    qint64 video_id = getVideoId(filename);
+    qint64 rush_id = getVideoId(filename);
     QStringList previous_tags = getVideoTags(filename);
 
     QSet<QString> new_tags;
@@ -186,15 +196,15 @@ void CatalogModel::addTags(const QString &filename, const QStringList &tags)
     }
 
     // if no video id exit or no tag to add
-    if (video_id < 0 || new_tags.empty())
+    if (rush_id < 0 || new_tags.empty())
         return;
 
     // create insert query
-    QSqlQuery add_tag_query;
-    QString querystr = QString("INSERT INTO Tag (name, video_id) VALUES");
+    QSqlQuery add_tag_query(m_db.sqlDatabase());
+    QString querystr = QString("INSERT INTO Tag (name, rush_id) VALUES");
     foreach (QString tag, new_tags)
     {
-        querystr += QString("('%1',%2),").arg(tag.trimmed(), QString::number(video_id));
+        querystr += QString("('%1',%2),").arg(tag.trimmed(), QString::number(rush_id));
     }
 
     // remove last coma
@@ -208,17 +218,17 @@ void CatalogModel::addTags(const QString &filename, const QStringList &tags)
 
 int CatalogModel::getVideoId(const QString &filename) const
 {
-    qint64 video_id = -1;
-    QSqlQuery get_id_query;
-    get_id_query.exec(QString("SELECT id FROM Videos WHERE filename='%1' LIMIT 1").arg(filename));
+    qint64 rush_id = -1;
+    QSqlQuery get_id_query(m_db.sqlDatabase());
+    get_id_query.exec(QString("SELECT id FROM Rush WHERE filename='%1' LIMIT 1").arg(filename));
     if (get_id_query.lastError().isValid())
             qDebug() << "error on" <<get_id_query.lastQuery() << get_id_query.lastError().text();
     else {
         get_id_query.first();
-        video_id = get_id_query.value(0).toLongLong();
+        rush_id = get_id_query.value(0).toLongLong();
     }
 
-    return video_id;
+    return rush_id;
 }
 
 MediaInfo CatalogModel::getMediaInfo(const QString &filename) const
@@ -230,15 +240,15 @@ MediaInfo CatalogModel::getMediaInfo(const QString &filename) const
 QStringList CatalogModel::getVideoTags(const QString &filename) const
 {
     // retrieve video id
-    qint64 video_id = getVideoId(filename);
+    qint64 rush_id = getVideoId(filename);
 
     // if no video id return empty list
-    if (video_id < 0)
+    if (rush_id < 0)
         return QStringList();
 
     QStringList tags;
-    QSqlQuery get_tags_query;
-    get_tags_query.exec(QString("SELECT name FROM Tag WHERE video_id=%1").arg(video_id));
+    QSqlQuery get_tags_query(m_db.sqlDatabase());
+    get_tags_query.exec(QString("SELECT name FROM Tag WHERE rush_id=%1").arg(rush_id));
     if (get_tags_query.lastError().isValid()) {
             qDebug() << "error on" <<get_tags_query.lastQuery() << get_tags_query.lastError().text();
     }
@@ -255,23 +265,23 @@ QStringList CatalogModel::getVideoTags(const QString &filename) const
 
 void CatalogModel::deleteFromCatalog(const QStringList &files)
 {
-    QString video_ids = "";
+    QString rush_ids = "";
     for (int i=0; i< files.size(); i++)
-        video_ids += QString("'%1',").arg(getVideoId(files[i]));
-    video_ids.chop(1);
+        rush_ids += QString("'%1',").arg(getVideoId(files[i]));
+    rush_ids.chop(1);
 
     // delete thumbnails
     // TODO
 
     // delete from database
     // TODO : handle catalog ?
-    QSqlQuery delete_query;
+    QSqlQuery delete_query(m_db.sqlDatabase());
 
-    QString querystr = QString("DELETE FROM Tag WHERE video_id in (%1)").arg(video_ids);
+    QString querystr = QString("DELETE FROM Tag WHERE rush_id in (%1)").arg(rush_ids);
     delete_query.exec(querystr);
     qDebug() << "CatalogModel::deleteFromCatalog" << delete_query.lastQuery() << delete_query.lastError().text();
 
-    querystr = QString("DELETE FROM Videos WHERE id in (%1)").arg(video_ids);
+    querystr = QString("DELETE FROM Rush WHERE id in (%1)").arg(rush_ids);
     delete_query.exec(querystr);
 
     qDebug() << "CatalogModel::deleteFromCatalog" << delete_query.lastQuery() << delete_query.lastError().text();

@@ -1,6 +1,9 @@
 Configurer CMAKE pour utiliser opencv avec QT:
 https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows
 
+Compilation QtAV
+https://github.com/wang-bin/QtAV/wiki/Build-QtAV
+
 If you have the following error : ... windres.exe: unknown option -- W ...
 
 try this : in cmake uncheck ENABLE_PRECOMPILED_HEADERS

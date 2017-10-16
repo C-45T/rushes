@@ -31,6 +31,8 @@ public slots:
     void addTags();
     void transcode(const QString& command_preset);
     void faceRecognition();
+    void addRushToCatalog();
+    void removeRushFromCatalog();
 
     void onSelectionChanged();
     void onShowJobsProgress();
