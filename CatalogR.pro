@@ -46,7 +46,7 @@ SOURCES += \
     gui/facetagwidget.cpp \
     videothumbnailgraphicitem.cpp \
     cataloggraphicsscene.cpp \
-    proc/ffmpegparser.cpp \
+    core/ffmpegparser.cpp \
     gui/cataloggraphicsview.cpp \
     gui/catalogwidget.cpp \
     gui/mediainfowidget.cpp \
@@ -54,14 +54,14 @@ SOURCES += \
     gui/playerwidget.cpp \
     thirdParty/starrating.cpp \
     gui/tagswidget.cpp \
-    proc/jobsmaster.cpp \
-    proc/exportjob.cpp \
+    core/jobsmaster.cpp \
+    core/exportjob.cpp \
     gui/jobswidget.cpp \
     gui/jobstatuswidget.cpp \
     gui/basedialog.cpp \
-    proc/importjob.cpp \
+    core/importjob.cpp \
     gui/catalogtreewidget.cpp \
-    proc/facedetectionjob.cpp
+    core/facedetectionjob.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -73,7 +73,7 @@ HEADERS += \
     gui/facetagwidget.h \
     videothumbnailgraphicitem.h \
     cataloggraphicsscene.h \
-    proc/ffmpegparser.h \
+    core/ffmpegparser.h \
     gui/cataloggraphicsview.h \
     gui/catalogwidget.h \
     gui/mediainfowidget.h \
@@ -81,14 +81,14 @@ HEADERS += \
     gui/playerwidget.h \
     thirdParty/starrating.h \
     gui/tagswidget.h \
-    proc/jobsmaster.h \
-    proc/exportjob.h \
+    core/jobsmaster.h \
+    core/exportjob.h \
     gui/jobswidget.h \
     gui/jobstatuswidget.h \
     gui/basedialog.h \
-    proc/importjob.h \
+    core/importjob.h \
     gui/catalogtreewidget.h \
-    proc/facedetectionjob.h
+    core/facedetectionjob.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

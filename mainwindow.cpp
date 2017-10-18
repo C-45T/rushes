@@ -24,11 +24,11 @@
 #include <QGraphicsScene>
 #include "videothumbnailgraphicitem.h"
 #include "cataloggraphicsscene.h"
-#include "proc/ffmpegparser.h"
+#include "core/ffmpegparser.h"
 
-#include "proc/exportjob.h"
-#include "proc/importjob.h"
-#include "proc/facedetectionjob.h"
+#include "core/exportjob.h"
+#include "core/importjob.h"
+#include "core/facedetectionjob.h"
 
 #include "gui/jobswidget.h"
 #include "gui/basedialog.h"

@@ -9,7 +9,7 @@
 #include "opencv2/opencv.hpp"
 #include <iostream>
 
-#include "proc/ffmpegparser.h"
+#include "core/ffmpegparser.h"
 
 
 QImage getThumbnailFromFile(QString filename) {

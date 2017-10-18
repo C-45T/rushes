@@ -6,7 +6,7 @@
 #include <QLabel>
 #include <QMap>
 
-#include "proc/jobsmaster.h"
+#include "core/jobsmaster.h"
 
 class JobStatusWidget : public QWidget
 {

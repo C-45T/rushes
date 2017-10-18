@@ -12,7 +12,7 @@
 #include "gui/playerwidget.h"
 #include "gui/tagswidget.h"
 
-#include "proc/jobsmaster.h"
+#include "core/jobsmaster.h"
 #include "faces.h"
 
 class MainWindow : public QMainWindow

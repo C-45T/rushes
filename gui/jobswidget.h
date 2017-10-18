@@ -6,7 +6,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-#include "proc/jobsmaster.h"
+#include "core/jobsmaster.h"
 #include "gui/jobstatuswidget.h"
 
 class JobsWidget : public QWidget
