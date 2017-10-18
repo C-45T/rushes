@@ -11,19 +11,19 @@ extern "C" {
 #include <libswresample/swresample.h>
 }
 
-#include "data/mediainfo.h"
+#include "data/rush.h"
 
 class FFMpegParser
 {
 public:
     FFMpegParser();
 
-    int openVideo( const QString& filename, MediaInfo &media );
+    int openVideo(const QString& filename, Rush &rush );
 
     static QProcess* transcode(const QString& input_filename, const QString& destination_path , const QString &preset);
 
 private:
-    void metadata(AVFormatContext *context, AVCodecContext *codec_ctx, MediaInfo &media);   
+    void metadata(AVFormatContext *context, AVCodecContext *codec_ctx, Rush &rush);
 };
 
 #endif // FFMPEGPARSER_H

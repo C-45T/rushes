@@ -198,7 +198,7 @@ int CatalogModel::getVideoId(const QString &filename) const
     return rush_id;
 }
 
-MediaInfo CatalogModel::getMediaInfo(const QString &filename) const
+Rush CatalogModel::getRush(const QString &filename) const
 {
     return m_db.getVideo(filename);
 }

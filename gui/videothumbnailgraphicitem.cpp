@@ -5,17 +5,17 @@
 
 #include <QDebug>
 
-VideoThumbnailGraphicItem::VideoThumbnailGraphicItem(const MediaInfo &info)
+VideoThumbnailGraphicItem::VideoThumbnailGraphicItem(const Rush &rush)
     : QGraphicsItem()
 {
-    m_media_info = info;
-    m_thumbnail = QImage(m_media_info.thumbnail_filename);
+    m_rush = rush;
+    m_thumbnail = QImage(m_rush.thumbnail_filename);
     m_mouse_pressed = false;
 
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsFocusable, true);
 
-    m_rating = StarRating(m_media_info.rating, 5);
+    m_rating = StarRating(m_rush.rating, 5);
 }
 
 QRectF VideoThumbnailGraphicItem::boundingRect() const
@@ -31,7 +31,7 @@ void VideoThumbnailGraphicItem::paint(QPainter *painter, const QStyleOptionGraph
     else
         painter->fillRect(option->rect, QColor(Qt::gray).darker(300));
 
-    if (m_media_info.filename.isEmpty())
+    if (m_rush.filename.isEmpty())
         return;
 
     // paint thumbnail
@@ -49,7 +49,7 @@ void VideoThumbnailGraphicItem::paint(QPainter *painter, const QStyleOptionGraph
     QRect rectangle = option->rect.adjusted(0, 270, 0, 0); // TODO : remove hardcoded values
     painter->setFont(QFont("Arial", 16, QFont::Bold ));
     painter->setPen(Qt::white);
-    painter->drawText(rectangle, Qt::AlignCenter, m_media_info.filename.split("/").last());
+    painter->drawText(rectangle, Qt::AlignCenter, m_rush.filename.split("/").last());
 
     // draw stars
     m_rating.paint(painter, option->rect.adjusted(5, 0, 0, -270), option->palette, StarRating::ReadOnly);
@@ -61,7 +61,7 @@ int VideoThumbnailGraphicItem::type() const
     return Type;
 }
 
-const MediaInfo &VideoThumbnailGraphicItem::itemData() const
+const Rush &VideoThumbnailGraphicItem::itemData() const
 {
-    return m_media_info;
+    return m_rush;
 }

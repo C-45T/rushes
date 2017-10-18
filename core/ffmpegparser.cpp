@@ -10,7 +10,7 @@ FFMpegParser::FFMpegParser()
     av_register_all();
 }
 
-int FFMpegParser::openVideo(const QString &filename, MediaInfo &media)
+int FFMpegParser::openVideo(const QString &filename, Rush &rush)
 {
     AVFormatContext *pFormatCtx = NULL;
     AVDictionary *pDictionary = NULL;
@@ -60,7 +60,7 @@ int FFMpegParser::openVideo(const QString &filename, MediaInfo &media)
     if(avcodec_open2(pCodecCtx, pCodec, &pDictionary)<0)
       return -1; // Could not open codec
 
-    metadata(pFormatCtx, pCodecCtx, media);
+    metadata(pFormatCtx, pCodecCtx, rush);
 
     // Close the codecs
     avcodec_close(pCodecCtx);
@@ -72,7 +72,7 @@ int FFMpegParser::openVideo(const QString &filename, MediaInfo &media)
     return 0;
 }
 
-void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, MediaInfo& media)
+void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, Rush& rush)
 {
     if (context->duration != AV_NOPTS_VALUE)
     {
@@ -86,11 +86,11 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, MediaInf
         mins %= 60;
 
         //qDebug() << "duration :" << hours << ":" << mins << ":" << secs;
-        media.length = duration / AV_TIME_BASE;
+        rush.length = duration / AV_TIME_BASE;
     }
 
     if (context->bit_rate)
-        media.bitrate = (int64_t)context->bit_rate / 1000;
+        rush.bitrate = (int64_t)context->bit_rate / 1000;
 
     for (uint i = 0; i < context->nb_streams; i++)
     {
@@ -113,9 +113,9 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, MediaInf
             continue;
 
         if (avctx->codec_type == AVMEDIA_TYPE_VIDEO)
-            media.video_codec = QString(/*av_get_media_type_string(avctx->codec_type)) + " " +*/ avcodec_get_name(avctx->codec_id)) + "(" + avcodec_profile_name(avctx->codec_id, avctx->profile) + ")";
+            rush.video_codec = QString(/*av_get_media_type_string(avctx->codec_type)) + " " +*/ avcodec_get_name(avctx->codec_id)) + "(" + avcodec_profile_name(avctx->codec_id, avctx->profile) + ")";
         else if (avctx->codec_type == AVMEDIA_TYPE_AUDIO)
-            media.audio_codec = QString(/*av_get_media_type_string(avctx->codec_type)) + " " +*/ avcodec_get_name(avctx->codec_id));
+            rush.audio_codec = QString(/*av_get_media_type_string(avctx->codec_type)) + " " +*/ avcodec_get_name(avctx->codec_id));
 
 //        if (avctx->field_order != AV_FIELD_UNKNOWN) {
 //            const char *field_order = "progressive";
@@ -133,20 +133,20 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, MediaInf
 
 
         if (avctx->width) {
-            media.width = avctx->width;
-            media.height = avctx->height;
+            rush.width = avctx->width;
+            rush.height = avctx->height;
         }
 
         if (st->avg_frame_rate.den && st->avg_frame_rate.num)
-            media.fps = av_q2d(st->avg_frame_rate);
+            rush.fps = av_q2d(st->avg_frame_rate);
 
         if (avctx->sample_rate)
-            media.sample_rate = avctx->sample_rate;
+            rush.sample_rate = avctx->sample_rate;
 
         if (avctx->channel_layout) {
             char name_buff[32];
             av_get_channel_layout_string(name_buff, 32, 0, avctx->channel_layout);
-            media.channel = name_buff;
+            rush.channel = name_buff;
         }
 
         int64_t bitrate;
@@ -158,14 +158,13 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, MediaInf
         }
 
         if (bitrate != 0)
-            media.audio_bitrate = bitrate / 1000;
+            rush.audio_bitrate = bitrate / 1000;
         else if (avctx->rc_max_rate > 0)
-            media.audio_bitrate = (int64_t)avctx->rc_max_rate / 1000;
+            rush.audio_bitrate = (int64_t)avctx->rc_max_rate / 1000;
 
         avcodec_free_context(&avctx);
     }
 
-    //media.debug();
 }
 
 QProcess* FFMpegParser::transcode(const QString &input_filename, const QString &destination_path, const QString& preset)

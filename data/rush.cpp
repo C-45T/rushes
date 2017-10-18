@@ -1,6 +1,6 @@
-#include "mediainfo.h"
+#include "rush.h"
 
-MediaInfo::MediaInfo()
+Rush::Rush()
 {
     // os data
     filename = QString();

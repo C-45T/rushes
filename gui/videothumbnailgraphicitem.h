@@ -4,14 +4,14 @@
 #include <QGraphicsItem>
 
 #include "thirdParty/starrating.h"
-#include "data/mediainfo.h"
+#include "data/rush.h"
 
 class VideoThumbnailGraphicItem : public QGraphicsItem
 {
 public:
     enum { Type = UserType + 1 };
 
-    VideoThumbnailGraphicItem(const MediaInfo& info);
+    VideoThumbnailGraphicItem(const Rush& rush);
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
@@ -19,10 +19,10 @@ public:
     int type() const;
 
 
-    const MediaInfo& itemData() const;
+    const Rush& itemData() const;
 
 private:
-    MediaInfo m_media_info;
+    Rush m_rush;
     QImage m_thumbnail;
 
     StarRating m_rating;

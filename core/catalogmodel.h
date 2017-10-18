@@ -7,7 +7,7 @@
 #include "core/catalogfilter.h"
 
 #include "data/database.h"
-#include "data/mediainfo.h"
+#include "data/rush.h"
 
 class CatalogModel : public QSqlQueryModel
 {
@@ -30,7 +30,7 @@ public:
 
     void updateRating(const QStringList &files, int rating);
     int getVideoId(const QString &filename) const;
-    MediaInfo getMediaInfo(const QString &filename) const;
+    Rush getRush(const QString &filename) const;
 
 signals:
     void catalogChanged();

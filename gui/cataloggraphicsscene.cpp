@@ -57,15 +57,15 @@ void CatalogGraphicsScene::updateScene()
 
     for (int i=0; i<m_model->itemCount(); i++)
     {
-        MediaInfo info = Database::getMediaInfo(m_model->record(i));
-        VideoThumbnailGraphicItem *item = new VideoThumbnailGraphicItem(info);
+        Rush rush = Database::getRush(m_model->record(i));
+        VideoThumbnailGraphicItem *item = new VideoThumbnailGraphicItem(rush);
         item->setPos((i % item_by_line) * (ITEMS_WIDTH + HORIZONTAL_MARGIN), (i / item_by_line) * (ITEMS_HEIGHT + VERTICAL_MARGIN));
         addItem(item);
 
-        if (previous_selection.contains(info.filename))
+        if (previous_selection.contains(rush.filename))
             item->setSelected(true);
 
-        if (info.filename == focused_item)
+        if (rush.filename == focused_item)
         {
             m_last_selected_item = item;
             setFocusItem(item);
@@ -208,7 +208,7 @@ void CatalogGraphicsScene::shiftSelect(QGraphicsItem *item)
     }
 }
 
-MediaInfo CatalogGraphicsScene::focusedItem() const
+Rush CatalogGraphicsScene::focusedItem() const
 {
     VideoThumbnailGraphicItem *thumbnail_item = qgraphicsitem_cast<VideoThumbnailGraphicItem*>(focusItem());
     if (thumbnail_item)
@@ -222,6 +222,6 @@ MediaInfo CatalogGraphicsScene::focusedItem() const
             return old_item->itemData();
     }
 
-    return MediaInfo();
+    return Rush();
 }
 

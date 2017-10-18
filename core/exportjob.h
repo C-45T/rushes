@@ -2,7 +2,7 @@
 #define EXPORTJOB_H
 
 #include "core/jobsmaster.h"
-#include "data/mediainfo.h"
+#include "data/rush.h"
 
 #include <QProcess>
 
@@ -10,7 +10,7 @@ class ExportJob : public Job
 {
     Q_OBJECT
 public:
-    ExportJob(const MediaInfo& media, const QString& output_folder, const QString &ffmpeg_command_line);
+    ExportJob(const Rush& rush, const QString& output_folder, const QString &ffmpeg_command_line);
 
     void run();
 
@@ -18,7 +18,7 @@ public slots:
     void checkProgress();
 
 private:
-    MediaInfo m_media;
+    Rush m_rush;
     QString m_output_folder;
     QString m_command_line;
 

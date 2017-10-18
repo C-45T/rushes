@@ -6,8 +6,6 @@ Fixes :
 - gestion des noms de fichiers/dossiers avec espace
 
 Objectif POC :
-- job face detection
-- export catalog en csv ou autres
 - import catalog depuis csv ou autres
 - Amélioration GUI (affichage métadonnées, affichage tags, affichage étoile, ...)
 - check cache integrity, rebuild thumbnail
@@ -72,3 +70,5 @@ Done :
 - enregistrer thumbnail dans un dossier special cache et pas avec les fichiers directement
 - gestion des catalogues (changement bdd pour associer un clip à plusieurs catalogues ? )
 - progression thread dans status bar de la mainwindow
+- job face detection
+- export catalog en csv ou autres

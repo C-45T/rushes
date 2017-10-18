@@ -67,19 +67,19 @@ void ImportJob::run()
         emit progress(i+1, m_import_list.size());
         setDescription(QString(tr("Import file : %1").arg(m_import_list[i])));
 
-        // init MediaInfo struct and check if file is not already in database
-        MediaInfo media = m_db.getVideo(m_import_list[i]);
+        // init Rush struct and check if file is not already in database
+        Rush rush = m_db.getVideo(m_import_list[i]);
 
-        // if media already in db skip
-        if (!media.filename.isEmpty())
+        // if rush already in db skip
+        if (!rush.filename.isEmpty())
         {
             qDebug() << m_import_list[i] << "already in database";
             continue;
         }
 
         // fill filename and build thumbnail
-        media.filename = m_import_list[i];
-        QImage thumbnail = getThumbnailFromFile(media.filename);
+        rush.filename = m_import_list[i];
+        QImage thumbnail = getThumbnailFromFile(rush.filename);
 
         // save thumbnail to cache
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
@@ -87,27 +87,27 @@ void ImportJob::run()
         QDir output_path = QDir(settings.value("thumbnailFolder").toString());
         settings.endGroup();
 
-        media.thumbnail_filename = output_path.filePath(QFileInfo(media.filename).baseName() + ".png");
+        rush.thumbnail_filename = output_path.filePath(QFileInfo(rush.filename).baseName() + ".png");
 
         // make sure no file with same name is arlready generated
         int suffix=0;
-        while (QFile(media.thumbnail_filename).exists()) {
-            media.thumbnail_filename = output_path.filePath(QFileInfo(media.filename).baseName() + QString("_%1.png").arg(suffix));
+        while (QFile(rush.thumbnail_filename).exists()) {
+            rush.thumbnail_filename = output_path.filePath(QFileInfo(rush.filename).baseName() + QString("_%1.png").arg(suffix));
             suffix++;
         }
 
-        thumbnail.save(media.thumbnail_filename);
+        thumbnail.save(rush.thumbnail_filename);
 
         // get metadata
         FFMpegParser parser;
-        parser.openVideo(media.filename, media);
+        parser.openVideo(rush.filename, rush);
 
         // add creation time
-        QFileInfo file_info(media.filename);
-        media.utc_creation_time = qMin(file_info.created().toSecsSinceEpoch(), file_info.lastModified().toSecsSinceEpoch());
+        QFileInfo file_info(rush.filename);
+        rush.utc_creation_time = qMin(file_info.created().toSecsSinceEpoch(), file_info.lastModified().toSecsSinceEpoch());
 
         // add to database
-        m_db.addVideo(media);
+        m_db.addVideo(rush);
     }
 
     setStatus(Job::FINISHED);

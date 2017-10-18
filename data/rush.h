@@ -1,13 +1,13 @@
-#ifndef MEDIAINFO_H
-#define MEDIAINFO_H
+#ifndef RUSH_H
+#define RUSH_H
 
 #include <iostream>
 #include <QDebug>
 
-class MediaInfo
+class Rush
 {
 public:
-    MediaInfo();
+    Rush();
 
 public:
     // os data
@@ -48,4 +48,4 @@ public:
     }
 };
 
-#endif // MEDIAINFO_H
+#endif // RUSH_H

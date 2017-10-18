@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // widgets
     m_player = new PlayerWidget();
-    m_media_info = new MediaInfoWidget(this);
+    m_media_info = new RushInfoWidget(this);
     CatalogFilterWidget *catalogFilterWidget = new CatalogFilterWidget(this);
     catalogFilterWidget->setFilter(catalogFilter);
     m_tag_widget = new TagsWidget(this);
@@ -215,10 +215,10 @@ void MainWindow::addTags()
     QString tags = QInputDialog::getText(this, "Add Tags", "tags (separates with commas (,))");
     if (!tags.isEmpty() && m_catalog)
     {
-        foreach (MediaInfo media, m_view->selectedMedia())
+        foreach (Rush rush, m_view->selectedRush())
         {
             qDebug() << tags;
-            m_db.addTagToRush(media, tags.split(","));
+            m_db.addTagToRush(rush, tags.split(","));
         }
     }
 }
@@ -228,9 +228,9 @@ void MainWindow::transcode(const QString &command_preset)
     QString output_folder = QFileDialog::getExistingDirectory();
     if (m_view && !output_folder.isEmpty())
     {
-        foreach (MediaInfo media, m_view->selectedMedia())
+        foreach (Rush rush, m_view->selectedRush())
         {
-            ExportJob *job = new ExportJob(media, output_folder, command_preset);
+            ExportJob *job = new ExportJob(rush, output_folder, command_preset);
             m_job_master.addJob(job);
         }
     }
@@ -239,9 +239,9 @@ void MainWindow::transcode(const QString &command_preset)
 void MainWindow::faceRecognition()
 {
     //QStringList files_to_update = selectedFiles();
-    foreach (MediaInfo media, m_view->selectedMedia())
+    foreach (Rush rush, m_view->selectedRush())
     {
-        FaceDetectionJob *job = new FaceDetectionJob(m_db, m_faces, media);
+        FaceDetectionJob *job = new FaceDetectionJob(m_db, m_faces, rush);
         m_job_master.addJob(job);
     }
 }
@@ -252,9 +252,9 @@ void MainWindow::addRushToCatalog()
     if (m_db.getIdFromAttributeValue("Catalog", "name", catalog_name) >= 0 && m_catalog)
     {
         //QStringList files_to_update = selectedFiles();
-        foreach (MediaInfo media, m_view->selectedMedia())
+        foreach (Rush rush, m_view->selectedRush())
         {
-            m_db.catalogRush(catalog_name, media);
+            m_db.catalogRush(catalog_name, rush);
         }
     }
 }
@@ -264,22 +264,32 @@ void MainWindow::removeRushFromCatalog()
     if (m_catalog)
     {
         //QStringList files_to_update = selectedFiles();
-        foreach (MediaInfo media, m_view->selectedMedia())
+        foreach (Rush rush, m_view->selectedRush())
         {
-            m_db.removeRushFromCatalog(m_catalog->catalog(), media);
+            m_db.removeRushFromCatalog(m_catalog->catalog(), rush);
         }
     }
 }
 
+void MainWindow::exportDatabase()
+{
+    QString file_name = QFileDialog::getSaveFileName(this, "Export database to CSV");
+
+    if (file_name.isEmpty())
+         return;
+
+    m_db.exportToCsv(file_name);
+}
+
 void MainWindow::onSelectionChanged()
 {
-    MediaInfo infos;
+    Rush infos;
 
     if (m_view->selectedFiles().isEmpty())
         return;
 
     infos = m_view->focusedItem();
-    m_media_info->setMediaInfo(infos);
+    m_media_info->setRush(infos);
 
     m_tag_widget->setTags(m_db.getRushTags(m_db.getIdFromAttributeValue("Rush", "filename", infos.filename))); // TODO : ugly, fix this
 
@@ -312,6 +322,7 @@ void MainWindow::createMenus()
 {
     QMenu *file_menu = menuBar()->addMenu(tr("&File"));
     file_menu->addAction("Add to Catalog", this, SLOT(addVideo()), QKeySequence(Qt::CTRL + Qt::Key_O));
+    file_menu->addAction("Export database to CSV", this, SLOT(exportDatabase()));
 
     QMenu *edit_menu = menuBar()->addMenu(tr("&Edit"));
     QAction *tag_action = edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));

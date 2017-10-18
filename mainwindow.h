@@ -11,7 +11,7 @@
 #include "core/faces.h"
 
 #include "gui/catalogwidget.h"
-#include "gui/mediainfowidget.h"
+#include "gui/rushinfowidget.h"
 #include "gui/playerwidget.h"
 #include "gui/tagswidget.h"
 
@@ -34,6 +34,7 @@ public slots:
     void faceRecognition();
     void addRushToCatalog();
     void removeRushFromCatalog();
+    void exportDatabase();
 
     void onSelectionChanged();
     void onShowJobsProgress();
@@ -57,7 +58,7 @@ private:
     CatalogModel *m_catalog;
     PlayerWidget *m_player;
     CatalogWidget *m_view;
-    MediaInfoWidget *m_media_info;
+    RushInfoWidget *m_media_info;
     TagsWidget *m_tag_widget;
 
     JobsMaster m_job_master;

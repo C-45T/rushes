@@ -5,7 +5,7 @@
 #include <QSqlRecord>
 #include <QPair>
 
-#include "mediainfo.h"
+#include "rush.h"
 
 class Database
 { 
@@ -20,28 +20,33 @@ public:
     void addCatalog(const QString& catalog, const QString& parent = "");
     void deleteCatalog(const QString& catalog);
     QStringList getCatalogChildren(int catalog_id);
-    void catalogRush(const QString& catalog_name, const MediaInfo& media);
-    void removeRushFromCatalog(const QString& catalog_name, const MediaInfo& media);
+    void catalogRush(const QString& catalog_name, const Rush& rush);
+    void removeRushFromCatalog(const QString& catalog_name, const Rush& rush);
 
-    void addVideo(const MediaInfo& media, const QString& catalog = "default");
-    void addTagToRush(const MediaInfo& media, QStringList tags);
+    void addVideo(const Rush& rush, const QString& catalog = "default");
+    void addTagToRush(const Rush& rush, QStringList tags);
     QStringList getRushTags(qint64 rush_id) const;
 
     QStringList catalogs(const QString& parent_name) const;
 
     qint64 getIdFromAttributeValue(const QString& table_name, const QString& attr_name, const QString& attr_value) const;
 
-    MediaInfo getVideo(const QString& filename) const;
+    Rush getVideo(const QString& filename) const;
 
     void createRushTable();
     void createCatalogTable();
     void createTagTable();
     void createRushCatalogTable();
 
-    static MediaInfo getMediaInfo(const QSqlRecord& record);
+    static Rush getRush(const QSqlRecord& record);
+
+    void exportToCsv(const QString& output_file_name);
+    void importFromCsv(const QString& input_file_name);
 
 private:
     QSqlDatabase m_database;
+
+    void exportQuery(QSqlQuery& query, QTextStream& text_stream);
 };
 
 #endif // DATABASE_H

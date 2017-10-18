@@ -8,7 +8,7 @@
 #include "gui/cataloggraphicsview.h"
 #include "gui/cataloggraphicsscene.h"
 
-#include "data/mediainfo.h"
+#include "data/rush.h"
 
 class CatalogWidget : public QWidget
 {
@@ -22,9 +22,9 @@ public:
     void keyPressEvent(QKeyEvent *event);
 
     QStringList selectedFiles() const;
-    QList<MediaInfo> selectedMedia() const;
+    QList<Rush> selectedRush() const;
 
-    MediaInfo focusedItem() const;
+    Rush focusedItem() const;
 
 signals:
 

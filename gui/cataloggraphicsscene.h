@@ -4,7 +4,7 @@
 #include <QGraphicsScene>
 
 #include "core/catalogmodel.h"
-#include "data/mediainfo.h"
+#include "data/rush.h"
 
 class CatalogGraphicsScene : public QGraphicsScene
 {
@@ -29,7 +29,7 @@ public slots:
     CatalogModel* model() { return m_model; }
     CatalogModel* model() const { return m_model; }
 
-    MediaInfo focusedItem() const;
+    Rush focusedItem() const;
 
 signals:
     void itemDoubleClicked(QString);

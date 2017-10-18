@@ -6,6 +6,7 @@
 #include <QSqlQuery>
 #include <QDir>
 #include <QStandardPaths>
+#include <QApplication>
 
 static const char *catalogTableName = "Catalog";
 static const char *videoTableName = "Rush";
@@ -112,9 +113,9 @@ QStringList Database::getCatalogChildren(int catalog_id)
     return res;
 }
 
-void Database::catalogRush(const QString &catalog_name, const MediaInfo &media)
+void Database::catalogRush(const QString &catalog_name, const Rush &rush)
 {
-    int rush_id = getIdFromAttributeValue("Rush", "filename", media.filename);
+    int rush_id = getIdFromAttributeValue("Rush", "filename", rush.filename);
     int catalog_id = getIdFromAttributeValue("Catalog", "name", catalog_name);
 
     if (rush_id < 0 || catalog_id < 0)
@@ -131,9 +132,9 @@ void Database::catalogRush(const QString &catalog_name, const MediaInfo &media)
 
 }
 
-void Database::removeRushFromCatalog(const QString &catalog_name, const MediaInfo &media)
+void Database::removeRushFromCatalog(const QString &catalog_name, const Rush &rush)
 {
-    int rush_id = getIdFromAttributeValue("Rush", "filename", media.filename);
+    int rush_id = getIdFromAttributeValue("Rush", "filename", rush.filename);
     int catalog_id = getIdFromAttributeValue("Catalog", "name", catalog_name);
 
     if (rush_id < 0 || catalog_id < 0)
@@ -234,7 +235,7 @@ void Database::createRushTable()
 }
 
 
-void Database::addVideo(const MediaInfo &media, const QString& catalog)
+void Database::addVideo(const Rush &rush, const QString& catalog)
 {
     QSqlQuery query(m_database);
     QString querystr = QString("INSERT INTO Rush (filename, thumbnail, "
@@ -243,16 +244,16 @@ void Database::addVideo(const MediaInfo &media, const QString& catalog)
                                "utc_creation_time)"
                                " VALUES ('%1', '%2', %3, "
                                "%4, %5, %6, %7, '%8', '%9', ")
-            .arg(media.filename, media.thumbnail_filename,
-                 QString::number(media.length), QString::number(media.width), QString::number(media.height),
-                 QString::number(media.fps), QString::number(media.bitrate),
-                 media.video_codec, media.audio_codec);
+            .arg(rush.filename, rush.thumbnail_filename,
+                 QString::number(rush.length), QString::number(rush.width), QString::number(rush.height),
+                 QString::number(rush.fps), QString::number(rush.bitrate),
+                 rush.video_codec, rush.audio_codec);
 
     // arg() takes at most 9 parameters, consinue string building
-    querystr += QString("%1, '%2', %3, %4)").arg( QString::number(media.sample_rate),
-                                                    media.channel,
-                                                    QString::number(media.audio_bitrate),
-                                                    QString::number(media.utc_creation_time));
+    querystr += QString("%1, '%2', %3, %4)").arg( QString::number(rush.sample_rate),
+                                                    rush.channel,
+                                                    QString::number(rush.audio_bitrate),
+                                                    QString::number(rush.utc_creation_time));
     query.exec(querystr);
 
     qDebug() << query.lastQuery() << query.lastError().text();
@@ -282,10 +283,10 @@ QStringList Database::getRushTags(qint64 rush_id) const
     return tags;
 }
 
-void Database::addTagToRush(const MediaInfo &media, QStringList tags)
+void Database::addTagToRush(const Rush &rush, QStringList tags)
 {
     // retrieve video id
-    qint64 rush_id = getIdFromAttributeValue("Rush", "filename", media.filename);
+    qint64 rush_id = getIdFromAttributeValue("Rush", "filename", rush.filename);
 
     if (rush_id < 0)
         return;
@@ -365,31 +366,114 @@ qint64 Database::getIdFromAttributeValue(const QString &table_name, const QStrin
 
 
 
-MediaInfo Database::getMediaInfo(const QSqlRecord &record)
+Rush Database::getRush(const QSqlRecord &record)
 {
-    MediaInfo info;
+    Rush rush;
 
-    info.filename = record.value("filename").toString();
-    info.thumbnail_filename = record.value("thumbnail").toString();
-    info.length = record.value("length").toInt();
-    info.width = record.value("width").toInt();
-    info.height = record.value("height").toInt();
-    info.fps = record.value("fps").toInt();
-    info.bitrate = record.value("bitrate").toInt();
-    info.video_codec = record.value("video_codec").toString();
-    info.audio_codec = record.value("audio_codec").toString();
-    info.sample_rate = record.value("sample_rate").toInt();
-    info.channel = record.value("channel").toString();
-    info.audio_bitrate = record.value("audio_bitrate").toInt();
-    info.utc_creation_time = record.value("utc_creation_time").toLongLong();
-    info.rating = record.value("rating").toInt();
+    rush.filename = record.value("filename").toString();
+    rush.thumbnail_filename = record.value("thumbnail").toString();
+    rush.length = record.value("length").toInt();
+    rush.width = record.value("width").toInt();
+    rush.height = record.value("height").toInt();
+    rush.fps = record.value("fps").toInt();
+    rush.bitrate = record.value("bitrate").toInt();
+    rush.video_codec = record.value("video_codec").toString();
+    rush.audio_codec = record.value("audio_codec").toString();
+    rush.sample_rate = record.value("sample_rate").toInt();
+    rush.channel = record.value("channel").toString();
+    rush.audio_bitrate = record.value("audio_bitrate").toInt();
+    rush.utc_creation_time = record.value("utc_creation_time").toLongLong();
+    rush.rating = record.value("rating").toInt();
 
-    return info;
+    return rush;
 }
 
-MediaInfo Database::getVideo(const QString &filename) const
+void Database::exportToCsv(const QString &output_file_name)
 {
-    MediaInfo res;
+    QFile file(output_file_name);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+              return;
+
+    QTextStream out(&file);
+    QSqlQuery query(m_database);
+
+    // export version
+    out << "<VERSION>" << endl;
+    out << QApplication::applicationVersion() << endl;
+
+    // export catalogs
+    out << "<CATALOGS>" << endl;
+    if (query.exec("SELECT c.name, parent.name as parent "
+                   "FROM Catalog c "
+                   "LEFT JOIN Catalog parent on (c.parent_id = parent.id)"))
+        exportQuery(query, out);
+
+
+
+    // export rushs
+    out << "<RUSHS>" << endl;
+    if (query.exec("SELECT r.*, group_concat(t.name, ',') as tags, group_concat(c.name, ',') as catalogs "
+               "FROM Rush r "
+               "LEFT JOIN Tag t on (t.rush_id = r.id) "
+               "LEFT JOIN RushCatalog rc on (rc.rush_id = r.id) "
+               "LEFT JOIN Catalog c on (c.id = rc.catalog_id) "
+               "GROUP BY r.id "))
+        exportQuery(query, out);
+
+    file.close();
+}
+
+void Database::importFromCsv(const QString &input_file_name)
+{
+    QFile file(input_file_name);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+              return;
+
+    QByteArray line;
+
+    // get version
+
+    // get catalogs
+    if (line == "<CATALOGS>")
+    {
+        line = file.readLine();
+        while (!file.atEnd() and !line.startsWith("<"))
+        {
+
+            line = file.readLine();
+        }
+    }
+
+    // get rush
+    while (!file.atEnd())
+    {
+        QByteArray line = file.readLine();
+    }
+}
+
+void Database::exportQuery(QSqlQuery &query, QTextStream &text_stream)
+{
+    // get field names
+    QStringList fields;
+    for (int i=0; i< query.record().count(); i++)
+        fields.append(query.record().fieldName(i));
+
+    text_stream << fields.join(";") << endl;
+
+    // get values
+    while (query.next())
+    {
+        QStringList values;
+        for (int i=0; i< query.record().count(); i++)
+            values.append(query.record().value(i).toString());
+        text_stream << values.join(";") << endl;
+    }
+
+}
+
+Rush Database::getVideo(const QString &filename) const
+{
+    Rush res;
     QSqlQuery query(m_database);
 
     // build query
@@ -407,7 +491,7 @@ MediaInfo Database::getVideo(const QString &filename) const
     // execute and get result
     if (query.first())
     {
-        return getMediaInfo(query.record());
+        return getRush(query.record());
     }
 
 

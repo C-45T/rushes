@@ -1,10 +1,10 @@
-#include "mediainfowidget.h"
+#include "rushinfowidget.h"
 
 #include <QFormLayout>
 #include <QFileInfo>
 #include <QTime>
 
-MediaInfoWidget::MediaInfoWidget(QWidget *parent) : QWidget(parent)
+RushInfoWidget::RushInfoWidget(QWidget *parent) : QWidget(parent)
 {
     QFormLayout *layout = new QFormLayout(this);
     layout->setFormAlignment(Qt::AlignHCenter | Qt::AlignTop);
@@ -26,20 +26,20 @@ MediaInfoWidget::MediaInfoWidget(QWidget *parent) : QWidget(parent)
 
 }
 
-void MediaInfoWidget::setMediaInfo(const MediaInfo &info)
+void RushInfoWidget::setRush(const Rush &rush)
 {
     //info.debug();
 
-    QFileInfo file_info = QFileInfo(info.filename);
+    QFileInfo file_info = QFileInfo(rush.filename);
     QTime length(0, 0, 0);
-    length = length.addSecs(info.length);
+    length = length.addSecs(rush.length);
 
-    QDateTime creation_date = QDateTime::fromSecsSinceEpoch(info.utc_creation_time);
+    QDateTime creation_date = QDateTime::fromSecsSinceEpoch(rush.utc_creation_time);
 
     m_name_lbl->setText(file_info.baseName());
     m_length_lbl->setText(length.toString("hh:mm:ss"));
-    m_resolution_lbl->setText(QString::number(info.width) + "x" + QString::number(info.height));
-    m_vcodec_lbl->setText(info.video_codec + "\n" + QString::number(info.bitrate / 1000.0) + " Mb/s");
-    m_acodec_lbl->setText(info.audio_codec + "\n" + QString::number(info.audio_bitrate) + " Kb/s");
+    m_resolution_lbl->setText(QString::number(rush.width) + "x" + QString::number(rush.height));
+    m_vcodec_lbl->setText(rush.video_codec + "\n" + QString::number(rush.bitrate / 1000.0) + " Mb/s");
+    m_acodec_lbl->setText(rush.audio_codec + "\n" + QString::number(rush.audio_bitrate) + " Kb/s");
     m_date_lbl->setText(creation_date.toString("dd/MM/yyyy - hh:mm:ss"));
 }

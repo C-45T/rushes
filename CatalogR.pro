@@ -39,7 +39,6 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     data/database.cpp \
-    data/mediainfo.cpp \
     thirdParty/starrating.cpp \
     gui/catalogfilterwidget.cpp \
     gui/facetagwidget.cpp \
@@ -47,7 +46,6 @@ SOURCES += \
     gui/cataloggraphicsscene.cpp \
     gui/cataloggraphicsview.cpp \
     gui/catalogwidget.cpp \
-    gui/mediainfowidget.cpp \
     gui/playerwidget.cpp \
     gui/tagswidget.cpp \
     gui/jobswidget.cpp \
@@ -61,12 +59,14 @@ SOURCES += \
     core/jobsmaster.cpp \
     core/exportjob.cpp \
     core/importjob.cpp \
-    core/facedetectionjob.cpp
+    core/facedetectionjob.cpp \
+    data/rush.cpp \
+    gui/rushinfowidget.cpp \
+    data/bin.cpp
 
 HEADERS += \
         mainwindow.h \
     data/database.h \
-    data/mediainfo.h \
     thirdParty/starrating.h \
     gui/catalogfilterwidget.h \
     gui/facetagwidget.h \
@@ -74,7 +74,6 @@ HEADERS += \
     gui/cataloggraphicsscene.h \
     gui/cataloggraphicsview.h \
     gui/catalogwidget.h \
-    gui/mediainfowidget.h \
     gui/playerwidget.h \
     gui/tagswidget.h \
     gui/jobswidget.h \
@@ -88,7 +87,10 @@ HEADERS += \
     core/importjob.h \
     core/facedetectionjob.h \
     core/jobsmaster.h \
-    core/exportjob.h
+    core/exportjob.h \
+    data/rush.h \
+    gui/rushinfowidget.h \
+    data/bin.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

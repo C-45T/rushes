@@ -126,9 +126,9 @@ QStringList CatalogWidget::selectedFiles() const
     return selection;
 }
 
-QList<MediaInfo> CatalogWidget::selectedMedia() const
+QList<Rush> CatalogWidget::selectedRush() const
 {
-    QList<MediaInfo> selection;
+    QList<Rush> selection;
 
     if (!m_scene)
         return selection;
@@ -145,10 +145,10 @@ QList<MediaInfo> CatalogWidget::selectedMedia() const
     return selection;
 }
 
-MediaInfo CatalogWidget::focusedItem() const
+Rush CatalogWidget::focusedItem() const
 {
     if (!m_scene)
-        return MediaInfo();
+        return Rush();
 
     return m_scene->focusedItem();
 }
