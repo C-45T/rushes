@@ -24,6 +24,8 @@ public:
     void removeRushFromCatalog(const QString& catalog_name, const MediaInfo& media);
 
     void addVideo(const MediaInfo& media, const QString& catalog = "default");
+    void addTagToRush(const MediaInfo& media, QStringList tags);
+    QStringList getRushTags(qint64 rush_id) const;
 
     QStringList catalogs(const QString& parent_name) const;
 
@@ -37,8 +39,6 @@ public:
     void createRushCatalogTable();
 
     static MediaInfo getMediaInfo(const QSqlRecord& record);
-
-
 
 private:
     QSqlDatabase m_database;

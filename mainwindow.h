@@ -6,13 +6,14 @@
 
 #include "database.h"
 #include "catalogmodel.h"
-#include "catalogwidget.h"
+#include "gui/catalogwidget.h"
 
 #include "gui/mediainfowidget.h"
 #include "gui/playerwidget.h"
 #include "gui/tagswidget.h"
 
 #include "proc/jobsmaster.h"
+#include "faces.h"
 
 class MainWindow : public QMainWindow
 {
@@ -36,6 +37,7 @@ public slots:
 
     void onSelectionChanged();
     void onShowJobsProgress();
+    void onFaceRecognitionTraining();
 
 protected:
     void readSettings();
@@ -51,6 +53,7 @@ private:
     QList<QAction *> m_transcode_actions;
 
     Database m_db;
+    Faces m_faces;
     CatalogModel *m_catalog;
     PlayerWidget *m_player;
     CatalogWidget *m_view;

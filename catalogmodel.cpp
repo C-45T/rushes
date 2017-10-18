@@ -183,39 +183,6 @@ void CatalogModel::updateRating(const QStringList &files, int rating)
     updateCatalog();
 }
 
-void CatalogModel::addTags(const QString &filename, const QStringList &tags)
-{
-    // retrieve video id
-    qint64 rush_id = getVideoId(filename);
-    QStringList previous_tags = getVideoTags(filename);
-
-    QSet<QString> new_tags;
-    foreach (QString tag, tags) {
-        if (!tag.isEmpty() && !previous_tags.contains(tag.trimmed()))
-            new_tags.insert(tag.trimmed());
-    }
-
-    // if no video id exit or no tag to add
-    if (rush_id < 0 || new_tags.empty())
-        return;
-
-    // create insert query
-    QSqlQuery add_tag_query(m_db.sqlDatabase());
-    QString querystr = QString("INSERT INTO Tag (name, rush_id) VALUES");
-    foreach (QString tag, new_tags)
-    {
-        querystr += QString("('%1',%2),").arg(tag.trimmed(), QString::number(rush_id));
-    }
-
-    // remove last coma
-    querystr.chop(1);
-
-    // execute query
-    add_tag_query.exec(querystr);
-
-    qDebug() << "CatalogModel::addTag" << add_tag_query.lastQuery() << add_tag_query.lastError().text();
-}
-
 int CatalogModel::getVideoId(const QString &filename) const
 {
     qint64 rush_id = -1;
@@ -234,33 +201,6 @@ int CatalogModel::getVideoId(const QString &filename) const
 MediaInfo CatalogModel::getMediaInfo(const QString &filename) const
 {
     return m_db.getVideo(filename);
-}
-
-// TODO : move query to Database class !
-QStringList CatalogModel::getVideoTags(const QString &filename) const
-{
-    // retrieve video id
-    qint64 rush_id = getVideoId(filename);
-
-    // if no video id return empty list
-    if (rush_id < 0)
-        return QStringList();
-
-    QStringList tags;
-    QSqlQuery get_tags_query(m_db.sqlDatabase());
-    get_tags_query.exec(QString("SELECT name FROM Tag WHERE rush_id=%1").arg(rush_id));
-    if (get_tags_query.lastError().isValid()) {
-            qDebug() << "error on" <<get_tags_query.lastQuery() << get_tags_query.lastError().text();
-    }
-    else {
-        while (get_tags_query.next()) {
-            tags.append(get_tags_query.value(0).toString());
-        }
-    }
-
-    qDebug() << "tags" << tags;
-
-    return tags;
 }
 
 void CatalogModel::deleteFromCatalog(const QStringList &files)

@@ -12,7 +12,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/objdetect/objdetect.hpp"
 
-#include "facetagwidget.h"
+#include "gui/facetagwidget.h"
 
 using namespace std;
 using namespace cv;
@@ -94,34 +94,48 @@ void Faces::setTrainingSamplesFolder(const QString &path)
     m_recognition_model->train(m_images, m_labels);
 }
 
-QStringList Faces::tagUnknwonFaces()
+QMap<QString, QStringList> Faces::tagUnknwonFaces()
 {
     qDebug() << "Faces::tagUnknwonFaces" << m_unknown_faces.size();
-    QSet<QString> newcomers;
 
-    for (int i=0; i<m_unknown_faces.size(); i++)
+    QMap<QString, QStringList> res;
+
+    QMapIterator<QString, FaceD> faces_iterator(m_unknown_faces);
+    while (faces_iterator.hasNext())
     {
-        QPair<cv::Mat, cv::Rect> current_face = m_unknown_faces[i];
+        faces_iterator.next();
+        QSet<QString> newcomers;
 
-        int predictedLabel = -1;
-        double confidence = 0.0;
-        cv::Mat extracted_face = current_face.first(current_face.second);
-        cv::Mat gray_face;
-        cvtColor(extracted_face, gray_face, CV_BGR2GRAY);
-        cv::Mat face_resized;
-        cv::resize(gray_face, face_resized, Size(m_samples_size.width(), m_samples_size.height()), 1.0, 1.0, INTER_CUBIC);
-        m_recognition_model->predict(face_resized, predictedLabel, confidence);
+        for (int i=0; i<faces_iterator.value().size(); i++)
+        {
+            QPair<cv::Mat, cv::Rect> current_face = faces_iterator.value()[i];
 
-        qDebug() << "new prediction" << predictedLabel << confidence;
+            int predictedLabel = -1;
+            double confidence = 0.0;
+            cv::Mat extracted_face = current_face.first(current_face.second);
+            cv::Mat gray_face;
+            cvtColor(extracted_face, gray_face, CV_BGR2GRAY);
+            cv::Mat face_resized;
+            cv::resize(gray_face, face_resized, Size(m_samples_size.width(), m_samples_size.height()), 1.0, 1.0, INTER_CUBIC);
+            m_recognition_model->predict(face_resized, predictedLabel, confidence);
 
-        if (predictedLabel >= 0 && confidence > 50) {
-            QString tagged = whoIsThis(current_face.first, current_face.second);
-            if (!tagged.isEmpty())
-                newcomers.insert(tagged);
+            qDebug() << "new prediction" << predictedLabel << confidence;
+
+            if (predictedLabel >= 0 && confidence > 50) {
+                QString tagged = whoIsThis(current_face.first, current_face.second);
+                if (!tagged.isEmpty())
+                    newcomers.insert(tagged);
+            }
         }
+
+        if (!newcomers.isEmpty())
+            res[faces_iterator.key()]=newcomers.toList();
+
     }
 
-    return newcomers.toList();
+    m_unknown_faces.clear();
+
+    return res;
 }
 
 QString Faces::whoIsThis(Mat image, Rect face)
@@ -157,7 +171,7 @@ QString Faces::whoIsThis(Mat image, Rect face)
         //m_images.push_back(face_resized);
         //m_labels.push_back(m_peoples[widget->tag()]);
 
-        setTrainingSamplesFolder("D:/Dev/Project/face_samples");
+        setTrainingSamplesFolder("D:/Dev/Project/face_samples"); // TODO : hardcoded value
         //m_recognition_model->train(m_images, m_labels);
 
     }
@@ -169,6 +183,9 @@ QString Faces::whoIsThis(Mat image, Rect face)
 QStringList Faces::parseVideo(const QString &filename)
 {
     QSet<QString> people_in_video;
+
+    // reset training samples
+    setTrainingSamplesFolder("D:/Dev/Project/face_samples"); // TODO : hardcoded value
 
     qDebug() << "capture video";
 
@@ -186,6 +203,8 @@ QStringList Faces::parseVideo(const QString &filename)
 
     QTime timer;
     timer.start();
+
+    FaceD unknown_faces;
 
     while (frame_index < count)
     {
@@ -268,7 +287,7 @@ QStringList Faces::parseVideo(const QString &filename)
                 double confidence = 0.0;
                 m_recognition_model->predict(face_resized, predictedLabel, confidence);
 
-                 qDebug() << timer.elapsed() << "prediction -" << predictedLabel;
+                 qDebug() << timer.elapsed() << "prediction -" << predictedLabel << "confidence" << confidence;
 
                 //int prediction = m_recognition_model->predict(face_resized);
                 // And finally write all we've found out to the original image!
@@ -309,7 +328,7 @@ QStringList Faces::parseVideo(const QString &filename)
                         m_strangers_lbls.push_back(m_strangers_imgs.size());
                         // retrain strangers model
                         m_strangers_recognition_model->train(m_strangers_imgs, m_strangers_lbls);
-                        m_unknown_faces.push_back(QPair<cv::Mat, cv::Rect>(original.clone(), face_i));
+                        unknown_faces.push_back(QPair<cv::Mat, cv::Rect>(original.clone(), face_i));
                     }
                 }
                 else {
@@ -322,6 +341,8 @@ QStringList Faces::parseVideo(const QString &filename)
 
         frame_index += 25;
         frame.release();
+
+        emit progress(frame_index);
 //        qDebug() << timer.elapsed() << "next frame";
 
     }
@@ -331,7 +352,8 @@ QStringList Faces::parseVideo(const QString &filename)
     for (uint i=0; i< m_strangers_imgs.size(); i++)
         m_strangers_imgs[i].release();
 
-
+    if (unknown_faces.size() > 0)
+        m_unknown_faces[filename]=unknown_faces;
 
     return people_in_video.toList(); // emptyImage;
 }

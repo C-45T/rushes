@@ -75,6 +75,7 @@ void JobsMaster::executeJobs()
         m_total_estimation = 0;
         m_current_progress = 0;
         m_finished_jobs.clear();
+        emit finishedJob(tr("All jobs performed"));
         return;
     }
 

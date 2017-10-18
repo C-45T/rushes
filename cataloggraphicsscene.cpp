@@ -25,7 +25,7 @@ CatalogGraphicsScene::CatalogGraphicsScene(CatalogModel *model)
     m_item_size = m_thumbnail_sizes[2];
     m_last_selected_item = 0;
 
-    setBackgroundBrush(Qt::gray);
+    //setBackgroundBrush(Qt::gray);
 
     connect(this, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
     connect(this, SIGNAL(focusItemChanged(QGraphicsItem*,QGraphicsItem*,Qt::FocusReason)), this, SLOT(onFocusItemChanged(QGraphicsItem*,QGraphicsItem*,Qt::FocusReason)));

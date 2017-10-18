@@ -28,10 +28,8 @@ public:
     void deleteFromCatalog(const QStringList &files);
 
     void updateRating(const QStringList &files, int rating);
-    void addTags(const QString &filename, const QStringList &tags);
     int getVideoId(const QString &filename) const;
     MediaInfo getMediaInfo(const QString &filename) const;
-    QStringList getVideoTags(const QString &filename) const;
 
 signals:
     void catalogChanged();

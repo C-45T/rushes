@@ -259,6 +259,66 @@ void Database::addVideo(const MediaInfo &media, const QString& catalog)
 
 }
 
+QStringList Database::getRushTags(qint64 rush_id) const
+{
+    // if no video id return empty list
+    if (rush_id < 0)
+        return QStringList();
+
+    QStringList tags;
+    QSqlQuery get_tags_query(m_database);
+    get_tags_query.exec(QString("SELECT name FROM Tag WHERE rush_id=%1").arg(rush_id));
+    if (get_tags_query.lastError().isValid()) {
+            qDebug() << "error on" <<get_tags_query.lastQuery() << get_tags_query.lastError().text();
+    }
+    else {
+        while (get_tags_query.next()) {
+            tags.append(get_tags_query.value(0).toString());
+        }
+    }
+
+    qDebug() << "tags" << tags;
+
+    return tags;
+}
+
+void Database::addTagToRush(const MediaInfo &media, QStringList tags)
+{
+    // retrieve video id
+    qint64 rush_id = getIdFromAttributeValue("Rush", "filename", media.filename);
+
+    if (rush_id < 0)
+        return;
+
+    QStringList previous_tags = getRushTags(rush_id);
+
+    QSet<QString> new_tags;
+    foreach (QString tag, tags) {
+        if (!tag.isEmpty() && !previous_tags.contains(tag.trimmed()))
+            new_tags.insert(tag.trimmed());
+    }
+
+    // if no tag to add
+    if (new_tags.empty())
+        return;
+
+    // create insert query
+    QSqlQuery add_tag_query(m_database);
+    QString querystr = QString("INSERT INTO Tag (name, rush_id) VALUES");
+    foreach (QString tag, new_tags)
+    {
+        querystr += QString("('%1',%2),").arg(tag.trimmed(), QString::number(rush_id));
+    }
+
+    // remove last coma
+    querystr.chop(1);
+
+    // execute query
+    add_tag_query.exec(querystr);
+
+    qDebug() << add_tag_query.lastQuery() << add_tag_query.lastError().text();
+}
+
 QStringList Database::catalogs(const QString &parent_name) const
 {
     QStringList res;

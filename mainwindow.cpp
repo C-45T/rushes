@@ -14,11 +14,11 @@
 #include <QInputDialog>
 #include <QSettings>
 #include <QSignalMapper>
+#include <QStatusBar>
 
 #include "catalogfilter.h"
-#include "catalogfilterwidget.h"
+#include "gui/catalogfilterwidget.h"
 
-#include "faces.h"
 #include <QStringList>
 
 #include <QGraphicsScene>
@@ -28,6 +28,7 @@
 
 #include "proc/exportjob.h"
 #include "proc/importjob.h"
+#include "proc/facedetectionjob.h"
 
 #include "gui/jobswidget.h"
 #include "gui/basedialog.h"
@@ -73,17 +74,17 @@ MainWindow::MainWindow(QWidget *parent)
     // layouts
     leftPanelLayout->addWidget(catalogFilterWidget);
     leftPanelLayout->addWidget(m_view);
-    leftPanelLayout->addWidget(small_job_widget);
 
     main_splitter->addWidget(layoutWidget);
     main_splitter->addWidget(right_splitter);
 
     right_splitter->addWidget(m_player);
     right_splitter->addWidget(m_media_info);
-    right_splitter->addWidget(catalog_list_widget);
     right_splitter->addWidget(m_tag_widget);
+    right_splitter->addWidget(catalog_list_widget);
 
     this->setCentralWidget(main_splitter);
+    this->statusBar()->addPermanentWidget(small_job_widget);
 
     // menu and context actions
     createTranscodingActions();
@@ -103,10 +104,10 @@ MainWindow::MainWindow(QWidget *parent)
     // display
     main_splitter->show();
 
+    m_player->setMinimumSize(320, 240);
     readSettings();
 
     QTimer::singleShot(0, m_view, SLOT(updateView()));
-
 }
 
 MainWindow::~MainWindow()
@@ -204,7 +205,7 @@ void MainWindow::addVideo()
     if (filenames.isEmpty())
          return;
 
-    ImportJob *job = new ImportJob(m_db, filenames, "default");
+    ImportJob *job = new ImportJob(m_db, filenames, m_catalog->catalog());
     m_job_master.addJob(job);
 
     connect(job, SIGNAL(finished()), m_catalog, SLOT(updateCatalog()));
@@ -222,11 +223,10 @@ void MainWindow::addTags()
     QString tags = QInputDialog::getText(this, "Add Tags", "tags (separates with commas (,))");
     if (!tags.isEmpty() && m_catalog)
     {
-        //QStringList files_to_update = selectedFiles();
-        foreach (QString filename, m_view->selectedFiles())
+        foreach (MediaInfo media, m_view->selectedMedia())
         {
             qDebug() << tags;
-            m_catalog->addTags(filename, tags.split(","));
+            m_db.addTagToRush(media, tags.split(","));
         }
     }
 }
@@ -247,15 +247,10 @@ void MainWindow::transcode(const QString &command_preset)
 void MainWindow::faceRecognition()
 {
     //QStringList files_to_update = selectedFiles();
-    foreach (QString filename, m_view->selectedFiles())
+    foreach (MediaInfo media, m_view->selectedMedia())
     {
-        Faces f;
-        QStringList tags = f.parseVideo(filename);
-        tags.append(f.tagUnknwonFaces());
-
-        qDebug() << tags;
-
-        m_catalog->addTags(filename, tags);
+        FaceDetectionJob *job = new FaceDetectionJob(m_db, m_faces, media);
+        m_job_master.addJob(job);
     }
 }
 
@@ -294,7 +289,7 @@ void MainWindow::onSelectionChanged()
     infos = m_view->focusedItem();
     m_media_info->setMediaInfo(infos);
 
-    m_tag_widget->setTags(m_catalog->getVideoTags(infos.filename));
+    m_tag_widget->setTags(m_db.getRushTags(m_db.getIdFromAttributeValue("Rush", "filename", infos.filename))); // TODO : ugly, fix this
 
     m_view->view()->onScrollToFocusedItem();
 
@@ -305,6 +300,20 @@ void MainWindow::onShowJobsProgress()
     JobsWidget *job_widget = new JobsWidget(m_job_master, false, this);
     BaseDialog *dlg = new BaseDialog(job_widget, this);
     dlg->show();
+}
+
+void MainWindow::onFaceRecognitionTraining()
+{
+    // identify faces
+    QMap<QString, QStringList> tags = m_faces.tagUnknwonFaces();
+
+    // add tags to videos
+    QMapIterator<QString, QStringList> i(tags);
+    while (i.hasNext())
+    {
+        i.next();
+        m_db.addTagToRush(m_db.getVideo(i.key()), i.value());
+    }
 }
 
 void MainWindow::createMenus()
@@ -320,6 +329,9 @@ void MainWindow::createMenus()
 
     QMenu *view_menu = menuBar()->addMenu(tr("&View"));
     view_menu->addAction("Jobs Progress Window", this, SLOT(onShowJobsProgress()), QKeySequence(Qt::Key_F8));
+
+    QMenu *tools_menu = menuBar()->addMenu(tr("&Tools"));
+    tools_menu->addAction("Train face recognition algorithm", this, SLOT(onFaceRecognitionTraining()));
 
     QMenu *context_menu = new QMenu(m_view->view());
     m_context_actions.append(tag_action);

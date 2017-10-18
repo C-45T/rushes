@@ -11,6 +11,8 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/face.hpp"
 
+typedef QVector<QPair<cv::Mat,cv::Rect>> FaceD;
+
 class Faces : public QObject
 {
     Q_OBJECT
@@ -20,7 +22,7 @@ public:
     QStringList parseVideo(const QString& filepath);
     void setTrainingSamplesFolder(const QString& path);
 
-    QStringList tagUnknwonFaces();
+    QMap<QString, QStringList> tagUnknwonFaces();
     QString whoIsThis(cv::Mat image, cv::Rect face);
 
     void clear();
@@ -29,6 +31,7 @@ protected:
     int getIdByName(const QString& name);
 
 signals:
+    void progress(int frame);
 
 public slots:
 
@@ -47,7 +50,7 @@ private:
     cv::CascadeClassifier m_haar_cascade;
 
     QSize m_samples_size;
-    QVector<QPair<cv::Mat,cv::Rect>> m_unknown_faces;
+    QMap<QString,FaceD> m_unknown_faces;
     QDir m_training_samples_path;
 };
 

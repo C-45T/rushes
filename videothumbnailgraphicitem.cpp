@@ -29,7 +29,7 @@ void VideoThumbnailGraphicItem::paint(QPainter *painter, const QStyleOptionGraph
     if (option->state & QStyle::State_Selected)
         painter->fillRect(option->rect, option->palette.highlight());
     else
-        painter->fillRect(option->rect, QColor(Qt::gray).darker());
+        painter->fillRect(option->rect, QColor(Qt::gray).darker(300));
 
     if (m_media_info.filename.isEmpty())
         return;
