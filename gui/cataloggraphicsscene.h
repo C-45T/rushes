@@ -3,8 +3,8 @@
 
 #include <QGraphicsScene>
 
-#include "catalogmodel.h"
-#include "mediainfo.h"
+#include "core/catalogmodel.h"
+#include "data/mediainfo.h"
 
 class CatalogGraphicsScene : public QGraphicsScene
 {

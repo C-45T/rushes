@@ -2,12 +2,13 @@
 #define CATALOGWIDGET_H
 
 #include <QWidget>
-#include <gui/cataloggraphicsview.h>
 #include <QSlider>
 #include <QResizeEvent>
 
-#include "cataloggraphicsscene.h"
-#include "mediainfo.h"
+#include "gui/cataloggraphicsview.h"
+#include "gui/cataloggraphicsscene.h"
+
+#include "data/mediainfo.h"
 
 class CatalogWidget : public QWidget
 {

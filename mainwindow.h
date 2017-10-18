@@ -4,16 +4,16 @@
 #include <QMainWindow>
 #include <QModelIndex>
 
-#include "database.h"
-#include "catalogmodel.h"
-#include "gui/catalogwidget.h"
+#include "data/database.h"
 
+#include "core/catalogmodel.h"
+#include "core/jobsmaster.h"
+#include "core/faces.h"
+
+#include "gui/catalogwidget.h"
 #include "gui/mediainfowidget.h"
 #include "gui/playerwidget.h"
 #include "gui/tagswidget.h"
-
-#include "core/jobsmaster.h"
-#include "faces.h"
 
 class MainWindow : public QMainWindow
 {

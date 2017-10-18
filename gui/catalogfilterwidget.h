@@ -5,7 +5,7 @@
 #include <QSlider>
 #include <QLineEdit>
 
-#include "catalogfilter.h"
+#include "core/catalogfilter.h"
 
 class CatalogFilterWidget : public QWidget
 {

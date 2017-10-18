@@ -5,7 +5,7 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
-#include "database.h"
+#include "data/database.h"
 
 class CatalogTreeWidget : public QWidget
 {

@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QLabel>
 
-#include "mediainfo.h"
+#include "data/mediainfo.h"
 
 class MediaInfoWidget : public QWidget
 {

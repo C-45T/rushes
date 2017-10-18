@@ -3,10 +3,11 @@
 
 #include <QStandardItemModel>
 #include <QSqlQueryModel>
-#include "catalogfilter.h"
-#include "database.h"
 
-#include "mediainfo.h"
+#include "core/catalogfilter.h"
+
+#include "data/database.h"
+#include "data/mediainfo.h"
 
 class CatalogModel : public QSqlQueryModel
 {

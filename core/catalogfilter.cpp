@@ -1,6 +1,6 @@
 #include "catalogfilter.h"
 
-#include "database.h"
+#include "data/database.h"
 
 CatalogFilter::CatalogFilter(QObject *parent)
     : QObject(parent)

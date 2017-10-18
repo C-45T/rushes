@@ -4,7 +4,7 @@
 #include <QGraphicsItem>
 
 #include "thirdParty/starrating.h"
-#include "mediainfo.h"
+#include "data/mediainfo.h"
 
 class VideoThumbnailGraphicItem : public QGraphicsItem
 {

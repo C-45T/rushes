@@ -1,7 +1,7 @@
 #include "catalogfilterwidget.h"
 
 #include <QHBoxLayout>
-#include "database.h"
+#include "data/database.h"
 
 CatalogFilterWidget::CatalogFilterWidget(QWidget *parent)
     : QWidget(parent)

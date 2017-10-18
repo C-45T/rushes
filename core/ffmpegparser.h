@@ -11,7 +11,7 @@ extern "C" {
 #include <libswresample/swresample.h>
 }
 
-#include "mediainfo.h"
+#include "data/mediainfo.h"
 
 class FFMpegParser
 {

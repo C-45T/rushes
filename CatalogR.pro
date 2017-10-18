@@ -38,57 +38,57 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    database.cpp \
-    catalogmodel.cpp \
+    data/database.cpp \
+    data/mediainfo.cpp \
+    thirdParty/starrating.cpp \
     gui/catalogfilterwidget.cpp \
-    catalogfilter.cpp \
-    faces.cpp \
     gui/facetagwidget.cpp \
-    videothumbnailgraphicitem.cpp \
-    cataloggraphicsscene.cpp \
-    core/ffmpegparser.cpp \
+    gui/videothumbnailgraphicitem.cpp \
+    gui/cataloggraphicsscene.cpp \
     gui/cataloggraphicsview.cpp \
     gui/catalogwidget.cpp \
     gui/mediainfowidget.cpp \
-    mediainfo.cpp \
     gui/playerwidget.cpp \
-    thirdParty/starrating.cpp \
     gui/tagswidget.cpp \
-    core/jobsmaster.cpp \
-    core/exportjob.cpp \
     gui/jobswidget.cpp \
     gui/jobstatuswidget.cpp \
     gui/basedialog.cpp \
-    core/importjob.cpp \
     gui/catalogtreewidget.cpp \
+    core/catalogmodel.cpp \
+    core/catalogfilter.cpp \
+    core/faces.cpp \
+    core/ffmpegparser.cpp \
+    core/jobsmaster.cpp \
+    core/exportjob.cpp \
+    core/importjob.cpp \
     core/facedetectionjob.cpp
 
 HEADERS += \
         mainwindow.h \
-    database.h \
-    catalogmodel.h \
+    data/database.h \
+    data/mediainfo.h \
+    thirdParty/starrating.h \
     gui/catalogfilterwidget.h \
-    catalogfilter.h \
-    faces.h \
     gui/facetagwidget.h \
-    videothumbnailgraphicitem.h \
-    cataloggraphicsscene.h \
-    core/ffmpegparser.h \
+    gui/videothumbnailgraphicitem.h \
+    gui/cataloggraphicsscene.h \
     gui/cataloggraphicsview.h \
     gui/catalogwidget.h \
     gui/mediainfowidget.h \
-    mediainfo.h \
     gui/playerwidget.h \
-    thirdParty/starrating.h \
     gui/tagswidget.h \
-    core/jobsmaster.h \
-    core/exportjob.h \
     gui/jobswidget.h \
     gui/jobstatuswidget.h \
     gui/basedialog.h \
-    core/importjob.h \
     gui/catalogtreewidget.h \
-    core/facedetectionjob.h
+    core/catalogmodel.h \
+    core/catalogfilter.h \
+    core/faces.h \
+    core/ffmpegparser.h \
+    core/importjob.h \
+    core/facedetectionjob.h \
+    core/jobsmaster.h \
+    core/exportjob.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

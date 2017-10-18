@@ -1,12 +1,8 @@
 #include "mainwindow.h"
 
 #include <QVBoxLayout>
-#include <QPushButton>
 #include <QFileDialog>
-#include <QListWidget>
-#include <QSqlQuery>
 #include <QDebug>
-#include <QSqlError>
 #include <QSplitter>
 #include <QTimer>
 #include <QMenuBar>
@@ -15,21 +11,17 @@
 #include <QSettings>
 #include <QSignalMapper>
 #include <QStatusBar>
-
-#include "catalogfilter.h"
-#include "gui/catalogfilterwidget.h"
-
 #include <QStringList>
 
-#include <QGraphicsScene>
-#include "videothumbnailgraphicitem.h"
-#include "cataloggraphicsscene.h"
+#include "core/catalogfilter.h"
 #include "core/ffmpegparser.h"
-
 #include "core/exportjob.h"
 #include "core/importjob.h"
 #include "core/facedetectionjob.h"
 
+#include "gui/catalogfilterwidget.h"
+#include "gui/videothumbnailgraphicitem.h"
+#include "gui/cataloggraphicsscene.h"
 #include "gui/jobswidget.h"
 #include "gui/basedialog.h"
 #include "gui/catalogtreewidget.h"

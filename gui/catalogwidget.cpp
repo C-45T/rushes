@@ -6,8 +6,8 @@
 #include <QInputDialog>
 #include <QFileDialog>
 
-#include "faces.h"
-#include "videothumbnailgraphicitem.h"
+#include "core/faces.h"
+#include "gui/videothumbnailgraphicitem.h"
 
 CatalogWidget::CatalogWidget(CatalogGraphicsScene *scene, QWidget *parent)
     : QWidget(parent)

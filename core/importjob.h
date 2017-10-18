@@ -1,8 +1,8 @@
 #ifndef IMPORTJOB_H
 #define IMPORTJOB_H
 
-#include "jobsmaster.h"
-#include "database.h"
+#include "core/jobsmaster.h"
+#include "data/database.h"
 
 class ImportJob : public Job
 {

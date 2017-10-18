@@ -1,8 +1,8 @@
 #ifndef EXPORTJOB_H
 #define EXPORTJOB_H
 
-#include "jobsmaster.h"
-#include "mediainfo.h"
+#include "core/jobsmaster.h"
+#include "data/mediainfo.h"
 
 #include <QProcess>
 

@@ -1,10 +1,11 @@
 #ifndef FACEDETECTIONJOB_H
 #define FACEDETECTIONJOB_H
 
-#include "jobsmaster.h"
-#include "mediainfo.h"
-#include "database.h"
-#include "faces.h"
+#include "core/jobsmaster.h"
+#include "core/faces.h"
+
+#include "data/mediainfo.h"
+#include "data/database.h"
 
 class FaceDetectionJob : public Job
 {
