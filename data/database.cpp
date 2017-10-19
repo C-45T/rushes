@@ -8,9 +8,6 @@
 #include <QStandardPaths>
 #include <QApplication>
 
-static const char *catalogTableName = "Catalog";
-static const char *videoTableName = "Rush";
-
 Database::Database()
 {
     m_database = QSqlDatabase::database();
@@ -517,7 +514,7 @@ void Database::importFromCsv(const QString &input_file_name)
                     addTagToRush(r, tags);
 
                     // get associated bins
-                    QStringList bins = line.split(";")[headers.indexOf("catalogs")].split(",");
+                    QStringList bins = line.split(";")[headers.indexOf("bins")].split(",");
                     foreach (QString bin, bins)
                         addRushToBin(bin, r);
                 }

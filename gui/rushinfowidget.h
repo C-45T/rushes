@@ -16,6 +16,7 @@ public:
 
 private:
     QLabel *m_name_lbl;
+    QLabel *m_path_lbl;
     QLabel *m_length_lbl;
     QLabel *m_resolution_lbl;
     QLabel *m_vcodec_lbl;

@@ -6,6 +6,7 @@
 #include <QLineEdit>
 
 #include "core/catalogfilter.h"
+#include "thirdParty/stareditor.h"
 
 class CatalogFilterWidget : public QWidget
 {
@@ -15,7 +16,8 @@ public:
     void setFilter(CatalogFilter *filter);
 
 private:
-    QSlider *m_rating_slider;
+    StarEditor *m_min_rating_editor;
+    StarEditor *m_max_rating_editor;
     QLineEdit *m_tags_edit;
     CatalogFilter *m_filter;
 };

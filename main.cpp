@@ -11,8 +11,9 @@ int main(int argc, char *argv[])
 
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, QApplication::applicationDirPath());
 
-    //QFile f("qdarkstyle/style.qss");
-//    QFile f("QTDark.stylesheet");
+//    QFile f("qdarkstyle/style.qss");
+//    //QFile f("QTDark.stylesheet");
+//    //QFile f("RRDark.qss");
 //    if (!f.exists())
 //    {
 //        printf("Unable to set stylesheet, file not found\n");

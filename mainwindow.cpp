@@ -11,6 +11,7 @@
 #include <QSignalMapper>
 #include <QStatusBar>
 #include <QStringList>
+#include <QApplication>
 
 #include "core/catalogfilter.h"
 #include "core/ffmpegparser.h"
@@ -256,7 +257,7 @@ void MainWindow::faceRecognition()
 void MainWindow::addRushToCatalog()
 {
     QString catalog_name = QInputDialog::getText(this, "Add Rushs to Catalog", "catalog name");
-    if (m_db.getIdFromAttributeValue("Catalog", "name", catalog_name) >= 0 && m_catalog)
+    if (m_db.getIdFromAttributeValue("Bin", "name", catalog_name) >= 0 && m_catalog)
     {
         //QStringList files_to_update = selectedFiles();
         foreach (Rush rush, m_view->selectedRush())
@@ -302,15 +303,19 @@ void MainWindow::importDatabase()
 
 void MainWindow::onSelectionChanged()
 {
-    Rush infos;
+    Rush rush;
 
     if (m_view->selectedFiles().isEmpty())
         return;
 
-    infos = m_view->focusedItem();
-    m_media_info->setRush(infos);
+    rush = m_view->focusedItem();
 
-    m_tag_widget->setTags(m_db.getRushTags(m_db.getIdFromAttributeValue("Rush", "filename", infos.filename))); // TODO : ugly, fix this
+    if (!rush.isValid())
+        return;
+
+    m_media_info->setRush(rush);
+
+    m_tag_widget->setTags(m_db.getRushTags(m_db.getIdFromAttributeValue("Rush", "filename", rush.filename))); // TODO : ugly, fix this
 
     m_view->view()->onScrollToFocusedItem();
 
@@ -337,10 +342,32 @@ void MainWindow::onFaceRecognitionTraining()
     }
 }
 
+void MainWindow::refreshTheme()
+{
+    QString file_name = QFileDialog::getOpenFileName(this, "Import database from CSV");
+
+    if (file_name.isEmpty())
+         return;
+
+    QFile f(file_name);
+    //QFile f("QTDark.stylesheet");
+    //QFile f("RRDark.qss");
+    if (!f.exists())
+    {
+        printf("Unable to set stylesheet, file not found\n");
+    }
+    else
+    {
+        f.open(QFile::ReadOnly | QFile::Text);
+        QTextStream ts(&f);
+        qApp->setStyleSheet(ts.readAll());
+    }
+}
+
 void MainWindow::createMenus()
 {
     QMenu *file_menu = menuBar()->addMenu(tr("&File"));
-    file_menu->addAction("Add to Catalog", this, SLOT(addVideo()), QKeySequence(Qt::CTRL + Qt::Key_O));
+    file_menu->addAction("Import Video in selected bin", this, SLOT(addVideo()), QKeySequence(Qt::CTRL + Qt::Key_O));
     file_menu->addAction("Export database to CSV", this, SLOT(exportDatabase()), QKeySequence(Qt::CTRL + Qt::Key_E));
     file_menu->addAction("Import database from CSV", this, SLOT(importDatabase()), QKeySequence(Qt::CTRL + Qt::Key_I));
 
@@ -355,6 +382,7 @@ void MainWindow::createMenus()
 
     QMenu *tools_menu = menuBar()->addMenu(tr("&Tools"));
     tools_menu->addAction("Train face recognition algorithm", this, SLOT(onFaceRecognitionTraining()));
+    tools_menu->addAction("Change theme", this, SLOT(refreshTheme()), QKeySequence(Qt::Key_F5));
 
     QMenu *context_menu = new QMenu(m_view->view());
     m_context_actions.append(tag_action);

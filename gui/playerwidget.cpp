@@ -8,6 +8,7 @@ using namespace QtAV;
 PlayerWidget::PlayerWidget(QWidget *parent) : QWidget(parent)
 {
     m_unit = 1000;
+    m_fps = 25;
 
     m_player = new AVPlayer(this);
     QVBoxLayout *vl = new QVBoxLayout();
@@ -25,9 +26,26 @@ PlayerWidget::PlayerWidget(QWidget *parent) : QWidget(parent)
     connect(m_slider, SIGNAL(sliderMoved(int)), SLOT(seekBySlider(int)));
     connect(m_slider, SIGNAL(sliderPressed()), SLOT(seekBySlider()));
     connect(m_player, SIGNAL(positionChanged(qint64)), SLOT(updateSlider(qint64)));
-    connect(m_player, SIGNAL(started()), SLOT(updateSlider()));
+    connect(m_player, SIGNAL(started()), SLOT(updateSlider()));  
 
     vl->addWidget(m_slider);
+
+    QFont volume_font("Tahoma", 20, QFont::Bold);
+    QFontMetrics fm(volume_font);
+
+    m_volume_label = new QLabel(this);
+    m_volume_label->move(20, 20);
+    m_volume_label->resize(fm.width("Volume : 100"), fm.height());
+    m_volume_label->setText("Volume : " + QString::number(m_player->audio()->volume()*100));
+    m_volume_label->setFont(volume_font);
+    m_volume_label->setStyleSheet("color:white");
+    m_volume_label->hide();
+    connect(m_player->audio(), SIGNAL(volumeChanged(qreal)), this, SLOT(onVolumeChanged()));
+
+    m_hide_volume_label_timer.setSingleShot(true);
+    connect(&m_hide_volume_label_timer, SIGNAL(timeout()), m_volume_label, SLOT(hide()));
+
+    setMinimumHeight(150);
 
 }
 
@@ -43,7 +61,7 @@ void PlayerWidget::keyPressEvent(QKeyEvent *event)
 
     if (m_player->isPaused())
     {
-        int one_frame_time = 1000 / 25;
+        int one_frame_time = 1000 / m_fps;
 
         if (event->key() == Qt::Key_Right)
             m_player->seek(m_player->position() + one_frame_time);
@@ -51,6 +69,29 @@ void PlayerWidget::keyPressEvent(QKeyEvent *event)
         if (event->key() == Qt::Key_Left)
             m_player->seek(m_player->position() - one_frame_time);
     }
+}
+
+void PlayerWidget::wheelEvent(QWheelEvent *event)
+{
+    QPoint numPixels = event->pixelDelta();
+    QPoint numDegrees = event->angleDelta() / 8;
+
+    if (!numPixels.isNull()) {
+        //scrollWithPixels(numPixels);
+    } else if (!numDegrees.isNull()) {
+        QPoint numSteps = numDegrees / 15;
+        qreal volume = m_player->audio()->volume();
+        volume = qMin(volume + numSteps.ry() / 100.0, 1.0);
+        volume = qMax(volume, 0.0);
+        m_player->audio()->setVolume(volume);
+    }
+
+    event->accept();
+}
+
+void PlayerWidget::mousePressEvent(QMouseEvent *event)
+{
+    playPause();
 }
 
 void PlayerWidget::openMedia(const QString& filename)
@@ -96,4 +137,11 @@ void PlayerWidget::updateSliderUnit()
 {
     m_unit = m_player->notifyInterval();
     updateSlider();
+}
+
+void PlayerWidget::onVolumeChanged()
+{
+    m_volume_label->show();
+    m_volume_label->setText("Volume : " + QString::number(m_player->audio()->volume()*100));
+    m_hide_volume_label_timer.start(2000);
 }

@@ -42,6 +42,8 @@ public slots:
     void onShowJobsProgress();
     void onFaceRecognitionTraining();
 
+    void refreshTheme();
+
 protected:
     void readSettings();
     void writeSettings();

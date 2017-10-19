@@ -32,6 +32,8 @@ public:
     QString channel;
     int audio_bitrate; // kb/s
 
+    bool isValid() { return !filename.isEmpty(); }
+
     void debug() const {
         qDebug() << "-----------------------";
         qDebug() << filename;

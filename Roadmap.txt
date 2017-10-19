@@ -12,7 +12,7 @@ Objectif POC :
 
 Optimisation:
 - à l'import lire d'abord les fichiers et metadata puis dans un deuxième temps créer les images
-
+- garder un cache en memoire de la bdd, refaire des requetes uniquement si modification de la bdd (signalé par un attribut en cas d'insert, delete, update)
 
 Evol :
 - gestion reconnaissance des visages
@@ -75,4 +75,5 @@ Done :
 - job face detection
 - export catalog en csv ou autres
 - import catalog depuis csv ou autres
--remplacer vocabulaire BDD (+ autres objets progressivement) "media" -> "rush", "catalog" par "bin" (chutier)
+- remplacer vocabulaire BDD (+ autres objets progressivement) "media" -> "rush", "catalog" par "bin" (chutier)
+- réglage volume video avec la molette

@@ -5,6 +5,8 @@
 #include <QStringList>
 #include <QLabel>
 
+#include "thirdParty/flowlayout.h"
+
 class TagsWidget : public QWidget
 {
     Q_OBJECT
@@ -18,7 +20,8 @@ signals:
 public slots:
 
 private:
-    QLabel *m_tags_lbl;
+    FlowLayout *m_layout;
+    QList<QLabel*> m_labels;
 };
 
 #endif // TAGSWIDGET_H

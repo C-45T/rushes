@@ -62,7 +62,9 @@ SOURCES += \
     core/facedetectionjob.cpp \
     data/rush.cpp \
     gui/rushinfowidget.cpp \
-    data/bin.cpp
+    data/bin.cpp \
+    thirdParty/stareditor.cpp \
+    thirdParty/flowlayout.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -90,7 +92,9 @@ HEADERS += \
     core/exportjob.h \
     data/rush.h \
     gui/rushinfowidget.h \
-    data/bin.h
+    data/bin.h \
+    thirdParty/stareditor.h \
+    thirdParty/flowlayout.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"
