@@ -14,21 +14,21 @@ CatalogModel::CatalogModel(Database &db, QObject *parent) :
     m_rows = 0;
     m_thumbnail_column_number = 4;
     m_selection_filter = NULL;
-    setCatalog("");
+    setBin("");
 }
 
 
 QString CatalogModel::catalog() const
 {
-    return m_catalog;
+    return m_bin_name;
 }
 
-void CatalogModel::setCatalog(const QString &catalog)
+void CatalogModel::setBin(const QString &bin_name)
 {
-    qDebug() << "CatalogModel::setCatalog" << catalog;
+    qDebug() << "CatalogModel::setBin" << bin_name;
 
     m_rows = 0;
-    m_catalog = catalog;
+    m_bin_name = bin_name;
 
     updateCatalog();
 }
@@ -38,8 +38,8 @@ void CatalogModel::updateCatalog()
 
     QString filterRatingStr = "";
     QString filterTagStr = "";
-    QString filterCatalogStr = "";
-    int catalog_id = m_db.getIdFromAttributeValue("Catalog", "name", m_catalog);
+    QString filterBinStr = "";
+    int bin_id = m_db.getIdFromAttributeValue("Bin", "name", m_bin_name);
 
     if (m_selection_filter) {
         filterRatingStr = m_selection_filter->sqlRatingCondition();
@@ -52,17 +52,17 @@ void CatalogModel::updateCatalog()
     if (!filterTagStr.isEmpty())
         filterTagStr.prepend(" AND t.name IN ");
 
-    if (m_catalog != "All" and !m_catalog.isEmpty())
-        filterCatalogStr = QString(" AND rc.catalog_id IN ('%1')").arg(m_db.getCatalogChildren(catalog_id).join("','"));
+    if (m_bin_name != "All" and !m_bin_name.isEmpty())
+        filterBinStr = QString(" AND rb.bin_id IN ('%1')").arg(m_db.getBinChildren(bin_id).join("','"));
 
     QString select_part = "SELECT DISTINCT r.* ";
     QString from_part = "FROM Rush r "
                         "LEFT JOIN Tag t ON (r.id = t.rush_id) ";
 
-   if (!filterCatalogStr.isEmpty())
-       from_part += "LEFT JOIN RushCatalog rc ON (r.id = rc.rush_id) ";
+   if (!filterBinStr.isEmpty())
+       from_part += "LEFT JOIN RushBin rb ON (r.id = rb.rush_id) ";
 
-    QString cond_part = "WHERE 1=1" + filterRatingStr + filterTagStr + filterCatalogStr;
+    QString cond_part = "WHERE 1=1" + filterRatingStr + filterTagStr + filterBinStr;
     QString order_part = " ORDER BY r.utc_creation_time" + filterRatingStr + filterTagStr;
 
     QSqlQuery countQuery(m_db.sqlDatabase());
@@ -82,7 +82,7 @@ void CatalogModel::updateCatalog()
     if (lastError().isValid())
         qDebug() << "error on" << query().lastQuery() << lastError().text();
 
-    qDebug() << "CatalogModel::setCatalog" << m_rows << query().lastQuery() << lastError().text();
+    qDebug() << "CatalogModel::setBin" << m_rows << query().lastQuery() << lastError().text();
 
     emit catalogChanged();
 }

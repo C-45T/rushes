@@ -17,26 +17,26 @@ public:
 
     QSqlDatabase& sqlDatabase() { return m_database; }
 
-    void addCatalog(const QString& catalog, const QString& parent = "");
-    void deleteCatalog(const QString& catalog);
-    QStringList getCatalogChildren(int catalog_id);
-    void catalogRush(const QString& catalog_name, const Rush& rush);
-    void removeRushFromCatalog(const QString& catalog_name, const Rush& rush);
+    void addBin(const QString& bin_name, const QString& parent_name = "");
+    void deleteBin(const QString& bin_name);
+    QStringList getBinChildren(int bin_id);
+    void addRushToBin(const QString& bin_name, const Rush& rush);
+    void removeRushFromBin(const QString& bin_name, const Rush& rush);
 
-    void addVideo(const Rush& rush, const QString& catalog = "default");
+    void addVideo(const Rush& rush, const QString& bin = "All");
     void addTagToRush(const Rush& rush, QStringList tags);
     QStringList getRushTags(qint64 rush_id) const;
 
-    QStringList catalogs(const QString& parent_name) const;
+    QStringList bins(const QString& parent_name) const;
 
     qint64 getIdFromAttributeValue(const QString& table_name, const QString& attr_name, const QString& attr_value) const;
 
     Rush getVideo(const QString& filename) const;
 
     void createRushTable();
-    void createCatalogTable();
+    void createBinTable();
     void createTagTable();
-    void createRushCatalogTable();
+    void createRushBinTable();
 
     static Rush getRush(const QSqlRecord& record);
 

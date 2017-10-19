@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QModelIndex>
+#include <QSplitter>
 
 #include "data/database.h"
 
@@ -14,6 +14,7 @@
 #include "gui/rushinfowidget.h"
 #include "gui/playerwidget.h"
 #include "gui/tagswidget.h"
+#include "gui/catalogtreewidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -35,6 +36,7 @@ public slots:
     void addRushToCatalog();
     void removeRushFromCatalog();
     void exportDatabase();
+    void importDatabase();
 
     void onSelectionChanged();
     void onShowJobsProgress();
@@ -56,10 +58,15 @@ private:
     Database m_db;
     Faces m_faces;
     CatalogModel *m_catalog;
+
     PlayerWidget *m_player;
     CatalogWidget *m_view;
     RushInfoWidget *m_media_info;
     TagsWidget *m_tag_widget;
+    CatalogTreeWidget *m_bin_tree_widget;
+
+    QSplitter *m_main_splitter;
+    QSplitter *m_right_splitter;
 
     JobsMaster m_job_master;
 

@@ -14,15 +14,15 @@ public:
     explicit CatalogTreeWidget(Database *db, QWidget *parent = nullptr);
 
 signals:
-    void catalogSelected(const QString& catalog_name);
+    void binSelected(const QString& catalog_name);
 
 public slots:
-    void addCatalog();   
-    void deleteCatalog();
+    void addBin();
+    void deleteBin();
     void itemClicked(QTreeWidgetItem*item, int);
+    void updateTree();
 
 protected:
-    void updateTree();
     void addNodes(QTreeWidgetItem *parent = NULL, const QString& parent_name = QString());
 
 private:

@@ -6,9 +6,9 @@ Fixes :
 - gestion des noms de fichiers/dossiers avec espace
 
 Objectif POC :
-- import catalog depuis csv ou autres
 - Amélioration GUI (affichage métadonnées, affichage tags, affichage étoile, ...)
 - check cache integrity, rebuild thumbnail
+- chercher fichier manquant
 
 Optimisation:
 - à l'import lire d'abord les fichiers et metadata puis dans un deuxième temps créer les images
@@ -49,6 +49,8 @@ Evol :
 - configuration multithreading pour lancer X jobs en fonction du nombre de threads autorisés
 - creer des filtres de recherches ("5 etoiles 2017", "sophie portrait", ...)
 - 2 modes face detection : interactive ou non. Enregistrer pour plus tard les coordonnées des visages non reconnus et le fichier associé dans la BDD pour taguer plus tard
+- rechercher portrait souriant dans video (visage d'une taille supérieur à 1/10 de l'image + detection sourire)
+- traductions
 
 Done :
 - Ajout multiple au catalogue
@@ -65,10 +67,12 @@ Done :
 - barre de progression jobs
 - remplacer libvlc par QtAv
 - changement selection avec les fleches
-- click droit menu contextuel
+- clic droit menu contextuel
 - preset pour export (prores, h264, ...)
 - enregistrer thumbnail dans un dossier special cache et pas avec les fichiers directement
 - gestion des catalogues (changement bdd pour associer un clip à plusieurs catalogues ? )
 - progression thread dans status bar de la mainwindow
 - job face detection
 - export catalog en csv ou autres
+- import catalog depuis csv ou autres
+-remplacer vocabulaire BDD (+ autres objets progressivement) "media" -> "rush", "catalog" par "bin" (chutier)

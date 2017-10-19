@@ -49,57 +49,57 @@ Database::~Database()
     qDebug() << "Database::~Database() - end";
 }
 
-void Database::addCatalog(const QString &catalog, const QString &parent)
+void Database::addBin(const QString &bin_name, const QString &parent_name)
 {
     // Get parent_id
     int parent_id = -1;
-    if (!parent.isEmpty())
-        parent_id = getIdFromAttributeValue("Catalog", "name", parent);
+    if (!parent_name.isEmpty())
+        parent_id = getIdFromAttributeValue("Bin", "name", parent_name);
 
-    // Insert catalog in db
+    // Insert Bin in db
     QSqlQuery query;
-    QString querystr = QString("INSERT INTO Catalog (name, parent_id)"
+    QString querystr = QString("INSERT INTO Bin (name, parent_id)"
                                " VALUES ('%1', '%2') ")
-            .arg(catalog, parent_id == -1 ? "NULL" : QString::number(parent_id));
+            .arg(bin_name, parent_id == -1 ? "NULL" : QString::number(parent_id));
 
     query.exec(querystr);
 
     qDebug() << query.lastQuery() << query.lastError().text();
 }
 
-void Database::deleteCatalog(const QString &catalog)
+void Database::deleteBin(const QString &bin_name)
 {
-    // Get catalog id
-    int catalog_id = getIdFromAttributeValue( "Catalog", "name", catalog);
+    // Get Bin id
+    int bin_id = getIdFromAttributeValue( "Bin", "name", bin_name);
 
-    // if catalog not found return
-    if (catalog_id == -1)
+    // if bin not found return
+    if (bin_id == -1)
         return;
 
-    // get all catalog children
-    QStringList catalogs_ids = getCatalogChildren(catalog_id);
+    // get all bins children
+    QStringList bins_ids = getBinChildren(bin_id);
 
-    // delete catalog from db
+    // delete bin from db
     QSqlQuery query;
-    QString querystr = QString("DELETE FROM Catalog WHERE id in ('%1') ")
-            .arg(catalogs_ids.join("','"));
+    QString querystr = QString("DELETE FROM Bin WHERE id in ('%1') ")
+            .arg(bins_ids.join("','"));
 
     query.exec(querystr);
 
     qDebug() << query.lastQuery() << query.lastError().text();
 }
 
-QStringList Database::getCatalogChildren(int catalog_id)
+QStringList Database::getBinChildren(int bin_id)
 {
     QStringList res;
-    res.append(QString::number(catalog_id));
+    res.append(QString::number(bin_id));
 
     QSqlQuery query(m_database);
 
     // build query
-    QString querystr = QString("SELECT id FROM Catalog "
+    QString querystr = QString("SELECT id FROM Bin "
                                "WHERE parent_id = '%1' "
-                               ).arg(QString::number(catalog_id));
+                               ).arg(QString::number(bin_id));
 
     query.exec(querystr);
     qDebug() << query.lastQuery() << query.lastError().text();
@@ -107,24 +107,24 @@ QStringList Database::getCatalogChildren(int catalog_id)
     // execute and get result recursivly
     while (query.next())
     {
-        res.append(getCatalogChildren(query.value(0).toInt()));
+        res.append(getBinChildren(query.value(0).toInt()));
     }
 
     return res;
 }
 
-void Database::catalogRush(const QString &catalog_name, const Rush &rush)
+void Database::addRushToBin(const QString &bin_name, const Rush &rush)
 {
     int rush_id = getIdFromAttributeValue("Rush", "filename", rush.filename);
-    int catalog_id = getIdFromAttributeValue("Catalog", "name", catalog_name);
+    int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
 
-    if (rush_id < 0 || catalog_id < 0)
+    if (rush_id < 0 || bin_id < 0)
         return;
 
     QSqlQuery query(m_database);
-    QString querystr = QString("INSERT INTO RushCatalog (rush_id, catalog_id) "
+    QString querystr = QString("INSERT INTO RushBin (rush_id, bin_id) "
                                " VALUES (%1, %2) ")
-            .arg(QString::number(rush_id), QString::number(catalog_id));
+            .arg(QString::number(rush_id), QString::number(bin_id));
 
     query.exec(querystr);
 
@@ -132,18 +132,18 @@ void Database::catalogRush(const QString &catalog_name, const Rush &rush)
 
 }
 
-void Database::removeRushFromCatalog(const QString &catalog_name, const Rush &rush)
+void Database::removeRushFromBin(const QString &bin_name, const Rush &rush)
 {
     int rush_id = getIdFromAttributeValue("Rush", "filename", rush.filename);
-    int catalog_id = getIdFromAttributeValue("Catalog", "name", catalog_name);
+    int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
 
-    if (rush_id < 0 || catalog_id < 0)
+    if (rush_id < 0 || bin_id < 0)
         return;
 
     QSqlQuery query(m_database);
-    QString querystr = QString("DELETE FROM RushCatalog "
-                               " WHERE rush_id = %1 AND catalog_id = %2")
-            .arg(QString::number(rush_id), QString::number(catalog_id));
+    QString querystr = QString("DELETE FROM RushBin "
+                               " WHERE rush_id = %1 AND bin_id = %2")
+            .arg(QString::number(rush_id), QString::number(bin_id));
 
     query.exec(querystr);
 
@@ -151,16 +151,16 @@ void Database::removeRushFromCatalog(const QString &catalog_name, const Rush &ru
 
 }
 
-void Database::createCatalogTable()
+void Database::createBinTable()
 {
-    if (QSqlDatabase::database().tables().contains("Catalog")) {
+    if (QSqlDatabase::database().tables().contains("Bin")) {
         // The table already exists; we don't need to do anything.
         return;
     }
 
     QSqlQuery query(m_database);
     if (!query.exec(
-                "CREATE TABLE IF NOT EXISTS 'Catalog' ("
+                "CREATE TABLE IF NOT EXISTS 'Bin' ("
                 "'id' INTEGER NOT NULL PRIMARY KEY,"
                 "'name' TEXT NOT NULL UNIQUE,"
                 "'parent_id' INTEGER"
@@ -168,7 +168,7 @@ void Database::createCatalogTable()
         qFatal("Failed to query database: %s", qPrintable(query.lastError().text()));
     }
 
-    addCatalog("All", "");
+    addBin("All", "");
 }
 
 void Database::createTagTable()
@@ -188,20 +188,18 @@ void Database::createTagTable()
                 ")")) {
         qFatal("Failed to query database: %s", qPrintable(query.lastError().text()));
     }
-
-    query.exec("INSERT INTO Catalog VALUES('default')");
 }
 
-void Database::createRushCatalogTable()
+void Database::createRushBinTable()
 {
     QSqlQuery query(m_database);
     if (!query.exec(
-                "CREATE TABLE IF NOT EXISTS 'RushCatalog' ("
+                "CREATE TABLE IF NOT EXISTS 'RushBin' ("
                 "'rush_id' INTEGER NOT NULL,"
-                "'catalog_id' INTEGER NOT NULL,"
-                "PRIMARY KEY(rush_id, catalog_id),"
+                "'bin_id' INTEGER NOT NULL,"
+                "PRIMARY KEY(rush_id, bin_id),"
                 "FOREIGN KEY('rush_id') REFERENCES Rush ( id ),"
-                "FOREIGN KEY('catalog_id') REFERENCES Catalog ( id )"
+                "FOREIGN KEY('bin_id') REFERENCES Bin ( id )"
                 ")")) {
         qFatal("Failed to query database: %s", qPrintable(query.lastError().text()));
     }
@@ -235,7 +233,7 @@ void Database::createRushTable()
 }
 
 
-void Database::addVideo(const Rush &rush, const QString& catalog)
+void Database::addVideo(const Rush &rush, const QString& bin)
 {
     QSqlQuery query(m_database);
     QString querystr = QString("INSERT INTO Rush (filename, thumbnail, "
@@ -320,18 +318,18 @@ void Database::addTagToRush(const Rush &rush, QStringList tags)
     qDebug() << add_tag_query.lastQuery() << add_tag_query.lastError().text();
 }
 
-QStringList Database::catalogs(const QString &parent_name) const
+QStringList Database::bins(const QString &parent_name) const
 {
     QStringList res;
 
     // get parent id
-    int parent_id = getIdFromAttributeValue("Catalog", "name", parent_name);
+    int parent_id = getIdFromAttributeValue("Bin", "name", parent_name);
 
     QSqlQuery query(m_database);
 
     // build query
     QString querystr = QString("SELECT name "
-                               "FROM Catalog "
+                               "FROM Bin "
                                "WHERE parent_id = '%1' ORDER by name"
                                ).arg(parent_id == -1 ? "NULL" : QString::number(parent_id));
 
@@ -401,22 +399,23 @@ void Database::exportToCsv(const QString &output_file_name)
     out << "<VERSION>" << endl;
     out << QApplication::applicationVersion() << endl;
 
-    // export catalogs
-    out << "<CATALOGS>" << endl;
+    // export bins
+    out << "<BINS>" << endl;
     if (query.exec("SELECT c.name, parent.name as parent "
-                   "FROM Catalog c "
-                   "LEFT JOIN Catalog parent on (c.parent_id = parent.id)"))
+                   "FROM Bin b "
+                   "LEFT JOIN Bin parent on (b.parent_id = parent.id) "
+                   "ORDER BY b.id"))
         exportQuery(query, out);
 
 
 
     // export rushs
     out << "<RUSHS>" << endl;
-    if (query.exec("SELECT r.*, group_concat(t.name, ',') as tags, group_concat(c.name, ',') as catalogs "
+    if (query.exec("SELECT r.*, group_concat(t.name, ',') as tags, group_concat(c.name, ',') as bins "
                "FROM Rush r "
                "LEFT JOIN Tag t on (t.rush_id = r.id) "
-               "LEFT JOIN RushCatalog rc on (rc.rush_id = r.id) "
-               "LEFT JOIN Catalog c on (c.id = rc.catalog_id) "
+               "LEFT JOIN RushBin rb on (rb.rush_id = r.id) "
+               "LEFT JOIN Bin b on (b.id = rb.bin_id) "
                "GROUP BY r.id "))
         exportQuery(query, out);
 
@@ -425,29 +424,106 @@ void Database::exportToCsv(const QString &output_file_name)
 
 void Database::importFromCsv(const QString &input_file_name)
 {
+    qDebug() << "Importing file" << input_file_name;
+
     QFile file(input_file_name);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-              return;
+    {
+        qDebug() << "error opening file";
+        return;
+    }
 
-    QByteArray line;
+    QString line = file.readLine().trimmed();
 
     // get version
-
-    // get catalogs
-    if (line == "<CATALOGS>")
+    if (line == "<VERSION>")
     {
-        line = file.readLine();
+        line = file.readLine().trimmed();
+        qDebug() << "Importing file version" << line;
         while (!file.atEnd() and !line.startsWith("<"))
         {
+            line = file.readLine().trimmed();
+            qDebug() << line;
+        }
+    }
 
-            line = file.readLine();
+    // get bins
+//    QMap<QString, QStringList> bins;
+    if (line == "<BINS>")
+    {
+        // retrieve all
+        line = file.readLine().trimmed();
+
+        while (!file.atEnd() and !line.startsWith("<"))
+        {
+            line = file.readLine().trimmed();
+            qDebug() << line;
+
+            if (!line.startsWith("<"))
+            {
+                QString name = line.split(";")[0];
+                QString parent = line.split(";")[1];
+    //            if (!parent.isEmpty())
+    //                bins[parent].append(name);
+
+                qDebug() << "importing bin" << name;
+
+                // as bins are exported by order of id, parents should always be created before their children
+                // and this should be sufficient (no need to make sure parent is created first)
+                addBin(name, parent);
+            }
         }
     }
 
     // get rush
-    while (!file.atEnd())
+    if (line == "<RUSHS>")
     {
-        QByteArray line = file.readLine();
+        // retrieve all
+        line = file.readLine().trimmed();
+        QStringList headers = line.split(";");
+
+        while (!file.atEnd() and !line.startsWith("<"))
+        {
+            line = file.readLine().trimmed();
+
+            if (!line.startsWith("<") && line.split(";").size() == headers.size())
+            {
+                // get rush data
+                Rush r;
+                r.filename = line.split(";")[headers.indexOf("filename")];
+                r.thumbnail_filename = line.split(";")[headers.indexOf("thumbnail")];
+                r.rating = line.split(";")[headers.indexOf("rating")].toInt();
+                r.length = line.split(";")[headers.indexOf("length")].toInt();
+                r.width = line.split(";")[headers.indexOf("width")].toInt();
+                r.height = line.split(";")[headers.indexOf("height")].toInt();
+                r.fps = line.split(";")[headers.indexOf("fps")].toInt();
+                r.bitrate = line.split(";")[headers.indexOf("bitrate")].toInt();
+                r.video_codec = line.split(";")[headers.indexOf("video_codec")];
+                r.audio_codec = line.split(";")[headers.indexOf("audio_codec")];
+                r.sample_rate = line.split(";")[headers.indexOf("sample_rate")].toInt();
+                r.channel = line.split(";")[headers.indexOf("channel")];
+                r.audio_bitrate = line.split(";")[headers.indexOf("audio_bitrate")].toInt();
+                r.utc_creation_time = line.split(";")[headers.indexOf("utc_creation_time")].toLongLong();
+                addVideo(r);
+
+                qDebug() << "importing rush" << r.filename;
+
+                int rush_id = getIdFromAttributeValue("Rush", "filename", r.filename);
+
+                if (rush_id >= 0)
+                {
+                    // get tags
+                    QStringList tags = line.split(";")[headers.indexOf("tags")].split(",");
+                    addTagToRush(r, tags);
+
+                    // get associated bins
+                    QStringList bins = line.split(";")[headers.indexOf("catalogs")].split(",");
+                    foreach (QString bin, bins)
+                        addRushToBin(bin, r);
+                }
+            }
+
+        }
     }
 }
 

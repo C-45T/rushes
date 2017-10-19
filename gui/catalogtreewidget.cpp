@@ -24,12 +24,12 @@ CatalogTreeWidget::CatalogTreeWidget(Database *db, QWidget *parent)
     m_last_selected_item = "All"; // TODO : hardcoded value
     updateTree();
 
-    connect(add_btn, SIGNAL(clicked(bool)), this, SLOT(addCatalog()));
-    connect(delete_btn, SIGNAL(clicked(bool)), this, SLOT(deleteCatalog()));
+    connect(add_btn, SIGNAL(clicked(bool)), this, SLOT(addBin()));
+    connect(delete_btn, SIGNAL(clicked(bool)), this, SLOT(deleteBin()));
     connect(m_tree, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(itemClicked(QTreeWidgetItem*,int)));
 }
 
-void CatalogTreeWidget::addCatalog()
+void CatalogTreeWidget::addBin()
 {
     QString catalog_name = QInputDialog::getText(this, "Enter Catalog name", "Name");
     if (!catalog_name.isEmpty())
@@ -37,13 +37,13 @@ void CatalogTreeWidget::addCatalog()
         QString selected_item_name = QString();
         if (m_tree->selectedItems().size() > 0)
                 selected_item_name = m_tree->selectedItems().first()->text(0);
-        m_db->addCatalog(catalog_name, selected_item_name);
+        m_db->addBin(catalog_name, selected_item_name);
         m_last_selected_item = selected_item_name;
         updateTree();
     }
 }
 
-void CatalogTreeWidget::deleteCatalog()
+void CatalogTreeWidget::deleteBin()
 {
     QString selected_item_name = QString();
     // check if an item is selected and it's not root item
@@ -62,7 +62,7 @@ void CatalogTreeWidget::deleteCatalog()
                               QString(tr("Are you sure you want to delete catalog %1 and all its children ?")).arg(selected_item_name))
             == QMessageBox::Yes)
     {
-        m_db->deleteCatalog(selected_item_name);
+        m_db->deleteBin(selected_item_name);
         updateTree();
     }
 }
@@ -70,7 +70,7 @@ void CatalogTreeWidget::deleteCatalog()
 void CatalogTreeWidget::itemClicked(QTreeWidgetItem *item, int)
 {
     m_last_selected_item = item->text(0);
-    emit catalogSelected(m_last_selected_item);
+    emit binSelected(m_last_selected_item);
 }
 
 void CatalogTreeWidget::updateTree()
@@ -81,7 +81,7 @@ void CatalogTreeWidget::updateTree()
 
 void CatalogTreeWidget::addNodes(QTreeWidgetItem *parent, const QString &parent_name)
 {
-    QStringList catalogs = m_db->catalogs(parent_name);
+    QStringList catalogs = m_db->bins(parent_name);
     for (int i=0; i< catalogs.size(); i++)
     {
         QTreeWidgetItem *item = new QTreeWidgetItem(parent, QStringList(catalogs[i]));

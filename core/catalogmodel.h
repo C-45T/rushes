@@ -36,12 +36,12 @@ signals:
     void catalogChanged();
 
 public slots:
-    void setCatalog(const QString &catalog);
+    void setBin(const QString &bin_name);
     void updateCatalog();
 
 private:
     Database &m_db;
-    QString m_catalog;
+    QString m_bin_name;
     QString m_processingFile;
     qlonglong m_rows;
     int m_thumbnail_column_number;

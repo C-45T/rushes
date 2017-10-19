@@ -3,7 +3,6 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 #include <QDebug>
-#include <QSplitter>
 #include <QTimer>
 #include <QMenuBar>
 #include <QMenu>
@@ -24,26 +23,26 @@
 #include "gui/cataloggraphicsscene.h"
 #include "gui/jobswidget.h"
 #include "gui/basedialog.h"
-#include "gui/catalogtreewidget.h"
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     // database
-    m_db.createCatalogTable();
+    m_db.createBinTable();
     m_db.createRushTable();
     m_db.createTagTable();
-    m_db.createRushCatalogTable();
+    m_db.createRushBinTable();
 
     // layout
     //QWidget *mainWidget = new QWidget(this);
     //QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    QSplitter *main_splitter = new QSplitter(this);
-    QSplitter *right_splitter = new QSplitter(this);
+    m_main_splitter = new QSplitter(this);
+    m_right_splitter = new QSplitter(this);
     QWidget *layoutWidget = new QWidget(this);
     QVBoxLayout *leftPanelLayout = new QVBoxLayout(layoutWidget);
-    main_splitter->setOrientation(Qt::Horizontal);
-    right_splitter->setOrientation(Qt::Vertical);
+    m_main_splitter->setOrientation(Qt::Horizontal);
+    m_right_splitter->setOrientation(Qt::Vertical);
 
     // data
     m_catalog = new CatalogModel(m_db, this);
@@ -57,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     catalogFilterWidget->setFilter(catalogFilter);
     m_tag_widget = new TagsWidget(this);
     JobsWidget *small_job_widget = new JobsWidget(m_job_master, true, this);
-    CatalogTreeWidget *catalog_list_widget = new CatalogTreeWidget(&m_db, this);
+    m_bin_tree_widget = new CatalogTreeWidget(&m_db, this);
 
     // graphics
     CatalogGraphicsScene *scene = new CatalogGraphicsScene(m_catalog);
@@ -67,15 +66,15 @@ MainWindow::MainWindow(QWidget *parent)
     leftPanelLayout->addWidget(catalogFilterWidget);
     leftPanelLayout->addWidget(m_view);
 
-    main_splitter->addWidget(layoutWidget);
-    main_splitter->addWidget(right_splitter);
+    m_main_splitter->addWidget(layoutWidget);
+    m_main_splitter->addWidget(m_right_splitter);
 
-    right_splitter->addWidget(m_player);
-    right_splitter->addWidget(m_media_info);
-    right_splitter->addWidget(m_tag_widget);
-    right_splitter->addWidget(catalog_list_widget);
+    m_right_splitter->addWidget(m_player);
+    m_right_splitter->addWidget(m_media_info);
+    m_right_splitter->addWidget(m_tag_widget);
+    m_right_splitter->addWidget(m_bin_tree_widget);
 
-    this->setCentralWidget(main_splitter);
+    this->setCentralWidget(m_main_splitter);
     this->statusBar()->addPermanentWidget(small_job_widget);
 
     // menu and context actions
@@ -91,12 +90,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(scene, SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
     connect(scene, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
 
-    connect(catalog_list_widget, SIGNAL(catalogSelected(const QString&)), m_catalog, SLOT(setCatalog(const QString&)));
+    connect(m_bin_tree_widget, SIGNAL(binSelected(const QString&)), m_catalog, SLOT(setBin(const QString&)));
 
     // display
-    main_splitter->show();
+    m_main_splitter->show();
 
-    m_player->setMinimumSize(320, 240);
     readSettings();
 
     QTimer::singleShot(0, m_view, SLOT(updateView()));
@@ -120,7 +118,11 @@ void MainWindow::writeSettings()
     //settings.setValue("pos", pos());
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
-
+    settings.setValue("mainSplitterGeometry", m_main_splitter->saveGeometry());
+    settings.setValue("mainSplitterWindowState", m_main_splitter->saveState());
+    settings.setValue("rightSplitterGeometry", m_right_splitter->saveGeometry());
+    settings.setValue("rightSplitterWindowState", m_right_splitter->saveState());
+    settings.setValue("playerSize", m_player->size());
     settings.endGroup();
 }
 
@@ -129,7 +131,7 @@ void MainWindow::readSettings()
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
 
     settings.beginGroup("App");
-    m_catalog->setCatalog(settings.value("currentCatalog", "default").toString());
+    m_catalog->setBin(settings.value("currentCatalog", "All").toString());
     // check if thumbnail folder exists or create it at first start
     QString thumnbnail_folder = settings.value("thumbnailFolder", "").toString();
     if (thumnbnail_folder.isEmpty())
@@ -147,6 +149,11 @@ void MainWindow::readSettings()
     //move(settings.value("pos", QPoint(200, 200)).toPoint());
     restoreState(settings.value("windowState").toByteArray());
     restoreGeometry(settings.value("geometry").toByteArray());
+    m_main_splitter->restoreGeometry(settings.value("mainSplitterGeometry").toByteArray());
+    m_main_splitter->restoreState(settings.value("mainSplitterWindowState").toByteArray());
+    m_right_splitter->restoreGeometry(settings.value("rightSplitterGeometry").toByteArray());
+    m_right_splitter->restoreState(settings.value("rightSplitterGeometry").toByteArray());
+    m_player->resize(settings.value("playerSize", QSize(320, 240)).toSize());
     settings.endGroup();
 }
 
@@ -254,7 +261,7 @@ void MainWindow::addRushToCatalog()
         //QStringList files_to_update = selectedFiles();
         foreach (Rush rush, m_view->selectedRush())
         {
-            m_db.catalogRush(catalog_name, rush);
+            m_db.addRushToBin(catalog_name, rush);
         }
     }
 }
@@ -266,7 +273,7 @@ void MainWindow::removeRushFromCatalog()
         //QStringList files_to_update = selectedFiles();
         foreach (Rush rush, m_view->selectedRush())
         {
-            m_db.removeRushFromCatalog(m_catalog->catalog(), rush);
+            m_db.removeRushFromBin(m_catalog->catalog(), rush);
         }
     }
 }
@@ -279,6 +286,18 @@ void MainWindow::exportDatabase()
          return;
 
     m_db.exportToCsv(file_name);
+}
+
+void MainWindow::importDatabase()
+{
+    QString file_name = QFileDialog::getOpenFileName(this, "Import database from CSV");
+
+    if (file_name.isEmpty())
+         return;
+
+    m_db.importFromCsv(file_name);
+    m_bin_tree_widget->updateTree();
+    m_catalog->setBin("All"); // TODO : hardcoded value
 }
 
 void MainWindow::onSelectionChanged()
@@ -322,7 +341,8 @@ void MainWindow::createMenus()
 {
     QMenu *file_menu = menuBar()->addMenu(tr("&File"));
     file_menu->addAction("Add to Catalog", this, SLOT(addVideo()), QKeySequence(Qt::CTRL + Qt::Key_O));
-    file_menu->addAction("Export database to CSV", this, SLOT(exportDatabase()));
+    file_menu->addAction("Export database to CSV", this, SLOT(exportDatabase()), QKeySequence(Qt::CTRL + Qt::Key_E));
+    file_menu->addAction("Import database from CSV", this, SLOT(importDatabase()), QKeySequence(Qt::CTRL + Qt::Key_I));
 
     QMenu *edit_menu = menuBar()->addMenu(tr("&Edit"));
     QAction *tag_action = edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));
