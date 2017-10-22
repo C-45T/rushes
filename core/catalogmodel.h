@@ -19,11 +19,7 @@ public:
     QString catalog() const;
 
     QVariant data(const QModelIndex &index, int role) const;
-    int columnCount(const QModelIndex &index = QModelIndex()) const;
-    int rowCount(const QModelIndex &index = QModelIndex()) const;
     int itemCount() const;
-
-    void setThumbnailColumnNumber(int nb);
 
     void setFilter(CatalogFilter *filter);
     void deleteFromCatalog(const QStringList &files);

@@ -53,9 +53,8 @@
 
 #include "starrating.h"
 
-const int PaintingScaleFactor = 25;
 
-StarRating::StarRating(int starCount, int maxStarCount)
+StarRating::StarRating(int starCount, int maxStarCount, int scale_factor)
 {
     myStarCount = starCount;
     myMaxStarCount = maxStarCount;
@@ -68,11 +67,13 @@ StarRating::StarRating(int starCount, int maxStarCount)
     diamondPolygon << QPointF(0.4, 0.5) << QPointF(0.5, 0.4)
                    << QPointF(0.6, 0.5) << QPointF(0.5, 0.6)
                    << QPointF(0.4, 0.5);
+
+    m_painting_scale_factor = scale_factor;
 }
 
 QSize StarRating::sizeHint() const
 {
-    return PaintingScaleFactor * QSize(myMaxStarCount, 1);
+    return m_painting_scale_factor * QSize(myMaxStarCount, 1);
 }
 
 void StarRating::paint(QPainter *painter, const QRect &rect,
@@ -90,9 +91,9 @@ void StarRating::paint(QPainter *painter, const QRect &rect,
         //painter->setPen(QPen(Qt::black, 0.2));
     }
 
-    int yOffset = (rect.height() - PaintingScaleFactor) / 2;
+    int yOffset = (rect.height() - m_painting_scale_factor) / 2;
     painter->translate(rect.x(), rect.y() + yOffset);
-    painter->scale(PaintingScaleFactor, PaintingScaleFactor);
+    painter->scale(m_painting_scale_factor, m_painting_scale_factor);
 
     for (int i = 0; i < myMaxStarCount; ++i) {
         if (i < myStarCount) {

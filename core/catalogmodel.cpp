@@ -92,59 +92,6 @@ void CatalogModel::setFilter(CatalogFilter *filter)
     m_selection_filter = filter;
 }
 
-void CatalogModel::setThumbnailColumnNumber(int new_columns)
-{
-    if (new_columns == m_thumbnail_column_number)
-        return;
-
-    int old_columns = m_thumbnail_column_number;
-    int old_rows = rowCount(QModelIndex());
-    int new_rows = ((m_rows-1) / new_columns ) + 1;
-
-    if (old_columns < new_columns)
-        beginInsertColumns(QModelIndex(), 0, new_columns - old_columns - 1);
-    else
-        beginRemoveColumns(QModelIndex(), 0, old_columns - new_columns - 1);
-
-    if (old_rows < new_rows)
-        beginInsertRows(QModelIndex(), 0, new_rows - old_rows - 1);
-    if (old_rows > new_rows)
-        beginRemoveRows(QModelIndex(), 0, old_rows - new_rows - 1);
-
-    //qDebug() << old_columns << new_columns;
-    m_thumbnail_column_number = new_columns;
-
-    if (old_columns < new_columns)
-        endInsertColumns();
-    else
-        endRemoveColumns();
-
-    if (old_rows < new_rows)
-        endInsertRows();
-    if (old_rows > new_rows)
-        endRemoveRows();
-
-    emit catalogChanged();
-}
-
-int CatalogModel::columnCount(const QModelIndex &) const
-{
-    if (m_rows < m_thumbnail_column_number)
-        return m_rows;
-
-    return m_thumbnail_column_number; // TODO change this
-}
-
-int CatalogModel::rowCount(const QModelIndex &) const
-{
-    //return QSqlTableModel::rowCount(index);
-
-    if (m_rows < 1)
-        return 0;
-
-    return ((m_rows-1) / m_thumbnail_column_number ) + 1; // TODO remove hardcoded value
-}
-
 int CatalogModel::itemCount() const
 {
     return m_rows;
@@ -200,7 +147,7 @@ int CatalogModel::getVideoId(const QString &filename) const
 
 Rush CatalogModel::getRush(const QString &filename) const
 {
-    return m_db.getVideo(filename);
+    return m_db.getRush(filename);
 }
 
 void CatalogModel::deleteFromCatalog(const QStringList &files)

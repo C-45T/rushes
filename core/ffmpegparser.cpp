@@ -4,6 +4,7 @@
 #include <QProcess>
 #include <QFileInfo>
 #include <QDir>
+#include <QTime>
 
 FFMpegParser::FFMpegParser()
 {
@@ -24,47 +25,47 @@ int FFMpegParser::openVideo(const QString &filename, Rush &rush)
       return -1; // Couldn't find stream information
 
     // Dump information about file onto standard error
-    av_dump_format(pFormatCtx, 0, filename.toStdString().c_str(), 0);
+    //av_dump_format(pFormatCtx, 0, filename.toStdString().c_str(), 0);
 
     AVCodecContext *pCodecCtxOrig = NULL;
     AVCodecContext *pCodecCtx = NULL;
 
     // Find the first video stream
-    int videoStream=-1;
-    for(unsigned int i=0; i<pFormatCtx->nb_streams; i++)
-      if(pFormatCtx->streams[i]->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
-        videoStream=i;
-        break;
-      }
-    if(videoStream==-1)
-      return -1; // Didn't find a video stream
+//    int videoStream=-1;
+//    for(unsigned int i=0; i<pFormatCtx->nb_streams; i++)
+//      if(pFormatCtx->streams[i]->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
+//        videoStream=i;
+//        break;
+//      }
+//    if(videoStream==-1)
+//      return -1; // Didn't find a video stream
 
-    // Get a pointer to the codec context for the video stream
-    pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
+//    // Get a pointer to the codec context for the video stream
+//    pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
 
-    AVCodec *pCodec = NULL;
+//    AVCodec *pCodec = NULL;
 
-    // Find the decoder for the video stream
-    pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
-    if(pCodec==NULL) {
-      fprintf(stderr, "Unsupported codec!\n");
-      return -1; // Codec not found
-    }
-    // Copy context
-    pCodecCtx = avcodec_alloc_context3(pCodec);
-    if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0) {
-      fprintf(stderr, "Couldn't copy codec context");
-      return -1; // Error copying codec context
-    }
-    // Open codec
-    if(avcodec_open2(pCodecCtx, pCodec, &pDictionary)<0)
-      return -1; // Could not open codec
+//    // Find the decoder for the video stream
+//    pCodec=avcodec_find_decoder(pCodecCtxOrig->codec_id);
+//    if(pCodec==NULL) {
+//      fprintf(stderr, "Unsupported codec!\n");
+//      return -1; // Codec not found
+//    }
+//    // Copy context
+//    pCodecCtx = avcodec_alloc_context3(pCodec);
+//    if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0) {
+//      fprintf(stderr, "Couldn't copy codec context");
+//      return -1; // Error copying codec context
+//    }
+//    // Open codec
+//    if(avcodec_open2(pCodecCtx, pCodec, &pDictionary)<0)
+//      return -1; // Could not open codec
 
     metadata(pFormatCtx, pCodecCtx, rush);
 
     // Close the codecs
-    avcodec_close(pCodecCtx);
-    avcodec_close(pCodecCtxOrig);
+//    avcodec_close(pCodecCtx);
+//    avcodec_close(pCodecCtxOrig);
 
     // Close the video file
     avformat_close_input(&pFormatCtx);
@@ -182,5 +183,23 @@ QProcess* FFMpegParser::transcode(const QString &input_filename, const QString &
     export_process->start(cmd);
 
     return export_process;
+}
+
+QProcess *FFMpegParser::extractFrame(const QString &input_filename, const QString &destination_file_name, int seconds)
+{
+    QString preset = "ffmpeg -ss %3 -i %1 -vframes 1 -s 256x144 %2";
+
+    QTime length(0, 0, 0);
+    length = length.addSecs(seconds);
+
+    // create transcoding command
+    QString cmd = QString(preset).arg(input_filename, destination_file_name, length.toString("hh:mm:ss"));
+    qDebug() << "FFMpegParser::extractFrame :" << cmd;
+
+    // start process and return
+    QProcess *extract_frame_process = new QProcess();
+    extract_frame_process->start(cmd);
+
+    return extract_frame_process;
 }
 

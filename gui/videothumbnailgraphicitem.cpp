@@ -9,7 +9,7 @@ VideoThumbnailGraphicItem::VideoThumbnailGraphicItem(const Rush &rush)
     : QGraphicsItem()
 {
     m_rush = rush;
-    m_thumbnail = QImage(m_rush.thumbnail_filename);
+    m_thumbnail = QImage(m_rush.thumbnail_file_name);
     m_mouse_pressed = false;
 
     setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -29,9 +29,9 @@ void VideoThumbnailGraphicItem::paint(QPainter *painter, const QStyleOptionGraph
     if (option->state & QStyle::State_Selected)
         painter->fillRect(option->rect, option->palette.highlight());
     else
-        painter->fillRect(option->rect, QColor(Qt::gray).darker(300));
+        painter->fillRect(option->rect, QColor(53, 53, 53));
 
-    if (m_rush.filename.isEmpty())
+    if (m_rush.file_name.isEmpty())
         return;
 
     // paint thumbnail
@@ -49,7 +49,7 @@ void VideoThumbnailGraphicItem::paint(QPainter *painter, const QStyleOptionGraph
     QRect rectangle = option->rect.adjusted(0, 270, 0, 0); // TODO : remove hardcoded values
     painter->setFont(QFont("Arial", 16, QFont::Bold ));
     painter->setPen(Qt::white);
-    painter->drawText(rectangle, Qt::AlignCenter, m_rush.filename.split("/").last());
+    painter->drawText(rectangle, Qt::AlignCenter, m_rush.file_name.split("/").last());
 
     // draw stars
     m_rating.paint(painter, option->rect.adjusted(5, 0, 0, -270), option->palette, StarRating::ReadOnly);

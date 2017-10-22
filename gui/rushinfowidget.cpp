@@ -34,10 +34,10 @@ RushInfoWidget::RushInfoWidget(QWidget *parent) : QWidget(parent)
 void RushInfoWidget::setRush(const Rush &rush)
 {
     //info.debug();
-    if (rush.filename.isEmpty())
+    if (rush.file_name.isEmpty())
         return;
 
-    QFileInfo file_info = QFileInfo(rush.filename);
+    QFileInfo file_info = QFileInfo(rush.file_name);
     QTime length(0, 0, 0);
     length = length.addSecs(rush.length);
 

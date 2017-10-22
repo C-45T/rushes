@@ -6,30 +6,27 @@ Fixes :
 - gestion des noms de fichiers/dossiers avec espace
 
 Objectif POC :
-- Amélioration GUI (affichage métadonnées, affichage tags, affichage étoile, ...)
 - check cache integrity, rebuild thumbnail
 - chercher fichier manquant
 
 Optimisation:
 - à l'import lire d'abord les fichiers et metadata puis dans un deuxième temps créer les images
 - garder un cache en memoire de la bdd, refaire des requetes uniquement si modification de la bdd (signalé par un attribut en cas d'insert, delete, update)
+- Utilisation qpixmapcache pour affichage vignette ?
+- Ajout index dans la bdd sur champs recherchés pour améliorer requetes
+- remplacer les 2 QMaps pour la definition des personnes de Face par une bimap boost
 
 Evol :
 - gestion reconnaissance des visages
 - Ajout écran de setting et fichier
 - stockage au choix image en BLOB dans la BDD
-- Utilisation qpixmapcache pour affichage vignette ?
-- Ajout index dans la bdd sur champs recherchés pour améliorer requetes
 - ne pas rejouer les query a chaque changement de note
-- gestion version
 - maj bdd en fonction de la version
-- transcode selection
 - clone clip
 - selection in/out
 - ajout attribut "face recognation incomplete" quand visages non reconnus dans la video pour pouvoir reanalyser plus tard
 - enregistrer les images en taille reelles si inferieur à taille de référence et resize au chargement
 - définir image de référence pour afficher liste des personnes
-- remplacer les 2 QMaps pour la definition des personnes de Face par une bimap boost
 - ajout zoom in lors d'un clique sur l'image ssur faceTagWidget pour afficher le visage en gros plan
 - ajout sauvegarde et restauration du modele de reconnaissance facial (save et load au format yaml)
 - se debarrasser des noms de table hardcodées
@@ -39,10 +36,8 @@ Evol :
 - option (click droit "display same day") pour afficher video du meme jour (par exemple si une personne est taguée sur une video, elle est probablement sur d'autres du meme jour)
 - faire des familles de tag (les prenoms pour la famille personne, "mer" "montagne" "vallée" -> famille paysage, etc...)
 - creer des gifs de chaque video pour l'apercu
-- gestion des jpbs avec barre de progress liste de job en attente, ...
 - ecrire les metadonnées directement dans le fichiers (tags, ratings, auteur, ...)
 - import/export de bibliothèque/catalogue avec option copie des fichiers
-- ajouter profils d'export (prores proxy, hq, lq, mp4, ...)
 - creation de subclips avec ctrl+1, ctrl+2, ... plusieurs subclips sur une video, structure en base, ... (DB : subclis : ref clip, start frame, stop frame, rating)
 - detection de portrait : critère taille minimum par rapport à l'image (1/4 ?) temps supérieurs à X images (25?)
 - enregistrement job dans la bdd ?
@@ -51,9 +46,14 @@ Evol :
 - 2 modes face detection : interactive ou non. Enregistrer pour plus tard les coordonnées des visages non reconnus et le fichier associé dans la BDD pour taguer plus tard
 - rechercher portrait souriant dans video (visage d'une taille supérieur à 1/10 de l'image + detection sourire)
 - traductions
+- rajouter un champ libre de commentaire sur les rushs
+- rajouter n° image courante sur lecteur video + temps écoulé, temps restant
 
 Done :
+- transcode selection
+- gestion des jpbs avec barre de progress liste de job en attente, ...
 - Ajout multiple au catalogue
+- ajouter profils d'export (prores proxy, hq, lq, mp4, ...)
 - Rajout notation
 - nombre de vignette en fonction de la largeur de la fenetre
 - filtre sur le rating
@@ -77,3 +77,6 @@ Done :
 - import catalog depuis csv ou autres
 - remplacer vocabulaire BDD (+ autres objets progressivement) "media" -> "rush", "catalog" par "bin" (chutier)
 - réglage volume video avec la molette
+- Amélioration GUI (affichage métadonnées, affichage tags, affichage étoile, ...)
+- gestion version
+- rajouter un exploreur

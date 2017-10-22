@@ -46,108 +46,6 @@ Database::~Database()
     qDebug() << "Database::~Database() - end";
 }
 
-void Database::addBin(const QString &bin_name, const QString &parent_name)
-{
-    // Get parent_id
-    int parent_id = -1;
-    if (!parent_name.isEmpty())
-        parent_id = getIdFromAttributeValue("Bin", "name", parent_name);
-
-    // Insert Bin in db
-    QSqlQuery query;
-    QString querystr = QString("INSERT INTO Bin (name, parent_id)"
-                               " VALUES ('%1', '%2') ")
-            .arg(bin_name, parent_id == -1 ? "NULL" : QString::number(parent_id));
-
-    query.exec(querystr);
-
-    qDebug() << query.lastQuery() << query.lastError().text();
-}
-
-void Database::deleteBin(const QString &bin_name)
-{
-    // Get Bin id
-    int bin_id = getIdFromAttributeValue( "Bin", "name", bin_name);
-
-    // if bin not found return
-    if (bin_id == -1)
-        return;
-
-    // get all bins children
-    QStringList bins_ids = getBinChildren(bin_id);
-
-    // delete bin from db
-    QSqlQuery query;
-    QString querystr = QString("DELETE FROM Bin WHERE id in ('%1') ")
-            .arg(bins_ids.join("','"));
-
-    query.exec(querystr);
-
-    qDebug() << query.lastQuery() << query.lastError().text();
-}
-
-QStringList Database::getBinChildren(int bin_id)
-{
-    QStringList res;
-    res.append(QString::number(bin_id));
-
-    QSqlQuery query(m_database);
-
-    // build query
-    QString querystr = QString("SELECT id FROM Bin "
-                               "WHERE parent_id = '%1' "
-                               ).arg(QString::number(bin_id));
-
-    query.exec(querystr);
-    qDebug() << query.lastQuery() << query.lastError().text();
-
-    // execute and get result recursivly
-    while (query.next())
-    {
-        res.append(getBinChildren(query.value(0).toInt()));
-    }
-
-    return res;
-}
-
-void Database::addRushToBin(const QString &bin_name, const Rush &rush)
-{
-    int rush_id = getIdFromAttributeValue("Rush", "filename", rush.filename);
-    int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
-
-    if (rush_id < 0 || bin_id < 0)
-        return;
-
-    QSqlQuery query(m_database);
-    QString querystr = QString("INSERT INTO RushBin (rush_id, bin_id) "
-                               " VALUES (%1, %2) ")
-            .arg(QString::number(rush_id), QString::number(bin_id));
-
-    query.exec(querystr);
-
-    qDebug() << query.lastQuery() << query.lastError().text();
-
-}
-
-void Database::removeRushFromBin(const QString &bin_name, const Rush &rush)
-{
-    int rush_id = getIdFromAttributeValue("Rush", "filename", rush.filename);
-    int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
-
-    if (rush_id < 0 || bin_id < 0)
-        return;
-
-    QSqlQuery query(m_database);
-    QString querystr = QString("DELETE FROM RushBin "
-                               " WHERE rush_id = %1 AND bin_id = %2")
-            .arg(QString::number(rush_id), QString::number(bin_id));
-
-    query.exec(querystr);
-
-    qDebug() << query.lastQuery() << query.lastError().text();
-
-}
-
 void Database::createBinTable()
 {
     if (QSqlDatabase::database().tables().contains("Bin")) {
@@ -229,8 +127,109 @@ void Database::createRushTable()
     }
 }
 
+void Database::addBin(const QString &bin_name, const QString &parent_name)
+{
+    // Get parent_id
+    int parent_id = -1;
+    if (!parent_name.isEmpty())
+        parent_id = getIdFromAttributeValue("Bin", "name", parent_name);
 
-void Database::addVideo(const Rush &rush, const QString& bin)
+    // Insert Bin in db
+    QSqlQuery query;
+    QString querystr = QString("INSERT INTO Bin (name, parent_id)"
+                               " VALUES ('%1', '%2') ")
+            .arg(bin_name, parent_id == -1 ? "NULL" : QString::number(parent_id));
+
+    query.exec(querystr);
+
+    qDebug() << query.lastQuery() << query.lastError().text();
+}
+
+void Database::deleteBin(const QString &bin_name)
+{
+    // Get Bin id
+    int bin_id = getIdFromAttributeValue( "Bin", "name", bin_name);
+
+    // if bin not found return
+    if (bin_id == -1)
+        return;
+
+    // get all bins children
+    QStringList bins_ids = getBinChildren(bin_id);
+
+    // delete bin from db
+    QSqlQuery query;
+    QString querystr = QString("DELETE FROM Bin WHERE id in ('%1') ")
+            .arg(bins_ids.join("','"));
+
+    query.exec(querystr);
+
+    qDebug() << query.lastQuery() << query.lastError().text();
+}
+
+QStringList Database::getBinChildren(int bin_id)
+{
+    QStringList res;
+    res.append(QString::number(bin_id));
+
+    QSqlQuery query(m_database);
+
+    // build query
+    QString querystr = QString("SELECT id FROM Bin "
+                               "WHERE parent_id = '%1' "
+                               ).arg(QString::number(bin_id));
+
+    query.exec(querystr);
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+    // execute and get result recursivly
+    while (query.next())
+    {
+        res.append(getBinChildren(query.value(0).toInt()));
+    }
+
+    return res;
+}
+
+void Database::addRushToBin(const QString &bin_name, const Rush &rush)
+{
+    int rush_id = getIdFromAttributeValue("Rush", "filename", rush.file_name);
+    int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
+
+    if (rush_id < 0 || bin_id < 0)
+        return;
+
+    QSqlQuery query(m_database);
+    QString querystr = QString("INSERT INTO RushBin (rush_id, bin_id) "
+                               " VALUES (%1, %2) ")
+            .arg(QString::number(rush_id), QString::number(bin_id));
+
+    query.exec(querystr);
+
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+}
+
+void Database::removeRushFromBin(const QString &bin_name, const Rush &rush)
+{
+    int rush_id = getIdFromAttributeValue("Rush", "filename", rush.file_name);
+    int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
+
+    if (rush_id < 0 || bin_id < 0)
+        return;
+
+    QSqlQuery query(m_database);
+    QString querystr = QString("DELETE FROM RushBin "
+                               " WHERE rush_id = %1 AND bin_id = %2")
+            .arg(QString::number(rush_id), QString::number(bin_id));
+
+    query.exec(querystr);
+
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+}
+
+void Database::addRushToBin(const Rush &rush, const QString& bin)
 {
     QSqlQuery query(m_database);
     QString querystr = QString("INSERT INTO Rush (filename, thumbnail, "
@@ -239,7 +238,7 @@ void Database::addVideo(const Rush &rush, const QString& bin)
                                "utc_creation_time)"
                                " VALUES ('%1', '%2', %3, "
                                "%4, %5, %6, %7, '%8', '%9', ")
-            .arg(rush.filename, rush.thumbnail_filename,
+            .arg(rush.file_name, rush.thumbnail_file_name,
                  QString::number(rush.length), QString::number(rush.width), QString::number(rush.height),
                  QString::number(rush.fps), QString::number(rush.bitrate),
                  rush.video_codec, rush.audio_codec);
@@ -281,7 +280,7 @@ QStringList Database::getRushTags(qint64 rush_id) const
 void Database::addTagToRush(const Rush &rush, QStringList tags)
 {
     // retrieve video id
-    qint64 rush_id = getIdFromAttributeValue("Rush", "filename", rush.filename);
+    qint64 rush_id = getIdFromAttributeValue("Rush", "filename", rush.file_name); // TODO retrieve from database_id attribute
 
     if (rush_id < 0)
         return;
@@ -358,15 +357,40 @@ qint64 Database::getIdFromAttributeValue(const QString &table_name, const QStrin
     return obj_id;
 }
 
+Rush Database::getRush(const QString &filename) const
+{
+    Rush res;
+    QSqlQuery query(m_database);
+
+    // build query
+    QString querystr = QString("SELECT id, filename, thumbnail, "
+                               "length, width, height, fps, bitrate, video_codec, "
+                               "audio_codec, sample_rate, channel, audio_bitrate,"
+                               "utc_creation_time, rating "
+                               "FROM Rush "
+                               "WHERE filename = '%1' "
+                               "LIMIT 1").arg(filename);
+
+    query.exec(querystr);
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+    // execute and get result
+    if (query.first())
+    {
+        return getRush(query.record());
+    }
 
 
+    return res;
+}
 
-Rush Database::getRush(const QSqlRecord &record)
+Rush Database::getRush(const QSqlRecord &record) const
 {
     Rush rush;
 
-    rush.filename = record.value("filename").toString();
-    rush.thumbnail_filename = record.value("thumbnail").toString();
+    rush.database_id = record.value("id").toLongLong();
+    rush.file_name = record.value("filename").toString();
+    rush.thumbnail_file_name = record.value("thumbnail").toString();
     rush.length = record.value("length").toInt();
     rush.width = record.value("width").toInt();
     rush.height = record.value("height").toInt();
@@ -487,8 +511,8 @@ void Database::importFromCsv(const QString &input_file_name)
             {
                 // get rush data
                 Rush r;
-                r.filename = line.split(";")[headers.indexOf("filename")];
-                r.thumbnail_filename = line.split(";")[headers.indexOf("thumbnail")];
+                r.file_name = line.split(";")[headers.indexOf("filename")];
+                r.thumbnail_file_name = line.split(";")[headers.indexOf("thumbnail")];
                 r.rating = line.split(";")[headers.indexOf("rating")].toInt();
                 r.length = line.split(";")[headers.indexOf("length")].toInt();
                 r.width = line.split(";")[headers.indexOf("width")].toInt();
@@ -501,11 +525,11 @@ void Database::importFromCsv(const QString &input_file_name)
                 r.channel = line.split(";")[headers.indexOf("channel")];
                 r.audio_bitrate = line.split(";")[headers.indexOf("audio_bitrate")].toInt();
                 r.utc_creation_time = line.split(";")[headers.indexOf("utc_creation_time")].toLongLong();
-                addVideo(r);
+                addRushToBin(r);
 
-                qDebug() << "importing rush" << r.filename;
+                qDebug() << "importing rush" << r.file_name;
 
-                int rush_id = getIdFromAttributeValue("Rush", "filename", r.filename);
+                int rush_id = getIdFromAttributeValue("Rush", "filename", r.file_name);
 
                 if (rush_id >= 0)
                 {
@@ -542,32 +566,5 @@ void Database::exportQuery(QSqlQuery &query, QTextStream &text_stream)
         text_stream << values.join(";") << endl;
     }
 
-}
-
-Rush Database::getVideo(const QString &filename) const
-{
-    Rush res;
-    QSqlQuery query(m_database);
-
-    // build query
-    QString querystr = QString("SELECT filename, thumbnail, "
-                               "length, width, height, fps, bitrate, video_codec, "
-                               "audio_codec, sample_rate, channel, audio_bitrate,"
-                               "utc_creation_time, rating "
-                               "FROM Rush "
-                               "WHERE filename = '%1' "
-                               "LIMIT 1").arg(filename);
-
-    query.exec(querystr);
-    qDebug() << query.lastQuery() << query.lastError().text();
-
-    // execute and get result
-    if (query.first())
-    {
-        return getRush(query.record());
-    }
-
-
-    return res;
 }
 

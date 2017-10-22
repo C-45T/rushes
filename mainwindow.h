@@ -10,7 +10,7 @@
 #include "core/jobsmaster.h"
 #include "core/faces.h"
 
-#include "gui/catalogwidget.h"
+#include "gui/thumbnailview.h"
 #include "gui/rushinfowidget.h"
 #include "gui/playerwidget.h"
 #include "gui/tagswidget.h"
@@ -62,7 +62,7 @@ private:
     CatalogModel *m_catalog;
 
     PlayerWidget *m_player;
-    CatalogWidget *m_view;
+    ThumbnailView *m_view;
     RushInfoWidget *m_media_info;
     TagsWidget *m_tag_widget;
     CatalogTreeWidget *m_bin_tree_widget;

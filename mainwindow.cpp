@@ -21,10 +21,9 @@
 
 #include "gui/catalogfilterwidget.h"
 #include "gui/videothumbnailgraphicitem.h"
-#include "gui/cataloggraphicsscene.h"
 #include "gui/jobswidget.h"
 #include "gui/basedialog.h"
-
+#include "gui/fileexplorerwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -47,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // data
     m_catalog = new CatalogModel(m_db, this);
-    CatalogFilter *catalogFilter = new CatalogFilter(this);
+    CatalogFilter *catalogFilter = new CatalogFilter(m_db, this);
     m_catalog->setFilter(catalogFilter);
 
     // widgets
@@ -58,15 +57,16 @@ MainWindow::MainWindow(QWidget *parent)
     m_tag_widget = new TagsWidget(this);
     JobsWidget *small_job_widget = new JobsWidget(m_job_master, true, this);
     m_bin_tree_widget = new CatalogTreeWidget(&m_db, this);
+    FileExplorerWidget *explorer = new FileExplorerWidget(m_db, this);
 
     // graphics
-    CatalogGraphicsScene *scene = new CatalogGraphicsScene(m_catalog);
-    m_view = new CatalogWidget(scene, this);
+    m_view = new ThumbnailView(m_db, this);
 
     // layouts
     leftPanelLayout->addWidget(catalogFilterWidget);
     leftPanelLayout->addWidget(m_view);
 
+    m_main_splitter->addWidget(explorer);
     m_main_splitter->addWidget(layoutWidget);
     m_main_splitter->addWidget(m_right_splitter);
 
@@ -84,21 +84,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     // signals
     connect(catalogFilter, SIGNAL(valueChanged()), m_catalog, SLOT(updateCatalog()));
-    connect(m_catalog, SIGNAL(catalogChanged()), scene, SLOT(updateScene()));
-    connect(m_catalog, SIGNAL(catalogChanged()), m_view, SLOT(updateView()));
-    //connect(catalogFilter, SIGNAL(valueChanged()), scene, SLOT(updateScene()));
+    connect(explorer->view(), SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
+    connect(catalogFilter, SIGNAL(selectionChanged(QStringList)), m_view, SLOT(setFiles(QStringList)));
+    connect(m_view, SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
+    connect(m_view, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
+    catalogFilter->querySelection();
 
-    connect(scene, SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
-    connect(scene, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
-
-    connect(m_bin_tree_widget, SIGNAL(binSelected(const QString&)), m_catalog, SLOT(setBin(const QString&)));
+    connect(m_bin_tree_widget, SIGNAL(binSelected(const QString&)), catalogFilter, SLOT(setBin(const QString&)));
 
     // display
     m_main_splitter->show();
 
     readSettings();
-
-    QTimer::singleShot(0, m_view, SLOT(updateView()));
 }
 
 MainWindow::~MainWindow()
@@ -223,10 +220,10 @@ void MainWindow::addTags()
     QString tags = QInputDialog::getText(this, "Add Tags", "tags (separates with commas (,))");
     if (!tags.isEmpty() && m_catalog)
     {
-        foreach (Rush rush, m_view->selectedRush())
+        foreach (Rush *rush, m_view->selectedRush())
         {
             qDebug() << tags;
-            m_db.addTagToRush(rush, tags.split(","));
+            m_db.addTagToRush(*rush, tags.split(","));
         }
     }
 }
@@ -236,9 +233,9 @@ void MainWindow::transcode(const QString &command_preset)
     QString output_folder = QFileDialog::getExistingDirectory();
     if (m_view && !output_folder.isEmpty())
     {
-        foreach (Rush rush, m_view->selectedRush())
+        foreach (Rush *rush, m_view->selectedRush())
         {
-            ExportJob *job = new ExportJob(rush, output_folder, command_preset);
+            ExportJob *job = new ExportJob(*rush, output_folder, command_preset);
             m_job_master.addJob(job);
         }
     }
@@ -247,9 +244,9 @@ void MainWindow::transcode(const QString &command_preset)
 void MainWindow::faceRecognition()
 {
     //QStringList files_to_update = selectedFiles();
-    foreach (Rush rush, m_view->selectedRush())
+    foreach (Rush *rush, m_view->selectedRush())
     {
-        FaceDetectionJob *job = new FaceDetectionJob(m_db, m_faces, rush);
+        FaceDetectionJob *job = new FaceDetectionJob(m_db, m_faces, *rush);
         m_job_master.addJob(job);
     }
 }
@@ -260,9 +257,9 @@ void MainWindow::addRushToCatalog()
     if (m_db.getIdFromAttributeValue("Bin", "name", catalog_name) >= 0 && m_catalog)
     {
         //QStringList files_to_update = selectedFiles();
-        foreach (Rush rush, m_view->selectedRush())
+        foreach (Rush *rush, m_view->selectedRush())
         {
-            m_db.addRushToBin(catalog_name, rush);
+            m_db.addRushToBin(catalog_name, *rush);
         }
     }
 }
@@ -272,9 +269,9 @@ void MainWindow::removeRushFromCatalog()
     if (m_catalog)
     {
         //QStringList files_to_update = selectedFiles();
-        foreach (Rush rush, m_view->selectedRush())
+        foreach (Rush *rush, m_view->selectedRush())
         {
-            m_db.removeRushFromBin(m_catalog->catalog(), rush);
+            m_db.removeRushFromBin(m_catalog->catalog(), *rush);
         }
     }
 }
@@ -303,22 +300,19 @@ void MainWindow::importDatabase()
 
 void MainWindow::onSelectionChanged()
 {
-    Rush rush;
+    Rush *rush;
 
-    if (m_view->selectedFiles().isEmpty())
+    if (m_view->selectedRush().isEmpty())
         return;
 
     rush = m_view->focusedItem();
 
-    if (!rush.isValid())
+    if (rush == 0)
         return;
 
-    m_media_info->setRush(rush);
+    m_media_info->setRush(*rush);
 
-    m_tag_widget->setTags(m_db.getRushTags(m_db.getIdFromAttributeValue("Rush", "filename", rush.filename))); // TODO : ugly, fix this
-
-    m_view->view()->onScrollToFocusedItem();
-
+    m_tag_widget->setTags(m_db.getRushTags(m_db.getIdFromAttributeValue("Rush", "filename", rush->file_name))); // TODO : ugly, fix this
 }
 
 void MainWindow::onShowJobsProgress()
@@ -338,7 +332,7 @@ void MainWindow::onFaceRecognitionTraining()
     while (i.hasNext())
     {
         i.next();
-        m_db.addTagToRush(m_db.getVideo(i.key()), i.value());
+        m_db.addTagToRush(m_db.getRush(i.key()), i.value());
     }
 }
 
@@ -384,7 +378,7 @@ void MainWindow::createMenus()
     tools_menu->addAction("Train face recognition algorithm", this, SLOT(onFaceRecognitionTraining()));
     tools_menu->addAction("Change theme", this, SLOT(refreshTheme()), QKeySequence(Qt::Key_F5));
 
-    QMenu *context_menu = new QMenu(m_view->view());
+    QMenu *context_menu = new QMenu(m_view);
     m_context_actions.append(tag_action);
     m_context_actions.append(facial_recognition_action);
     m_context_actions.append(add_rush_to_catalog);
@@ -392,6 +386,6 @@ void MainWindow::createMenus()
     context_menu->addActions(m_context_actions);
     QMenu *transcode_menu = context_menu->addMenu(tr("&Transcode"));
     transcode_menu->addActions(m_transcode_actions);
-    m_view->view()->setContextMenu(context_menu);
+    m_view->setContextMenu(context_menu);
 }
 

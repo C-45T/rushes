@@ -43,9 +43,6 @@ SOURCES += \
     gui/catalogfilterwidget.cpp \
     gui/facetagwidget.cpp \
     gui/videothumbnailgraphicitem.cpp \
-    gui/cataloggraphicsscene.cpp \
-    gui/cataloggraphicsview.cpp \
-    gui/catalogwidget.cpp \
     gui/playerwidget.cpp \
     gui/tagswidget.cpp \
     gui/jobswidget.cpp \
@@ -64,7 +61,13 @@ SOURCES += \
     gui/rushinfowidget.cpp \
     data/bin.cpp \
     thirdParty/stareditor.cpp \
-    thirdParty/flowlayout.cpp
+    thirdParty/flowlayout.cpp \
+    gui/fileexplorerwidget.cpp \
+    gui/thumbnailview.cpp \
+    core/thumbnailrenderer.cpp \
+    thirdParty/singleton.cpp \
+    gui/mediagraphicitem.cpp \
+    gui/thumbnailscene.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -73,9 +76,6 @@ HEADERS += \
     gui/catalogfilterwidget.h \
     gui/facetagwidget.h \
     gui/videothumbnailgraphicitem.h \
-    gui/cataloggraphicsscene.h \
-    gui/cataloggraphicsview.h \
-    gui/catalogwidget.h \
     gui/playerwidget.h \
     gui/tagswidget.h \
     gui/jobswidget.h \
@@ -94,7 +94,13 @@ HEADERS += \
     gui/rushinfowidget.h \
     data/bin.h \
     thirdParty/stareditor.h \
-    thirdParty/flowlayout.h
+    thirdParty/flowlayout.h \
+    gui/fileexplorerwidget.h \
+    gui/thumbnailview.h \
+    core/thumbnailrenderer.h \
+    thirdParty/singleton.h \
+    gui/mediagraphicitem.h \
+    gui/thumbnailscene.h
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

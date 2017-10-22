@@ -1,18 +1,28 @@
 #ifndef RUSH_H
 #define RUSH_H
 
-#include <iostream>
-#include <QDebug>
+#include <QObject>
+#include <QHash>
 
-class Rush
+class Rush : public QObject
 {
+    friend class Database;
+
 public:
     Rush();
+    Rush(const Rush& other);
+
+    Rush& operator=(const Rush& other);
+
+    static Rush* getRush(const QString &file_name);
 
 public:
+
+    // TODO : move attributes to private
+
     // os data
-    QString filename;
-    QString thumbnail_filename;
+    QString file_name;
+    QString thumbnail_file_name;
     qint64 utc_creation_time;
 
     // user data
@@ -32,22 +42,13 @@ public:
     QString channel;
     int audio_bitrate; // kb/s
 
-    bool isValid() { return !filename.isEmpty(); }
+    bool isValid() { return !file_name.isEmpty(); }
 
-    void debug() const {
-        qDebug() << "-----------------------";
-        qDebug() << filename;
-        qDebug() << "-----------------------";
-        qDebug() << length << "s";
-        qDebug() << video_codec;
-        qDebug() << width << "x" << height << "@" << fps << "fps";
-        qDebug() << bitrate << "kb/s";
-        qDebug() << audio_codec;
-        qDebug() << sample_rate << "Hz";
-        qDebug() << channel;
-        qDebug() << audio_bitrate << "kb/s";
-        qDebug() << "-----------------------";
-    }
+    qint64 database_id; // TODO : move this to private
+
+private:
+
+    static QHash<QString, Rush*> m_rush_cache;
 };
 
 #endif // RUSH_H

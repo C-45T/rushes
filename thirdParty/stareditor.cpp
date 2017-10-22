@@ -54,7 +54,8 @@
 #include "starrating.h"
 
 StarEditor::StarEditor(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent),
+      myStarRating(1, 5, 15)
 {
     setMouseTracking(true);
     setAutoFillBackground(true);

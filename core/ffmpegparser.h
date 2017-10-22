@@ -21,6 +21,7 @@ public:
     int openVideo(const QString& filename, Rush &rush );
 
     static QProcess* transcode(const QString& input_filename, const QString& destination_path , const QString &preset);
+    static QProcess* extractFrame(const QString& input_filename, const QString& destination_path, int seconds = 0);
 
 private:
     void metadata(AVFormatContext *context, AVCodecContext *codec_ctx, Rush &rush);

@@ -89,7 +89,7 @@ void PlayerWidget::wheelEvent(QWheelEvent *event)
     event->accept();
 }
 
-void PlayerWidget::mousePressEvent(QMouseEvent *event)
+void PlayerWidget::mousePressEvent(QMouseEvent *)
 {
     playPause();
 }
