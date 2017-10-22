@@ -126,6 +126,11 @@ QMap<QString, QStringList> Faces::tagUnknwonFaces()
                 if (!tagged.isEmpty())
                     newcomers.insert(tagged);
             }
+
+            extracted_face.release();
+            gray_face.release();
+            face_resized.release();
+            current_face.first.release();
         }
 
         if (!newcomers.isEmpty())
@@ -241,7 +246,8 @@ QStringList Faces::parseVideo(const QString &filename)
 
         qDebug() << timer.elapsed() << "search faces" << faces.size();
 
-        for(uint i = 0; i < faces.size(); i++) {
+        for(uint i = 0; i < faces.size(); i++)
+        {
 
  //           qDebug() << timer.elapsed() << "analyze frame" << i;
 
@@ -315,7 +321,7 @@ QStringList Faces::parseVideo(const QString &filename)
 //                    qOriginalImage.save(QString("original_%1.png").arg(QString::number(frame_index)));
 //                }
 
-                if (confidence > 50) {
+                if (confidence > 40) {
 
                     // compare with others strangers in the video if already spotted
                     if (m_strangers_imgs.size() > 0) {
@@ -323,7 +329,7 @@ QStringList Faces::parseVideo(const QString &filename)
                     }
 
                     // if still unknown add to people to tag and to stranger recognition model
-                    if (confidence > 50) {
+                    if (confidence > 40) {
                         m_strangers_imgs.push_back(face_resized.clone());
                         m_strangers_lbls.push_back(m_strangers_imgs.size());
                         // retrain strangers model
@@ -337,16 +343,22 @@ QStringList Faces::parseVideo(const QString &filename)
 
             }
 
+            hsv_image.release();
+            result_mask.release();
+            color_face.release();
+            face.release();
+            face_resized.release();
         }
 
         frame_index += 25;
         frame.release();
+        gray.release();
+        original.release();
 
         emit progress(frame_index);
 //        qDebug() << timer.elapsed() << "next frame";
 
     }
-
 
     // release strangers
     for (uint i=0; i< m_strangers_imgs.size(); i++)
@@ -354,6 +366,9 @@ QStringList Faces::parseVideo(const QString &filename)
 
     if (unknown_faces.size() > 0)
         m_unknown_faces[filename]=unknown_faces;
+
+    m_strangers_imgs.clear();
+    m_strangers_lbls.clear();
 
     return people_in_video.toList(); // emptyImage;
 }

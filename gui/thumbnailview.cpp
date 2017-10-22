@@ -201,6 +201,18 @@ void ThumbnailView::keyPressEvent(QKeyEvent *event)
         update();
         return;
     }
+    case Qt::Key_0:
+    case Qt::Key_1:
+    case Qt::Key_2:
+    case Qt::Key_3:
+    case Qt::Key_4:
+    case Qt::Key_5:
+    {
+        foreach (Rush *rush, selectedRush())
+            m_db.setRushRating(rush, event->text().toInt());
+        update();
+    }
+        break;
     }
 
     return QGraphicsView::keyPressEvent(event);

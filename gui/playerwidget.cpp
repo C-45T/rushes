@@ -81,7 +81,7 @@ void PlayerWidget::wheelEvent(QWheelEvent *event)
     } else if (!numDegrees.isNull()) {
         QPoint numSteps = numDegrees / 15;
         qreal volume = m_player->audio()->volume();
-        volume = qMin(volume + numSteps.ry() / 100.0, 1.0);
+        volume = qMin(volume + numSteps.ry() * 5 / 100.0, 1.0);
         volume = qMax(volume, 0.0);
         m_player->audio()->setVolume(volume);
     }

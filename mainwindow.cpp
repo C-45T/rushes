@@ -13,14 +13,12 @@
 #include <QStringList>
 #include <QApplication>
 
-#include "core/catalogfilter.h"
 #include "core/ffmpegparser.h"
 #include "core/exportjob.h"
 #include "core/importjob.h"
 #include "core/facedetectionjob.h"
 
 #include "gui/catalogfilterwidget.h"
-#include "gui/videothumbnailgraphicitem.h"
 #include "gui/jobswidget.h"
 #include "gui/basedialog.h"
 #include "gui/fileexplorerwidget.h"
@@ -38,22 +36,24 @@ MainWindow::MainWindow(QWidget *parent)
     //QWidget *mainWidget = new QWidget(this);
     //QVBoxLayout *mainLayout = new QVBoxLayout(this);
     m_main_splitter = new QSplitter(this);
-    m_right_splitter = new QSplitter(this);
-    QWidget *layoutWidget = new QWidget(this);
-    QVBoxLayout *leftPanelLayout = new QVBoxLayout(layoutWidget);
-    m_main_splitter->setOrientation(Qt::Horizontal);
-    m_right_splitter->setOrientation(Qt::Vertical);
+    m_top_splitter = new QSplitter(this);
+    m_bottom_splitter = new QSplitter(this);
+    QWidget *leftLayoutWidget = new QWidget(this);
+    QWidget *rightLayoutWidget = new QWidget(this);
+    QVBoxLayout *leftPanelLayout = new QVBoxLayout(leftLayoutWidget);
+    QVBoxLayout *rightPanelLayout = new QVBoxLayout(rightLayoutWidget);
+    m_main_splitter->setOrientation(Qt::Vertical);
+    m_top_splitter->setOrientation(Qt::Horizontal);
+    m_bottom_splitter->setOrientation(Qt::Horizontal);
 
     // data
-    m_catalog = new CatalogModel(m_db, this);
-    CatalogFilter *catalogFilter = new CatalogFilter(m_db, this);
-    m_catalog->setFilter(catalogFilter);
+    m_rush_filter = new CatalogFilter(m_db, this);
 
     // widgets
     m_player = new PlayerWidget();
     m_media_info = new RushInfoWidget(this);
     CatalogFilterWidget *catalogFilterWidget = new CatalogFilterWidget(this);
-    catalogFilterWidget->setFilter(catalogFilter);
+    catalogFilterWidget->setFilter(m_rush_filter);
     m_tag_widget = new TagsWidget(this);
     JobsWidget *small_job_widget = new JobsWidget(m_job_master, true, this);
     m_bin_tree_widget = new CatalogTreeWidget(&m_db, this);
@@ -61,19 +61,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     // graphics
     m_view = new ThumbnailView(m_db, this);
+    m_explorer_view = explorer->view();
 
     // layouts
     leftPanelLayout->addWidget(catalogFilterWidget);
     leftPanelLayout->addWidget(m_view);
 
-    m_main_splitter->addWidget(explorer);
-    m_main_splitter->addWidget(layoutWidget);
-    m_main_splitter->addWidget(m_right_splitter);
+    rightPanelLayout->addWidget(m_media_info);
+    rightPanelLayout->addWidget(m_tag_widget);
 
-    m_right_splitter->addWidget(m_player);
-    m_right_splitter->addWidget(m_media_info);
-    m_right_splitter->addWidget(m_tag_widget);
-    m_right_splitter->addWidget(m_bin_tree_widget);
+    m_main_splitter->addWidget(m_top_splitter);
+    m_main_splitter->addWidget(m_bottom_splitter);
+
+    m_top_splitter->addWidget(explorer);
+    m_top_splitter->addWidget(m_player);
+
+    m_bottom_splitter->addWidget(m_bin_tree_widget);
+    m_bottom_splitter->addWidget(leftLayoutWidget);
+    m_bottom_splitter->addWidget(rightLayoutWidget);
 
     this->setCentralWidget(m_main_splitter);
     this->statusBar()->addPermanentWidget(small_job_widget);
@@ -83,14 +88,13 @@ MainWindow::MainWindow(QWidget *parent)
     createMenus();
 
     // signals
-    connect(catalogFilter, SIGNAL(valueChanged()), m_catalog, SLOT(updateCatalog()));
     connect(explorer->view(), SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
-    connect(catalogFilter, SIGNAL(selectionChanged(QStringList)), m_view, SLOT(setFiles(QStringList)));
+    connect(m_rush_filter, SIGNAL(selectionChanged(QStringList)), m_view, SLOT(setFiles(QStringList)));
     connect(m_view, SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
     connect(m_view, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
-    catalogFilter->querySelection();
+    m_rush_filter->querySelection();
 
-    connect(m_bin_tree_widget, SIGNAL(binSelected(const QString&)), catalogFilter, SLOT(setBin(const QString&)));
+    connect(m_bin_tree_widget, SIGNAL(binSelected(const QString&)), m_rush_filter, SLOT(setBin(const QString&)));
 
     // display
     m_main_splitter->show();
@@ -108,7 +112,7 @@ void MainWindow::writeSettings()
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
 
     settings.beginGroup("App");
-    settings.setValue("currentCatalog", m_catalog->catalog());
+    settings.setValue("currentCatalog", m_rush_filter->bin());
     settings.endGroup();
 
     settings.beginGroup("MainWindow");
@@ -118,8 +122,10 @@ void MainWindow::writeSettings()
     settings.setValue("windowState", saveState());
     settings.setValue("mainSplitterGeometry", m_main_splitter->saveGeometry());
     settings.setValue("mainSplitterWindowState", m_main_splitter->saveState());
-    settings.setValue("rightSplitterGeometry", m_right_splitter->saveGeometry());
-    settings.setValue("rightSplitterWindowState", m_right_splitter->saveState());
+    settings.setValue("topSplitterGeometry", m_top_splitter->saveGeometry());
+    settings.setValue("topSplitterWindowState", m_top_splitter->saveState());
+    settings.setValue("bottomSplitterGeometry", m_bottom_splitter->saveGeometry());
+    settings.setValue("bottomSplitterWindowState", m_bottom_splitter->saveState());
     settings.setValue("playerSize", m_player->size());
     settings.endGroup();
 }
@@ -129,7 +135,7 @@ void MainWindow::readSettings()
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
 
     settings.beginGroup("App");
-    m_catalog->setBin(settings.value("currentCatalog", "All").toString());
+    m_rush_filter->setBin(settings.value("currentCatalog", "All").toString());
     // check if thumbnail folder exists or create it at first start
     QString thumnbnail_folder = settings.value("thumbnailFolder", "").toString();
     if (thumnbnail_folder.isEmpty())
@@ -149,8 +155,10 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("geometry").toByteArray());
     m_main_splitter->restoreGeometry(settings.value("mainSplitterGeometry").toByteArray());
     m_main_splitter->restoreState(settings.value("mainSplitterWindowState").toByteArray());
-    m_right_splitter->restoreGeometry(settings.value("rightSplitterGeometry").toByteArray());
-    m_right_splitter->restoreState(settings.value("rightSplitterGeometry").toByteArray());
+    m_top_splitter->restoreGeometry(settings.value("topSplitterGeometry").toByteArray());
+    m_top_splitter->restoreState(settings.value("topSplitterWindowState").toByteArray());
+    m_bottom_splitter->restoreGeometry(settings.value("bottomSplitterGeometry").toByteArray());
+    m_bottom_splitter->restoreState(settings.value("bottomSplitterWindowState").toByteArray());
     m_player->resize(settings.value("playerSize", QSize(320, 240)).toSize());
     settings.endGroup();
 }
@@ -197,16 +205,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::addVideo()
 {
-    QStringList filenames = QFileDialog::getOpenFileNames(this, "Add to catalog", QString(), "Videos (*.mp4 *.avi *.mov *.m4v *.mts)");
+    foreach (Rush* rush, m_explorer_view->selectedRush())
+    {
+        m_db.addRushToBin(rush, m_rush_filter->bin());
+    }
 
-    if (filenames.isEmpty())
-         return;
-
-    ImportJob *job = new ImportJob(m_db, filenames, m_catalog->catalog());
-    m_job_master.addJob(job);
-
-    connect(job, SIGNAL(finished()), m_catalog, SLOT(updateCatalog()));
-
+    m_rush_filter->querySelection();
 }
 
 void MainWindow::playVideo(const QString &filepath)
@@ -218,12 +222,13 @@ void MainWindow::playVideo(const QString &filepath)
 void MainWindow::addTags()
 {
     QString tags = QInputDialog::getText(this, "Add Tags", "tags (separates with commas (,))");
-    if (!tags.isEmpty() && m_catalog)
+    if (!tags.isEmpty())
     {
         foreach (Rush *rush, m_view->selectedRush())
         {
             qDebug() << tags;
             m_db.addTagToRush(*rush, tags.split(","));
+            onSelectionChanged();
         }
     }
 }
@@ -248,30 +253,32 @@ void MainWindow::faceRecognition()
     {
         FaceDetectionJob *job = new FaceDetectionJob(m_db, m_faces, *rush);
         m_job_master.addJob(job);
+
+        connect(job, SIGNAL(finished()), m_view, SLOT(update()));
     }
 }
 
 void MainWindow::addRushToCatalog()
 {
-    QString catalog_name = QInputDialog::getText(this, "Add Rushs to Catalog", "catalog name");
-    if (m_db.getIdFromAttributeValue("Bin", "name", catalog_name) >= 0 && m_catalog)
+    QString bin_name = QInputDialog::getText(this, "Add Rushs to Catalog", "catalog name");
+    if (m_db.getIdFromAttributeValue("Bin", "name", bin_name) >= 0)
     {
         //QStringList files_to_update = selectedFiles();
         foreach (Rush *rush, m_view->selectedRush())
         {
-            m_db.addRushToBin(catalog_name, *rush);
+            m_db.addRushToBin(rush, bin_name);
         }
     }
 }
 
 void MainWindow::removeRushFromCatalog()
 {
-    if (m_catalog)
+    if (m_rush_filter)
     {
         //QStringList files_to_update = selectedFiles();
         foreach (Rush *rush, m_view->selectedRush())
         {
-            m_db.removeRushFromBin(m_catalog->catalog(), *rush);
+            m_db.removeRushFromBin(m_rush_filter->bin(), *rush);
         }
     }
 }
@@ -295,7 +302,7 @@ void MainWindow::importDatabase()
 
     m_db.importFromCsv(file_name);
     m_bin_tree_widget->updateTree();
-    m_catalog->setBin("All"); // TODO : hardcoded value
+    m_rush_filter->setBin("All"); // TODO : hardcoded value
 }
 
 void MainWindow::onSelectionChanged()
@@ -312,7 +319,7 @@ void MainWindow::onSelectionChanged()
 
     m_media_info->setRush(*rush);
 
-    m_tag_widget->setTags(m_db.getRushTags(m_db.getIdFromAttributeValue("Rush", "filename", rush->file_name))); // TODO : ugly, fix this
+    m_tag_widget->setTags(m_db.getRushTags(rush->database_id));
 }
 
 void MainWindow::onShowJobsProgress()
@@ -361,7 +368,7 @@ void MainWindow::refreshTheme()
 void MainWindow::createMenus()
 {
     QMenu *file_menu = menuBar()->addMenu(tr("&File"));
-    file_menu->addAction("Import Video in selected bin", this, SLOT(addVideo()), QKeySequence(Qt::CTRL + Qt::Key_O));
+    QAction *import_action = file_menu->addAction("Import Video in selected bin", this, SLOT(addVideo()), QKeySequence(Qt::CTRL + Qt::Key_O));
     file_menu->addAction("Export database to CSV", this, SLOT(exportDatabase()), QKeySequence(Qt::CTRL + Qt::Key_E));
     file_menu->addAction("Import database from CSV", this, SLOT(importDatabase()), QKeySequence(Qt::CTRL + Qt::Key_I));
 
@@ -378,14 +385,24 @@ void MainWindow::createMenus()
     tools_menu->addAction("Train face recognition algorithm", this, SLOT(onFaceRecognitionTraining()));
     tools_menu->addAction("Change theme", this, SLOT(refreshTheme()), QKeySequence(Qt::Key_F5));
 
-    QMenu *context_menu = new QMenu(m_view);
-    m_context_actions.append(tag_action);
-    m_context_actions.append(facial_recognition_action);
-    m_context_actions.append(add_rush_to_catalog);
-    m_context_actions.append(remove_rush_from_catalog);
-    context_menu->addActions(m_context_actions);
-    QMenu *transcode_menu = context_menu->addMenu(tr("&Transcode"));
-    transcode_menu->addActions(m_transcode_actions);
-    m_view->setContextMenu(context_menu);
+    if (m_view)
+    {
+        QMenu *context_menu = new QMenu(m_view);
+        m_context_actions.append(tag_action);
+        m_context_actions.append(facial_recognition_action);
+        m_context_actions.append(add_rush_to_catalog);
+        m_context_actions.append(remove_rush_from_catalog);
+        context_menu->addActions(m_context_actions);
+        QMenu *transcode_menu = context_menu->addMenu(tr("&Transcode"));
+        transcode_menu->addActions(m_transcode_actions);
+        m_view->setContextMenu(context_menu);
+    }
+
+    if (m_explorer_view)
+    {
+        QMenu *explorer_context_menu = new QMenu(m_explorer_view);
+        explorer_context_menu->addAction(import_action);
+        m_explorer_view->setContextMenu(explorer_context_menu);
+    }
 }
 

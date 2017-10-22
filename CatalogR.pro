@@ -42,14 +42,12 @@ SOURCES += \
     thirdParty/starrating.cpp \
     gui/catalogfilterwidget.cpp \
     gui/facetagwidget.cpp \
-    gui/videothumbnailgraphicitem.cpp \
     gui/playerwidget.cpp \
     gui/tagswidget.cpp \
     gui/jobswidget.cpp \
     gui/jobstatuswidget.cpp \
     gui/basedialog.cpp \
     gui/catalogtreewidget.cpp \
-    core/catalogmodel.cpp \
     core/catalogfilter.cpp \
     core/faces.cpp \
     core/ffmpegparser.cpp \
@@ -75,14 +73,12 @@ HEADERS += \
     thirdParty/starrating.h \
     gui/catalogfilterwidget.h \
     gui/facetagwidget.h \
-    gui/videothumbnailgraphicitem.h \
     gui/playerwidget.h \
     gui/tagswidget.h \
     gui/jobswidget.h \
     gui/jobstatuswidget.h \
     gui/basedialog.h \
     gui/catalogtreewidget.h \
-    core/catalogmodel.h \
     core/catalogfilter.h \
     core/faces.h \
     core/ffmpegparser.h \

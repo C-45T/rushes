@@ -8,11 +8,10 @@ Fixes :
 Objectif POC :
 - check cache integrity, rebuild thumbnail
 - chercher fichier manquant
+- fix chemin en dur pour les samples de face recognition
 
 Optimisation:
-- à l'import lire d'abord les fichiers et metadata puis dans un deuxième temps créer les images
 - garder un cache en memoire de la bdd, refaire des requetes uniquement si modification de la bdd (signalé par un attribut en cas d'insert, delete, update)
-- Utilisation qpixmapcache pour affichage vignette ?
 - Ajout index dans la bdd sur champs recherchés pour améliorer requetes
 - remplacer les 2 QMaps pour la definition des personnes de Face par une bimap boost
 
@@ -20,7 +19,6 @@ Evol :
 - gestion reconnaissance des visages
 - Ajout écran de setting et fichier
 - stockage au choix image en BLOB dans la BDD
-- ne pas rejouer les query a chaque changement de note
 - maj bdd en fonction de la version
 - clone clip
 - selection in/out
@@ -48,6 +46,7 @@ Evol :
 - traductions
 - rajouter un champ libre de commentaire sur les rushs
 - rajouter n° image courante sur lecteur video + temps écoulé, temps restant
+- option pour caché les video déjà dans un chutier
 
 Done :
 - transcode selection
@@ -80,3 +79,6 @@ Done :
 - Amélioration GUI (affichage métadonnées, affichage tags, affichage étoile, ...)
 - gestion version
 - rajouter un exploreur
+- ne pas rejouer les query a chaque changement de note
+- à l'import lire d'abord les fichiers et metadata puis dans un deuxième temps créer les images
+- Utilisation qpixmapcache pour affichage vignette ?

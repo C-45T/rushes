@@ -20,6 +20,8 @@ void FaceDetectionJob::run()
 
     connect(&m_faces, SIGNAL(progress(int)), this, SLOT(onProgress(int)));
 
+    try
+    {
     QStringList tags = m_faces.parseVideo(m_rush.file_name);
 
     //tags.append(f.tagUnknwonFaces());
@@ -27,6 +29,11 @@ void FaceDetectionJob::run()
     qDebug() << tags;
 
     m_db.addTagToRush(m_rush, tags);
+    }
+    catch (cv::Exception e)
+    {
+        qDebug() << "exception while trying face detection" << QString::fromStdString(e.msg);
+    }
 
     disconnect(&m_faces, SIGNAL(progress(int)), this, SLOT(onProgress(int)));
 

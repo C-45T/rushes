@@ -191,20 +191,53 @@ QStringList Database::getBinChildren(int bin_id)
     return res;
 }
 
-void Database::addRushToBin(const QString &bin_name, const Rush &rush)
+void Database::addRushToBin(Rush *rush, const QString &bin_name)
 {
-    int rush_id = getIdFromAttributeValue("Rush", "filename", rush.file_name);
     int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
 
-    if (rush_id < 0 || bin_id < 0)
+    if (bin_id < 0)
+        return;
+
+    // if rush not in db, add it
+    if (rush->database_id < 0)
+        addRush(rush);
+
+    // if database_id is still not set insertion failed, leave
+    if (rush->database_id < 0)
         return;
 
     QSqlQuery query(m_database);
     QString querystr = QString("INSERT INTO RushBin (rush_id, bin_id) "
                                " VALUES (%1, %2) ")
-            .arg(QString::number(rush_id), QString::number(bin_id));
+            .arg(QString::number(rush->database_id), QString::number(bin_id));
 
     query.exec(querystr);
+
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+}
+
+void Database::addRush(Rush *rush, const QString& bin_name)
+{
+    QSqlQuery query(m_database);
+    QString querystr = QString("INSERT INTO Rush (filename, thumbnail, "
+                               "length, width, height, fps, bitrate, video_codec, "
+                               "audio_codec, sample_rate, channel, audio_bitrate, "
+                               "utc_creation_time)"
+                               " VALUES ('%1', '%2', %3, "
+                               "%4, %5, %6, %7, '%8', '%9', ")
+            .arg(rush->file_name, rush->thumbnail_file_name,
+                 QString::number(rush->length), QString::number(rush->width), QString::number(rush->height),
+                 QString::number(rush->fps), QString::number(rush->bitrate),
+                 rush->video_codec, rush->audio_codec);
+
+    // arg() takes at most 9 parameters, consinue string building
+    querystr += QString("%1, '%2', %3, %4)").arg( QString::number(rush->sample_rate),
+                                                    rush->channel,
+                                                    QString::number(rush->audio_bitrate),
+                                                    QString::number(rush->utc_creation_time));
+    if (query.exec(querystr))
+        rush->database_id = getIdFromAttributeValue("Rush", "filename", rush->file_name);
 
     qDebug() << query.lastQuery() << query.lastError().text();
 
@@ -223,31 +256,6 @@ void Database::removeRushFromBin(const QString &bin_name, const Rush &rush)
                                " WHERE rush_id = %1 AND bin_id = %2")
             .arg(QString::number(rush_id), QString::number(bin_id));
 
-    query.exec(querystr);
-
-    qDebug() << query.lastQuery() << query.lastError().text();
-
-}
-
-void Database::addRushToBin(const Rush &rush, const QString& bin)
-{
-    QSqlQuery query(m_database);
-    QString querystr = QString("INSERT INTO Rush (filename, thumbnail, "
-                               "length, width, height, fps, bitrate, video_codec, "
-                               "audio_codec, sample_rate, channel, audio_bitrate, "
-                               "utc_creation_time)"
-                               " VALUES ('%1', '%2', %3, "
-                               "%4, %5, %6, %7, '%8', '%9', ")
-            .arg(rush.file_name, rush.thumbnail_file_name,
-                 QString::number(rush.length), QString::number(rush.width), QString::number(rush.height),
-                 QString::number(rush.fps), QString::number(rush.bitrate),
-                 rush.video_codec, rush.audio_codec);
-
-    // arg() takes at most 9 parameters, consinue string building
-    querystr += QString("%1, '%2', %3, %4)").arg( QString::number(rush.sample_rate),
-                                                    rush.channel,
-                                                    QString::number(rush.audio_bitrate),
-                                                    QString::number(rush.utc_creation_time));
     query.exec(querystr);
 
     qDebug() << query.lastQuery() << query.lastError().text();
@@ -277,10 +285,26 @@ QStringList Database::getRushTags(qint64 rush_id) const
     return tags;
 }
 
+void Database::setRushRating(Rush *rush, int rating)
+{
+    // retrieve video id
+    qint64 rush_id = rush->database_id;
+
+    if (rush_id < 0)
+        return;
+
+    QSqlQuery rate_query(m_database);
+    QString querystr = QString("UPDATE Rush SET rating=%1 WHERE id=%2").arg(QString::number(rating), QString::number(rush_id));
+    if (rate_query.exec(querystr))
+        rush->rating = rating;
+
+    qDebug() << rate_query.lastQuery() << rate_query.lastError().text();
+}
+
 void Database::addTagToRush(const Rush &rush, QStringList tags)
 {
     // retrieve video id
-    qint64 rush_id = getIdFromAttributeValue("Rush", "filename", rush.file_name); // TODO retrieve from database_id attribute
+    qint64 rush_id = rush.database_id;
 
     if (rush_id < 0)
         return;
@@ -525,11 +549,11 @@ void Database::importFromCsv(const QString &input_file_name)
                 r.channel = line.split(";")[headers.indexOf("channel")];
                 r.audio_bitrate = line.split(";")[headers.indexOf("audio_bitrate")].toInt();
                 r.utc_creation_time = line.split(";")[headers.indexOf("utc_creation_time")].toLongLong();
-                addRushToBin(r);
+                addRush(&r);
 
                 qDebug() << "importing rush" << r.file_name;
 
-                int rush_id = getIdFromAttributeValue("Rush", "filename", r.file_name);
+                int rush_id = r.database_id;
 
                 if (rush_id >= 0)
                 {
@@ -540,7 +564,7 @@ void Database::importFromCsv(const QString &input_file_name)
                     // get associated bins
                     QStringList bins = line.split(";")[headers.indexOf("bins")].split(",");
                     foreach (QString bin, bins)
-                        addRushToBin(bin, r);
+                        addRushToBin(&r, bin);
                 }
             }
 

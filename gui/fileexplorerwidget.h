@@ -13,8 +13,13 @@ class FileExplorerWidget : public QSplitter
     Q_OBJECT
 public:
     FileExplorerWidget(Database &db, QWidget *parent = 0);
+    ~FileExplorerWidget();
 
     ThumbnailView *view() const;
+
+protected:
+    void writeSettings();
+    void readSettings();
 
 protected slots:
     void onDirectoryChanged(const QModelIndex &index);

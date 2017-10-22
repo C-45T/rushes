@@ -18,27 +18,37 @@ public:
 
     QSqlDatabase& sqlDatabase() { return m_database; }
 
-    void addBin(const QString& bin_name, const QString& parent_name = "");
-    void deleteBin(const QString& bin_name);
-    QStringList getBinChildren(int bin_id);
-    void addRushToBin(const QString& bin_name, const Rush& rush);
-    void removeRushFromBin(const QString& bin_name, const Rush& rush);
-
-    void addRushToBin(const Rush& rush, const QString& bin = "All");
-    void addTagToRush(const Rush& rush, QStringList tags);
-    QStringList getRushTags(qint64 rush_id) const;
-
-    QStringList bins(const QString& parent_name) const;
-
-    qint64 getIdFromAttributeValue(const QString& table_name, const QString& attr_name, const QString& attr_value) const;
-
-    Rush getRush(const QString& filename) const;
-
+    // Tables
     void createRushTable();
     void createBinTable();
     void createTagTable();
     void createRushBinTable();
 
+    // Rushs
+    void addRush(Rush *rush, const QString& bin_name = "All");
+    Rush getRush(const QString& filename) const;
+
+    // Bins
+    void addBin(const QString& bin_name, const QString& parent_name = "");
+    void deleteBin(const QString& bin_name);
+    QStringList getBinChildren(int bin_id);
+    QStringList bins(const QString& parent_name) const;
+
+    // Rush Bin link
+    void removeRushFromBin(const QString& bin_name, const Rush& rush);
+    void addRushToBin(Rush *rush, const QString& bin_name = "All");
+
+    // Tags
+    void addTagToRush(const Rush& rush, QStringList tags);
+    QStringList getRushTags(qint64 rush_id) const;
+
+    // Rating
+    void setRushRating(Rush *rush, int rating);
+
+    // generic : TODO : move to private
+    qint64 getIdFromAttributeValue(const QString& table_name, const QString& attr_name, const QString& attr_value) const;
+
+    // import/export
     void exportToCsv(const QString& output_file_name);
     void importFromCsv(const QString& input_file_name);
 

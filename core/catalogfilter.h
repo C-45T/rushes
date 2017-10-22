@@ -15,6 +15,7 @@ public:
 
     QString sqlRatingCondition() const;
     QString sqlTagCondition() const;
+    QString bin() const;
 
 public slots:
     void setMinRating(int rating);

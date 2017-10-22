@@ -37,7 +37,7 @@ void MediaGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
         if (m_rush->database_id >= 0)
             painter->fillRect(option->rect, QColor(53, 53, 53));
         else
-            painter->fillRect(option->rect, QColor(83, 83, 83));
+            painter->fillRect(option->rect, QColor(103, 103, 103));
     }
 
     if (m_rush->file_name.isEmpty())
@@ -50,7 +50,7 @@ void MediaGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 
     // draw filename
     QRect rectangle = option->rect.adjusted(0, 144, 0, 0); // TODO : remove hardcoded values
-    painter->setFont(QFont("Arial", 10, QFont::Bold ));
+    painter->setFont(QFont("Arial", 10 /*, QFont::Bold*/ ));
     painter->setPen(Qt::white);
     painter->drawText(rectangle, Qt::AlignCenter, m_rush->file_name.split("/").last());
 

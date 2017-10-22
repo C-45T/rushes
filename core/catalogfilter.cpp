@@ -43,6 +43,11 @@ QString CatalogFilter::sqlTagCondition() const
     return QString("(%1)").arg(condition);
 }
 
+QString CatalogFilter::bin() const
+{
+    return m_bin_name;
+}
+
 void CatalogFilter::setMinRating(int rating)
 {
     m_min_rating = rating;

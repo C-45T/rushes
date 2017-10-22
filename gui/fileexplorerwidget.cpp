@@ -2,6 +2,7 @@
 
 #include <QFileSystemModel>
 #include <QDebug>
+#include <QSettings>
 
 #include "core/thumbnailrenderer.h"
 
@@ -24,8 +25,37 @@ FileExplorerWidget::FileExplorerWidget(Database &db, QWidget *parent)
     addWidget(m_tree_view);
     addWidget(m_thumbnail_view);
 
+    readSettings();
+
     connect(m_tree_view, SIGNAL(clicked(QModelIndex)), this, SLOT(onDirectoryChanged(QModelIndex)));
     //setRootIndex(model->index(QDir::currentPath()));
+}
+
+FileExplorerWidget::~FileExplorerWidget()
+{
+    writeSettings();
+}
+
+void FileExplorerWidget::writeSettings()
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
+
+    settings.beginGroup("FileExplorerWidget");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("windowState", saveState());
+    settings.setValue("rootPath",m_model->rootPath());
+    settings.endGroup();
+}
+
+void FileExplorerWidget::readSettings()
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
+
+    settings.beginGroup("FileExplorerWidget");
+    restoreState(settings.value("windowState").toByteArray());
+    restoreGeometry(settings.value("geometry").toByteArray());
+    m_model->setRootPath(settings.value("rootPath").toString());
+    settings.endGroup();
 }
 
 ThumbnailView *FileExplorerWidget::view() const

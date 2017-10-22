@@ -107,7 +107,7 @@ void ImportJob::run()
         rush.utc_creation_time = qMin(file_info.created().toSecsSinceEpoch(), file_info.lastModified().toSecsSinceEpoch());
 
         // add to database
-        m_db.addRushToBin(rush);
+        m_db.addRush(&rush);
     }
 
     setStatus(Job::FINISHED);

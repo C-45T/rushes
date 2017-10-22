@@ -73,7 +73,7 @@ void StarEditor::paintEvent(QPaintEvent *)
                        StarRating::Editable);
 }
 
-void StarEditor::mouseMoveEvent(QMouseEvent *event)
+void StarEditor::mouseMoveEvent(QMouseEvent *)
 {
 //    int star = starAtPosition(event->x());
 

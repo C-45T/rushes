@@ -6,7 +6,7 @@
 
 #include "data/database.h"
 
-#include "core/catalogmodel.h"
+#include "core/catalogfilter.h"
 #include "core/jobsmaster.h"
 #include "core/faces.h"
 
@@ -59,16 +59,18 @@ private:
 
     Database m_db;
     Faces m_faces;
-    CatalogModel *m_catalog;
+    CatalogFilter *m_rush_filter;
 
     PlayerWidget *m_player;
     ThumbnailView *m_view;
+    ThumbnailView *m_explorer_view;
     RushInfoWidget *m_media_info;
     TagsWidget *m_tag_widget;
     CatalogTreeWidget *m_bin_tree_widget;
 
     QSplitter *m_main_splitter;
-    QSplitter *m_right_splitter;
+    QSplitter *m_top_splitter;
+    QSplitter *m_bottom_splitter;
 
     JobsMaster m_job_master;
 
