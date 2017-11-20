@@ -3,7 +3,6 @@
 #include <QStyleOptionGraphicsItem>
 #include <QPainter>
 #include <QPixmapCache>
-#include <QTimer>
 
 #include "core/thumbnailrenderer.h"
 
@@ -18,8 +17,6 @@ MediaGraphicItem::MediaGraphicItem(Rush *rush)
 
 MediaGraphicItem::~MediaGraphicItem()
 {
-//    if (m_rush)
-//        QTimer::singleShot(3000, m_rush, SLOT(deleteLater()));
 }
 
 QRectF MediaGraphicItem::boundingRect() const
@@ -34,7 +31,7 @@ void MediaGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
         painter->fillRect(option->rect, option->palette.highlight());
     else
     {
-        if (m_rush->database_id >= 0)
+        if (m_rush->isInDatabase())
             painter->fillRect(option->rect, QColor(53, 53, 53));
         else
             painter->fillRect(option->rect, QColor(103, 103, 103));

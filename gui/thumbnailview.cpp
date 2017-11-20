@@ -61,11 +61,17 @@ void ThumbnailView::setFiles(QStringList files, QDir path, bool prepend_path)
         if (prepend_path)
             file_path = path.absoluteFilePath(file);
         Rush *r = Rush::getRush(file_path);
+
+        qDebug() << "ThumbnailView::Rush" << r->file_name << r->database_id << r->width;
+
         if (r->database_id == -1)
         {
             Rush db_rush = m_db.getRush(file_path);
-            r->database_id = db_rush.database_id;
-            r->rating = db_rush.rating;
+
+            if (db_rush.database_id != -1 && !r->hasMetadata())
+            {
+                *r = db_rush;
+            }
         }
         ThumbnailRenderer::instance()->getThumbnail(r);
         QGraphicsItem *item = new MediaGraphicItem(r);
@@ -211,8 +217,26 @@ void ThumbnailView::keyPressEvent(QKeyEvent *event)
         foreach (Rush *rush, selectedRush())
             m_db.setRushRating(rush, event->text().toInt());
         update();
-    }
         break;
+    }
+    case Qt::Key_Delete:
+    {
+        foreach (QGraphicsItem *item, m_scene->selectedItems())
+        {
+            MediaGraphicItem *thumbnail_item = qgraphicsitem_cast<MediaGraphicItem*>(item);
+            if (thumbnail_item)
+            {
+                m_db.deleteRush(thumbnail_item->rush());
+                m_scene->removeItem(thumbnail_item);
+                delete thumbnail_item;
+                m_items.removeOne(thumbnail_item);
+            }
+        }
+
+        placeItems();
+        break;
+    }
+
     }
 
     return QGraphicsView::keyPressEvent(event);

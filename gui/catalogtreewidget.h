@@ -13,6 +13,8 @@ class CatalogTreeWidget : public QWidget
 public:
     explicit CatalogTreeWidget(Database *db, QWidget *parent = nullptr);
 
+    void selectBin(const QString& bin_name);
+
 signals:
     void binSelected(const QString& catalog_name);
 

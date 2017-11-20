@@ -26,6 +26,7 @@ public:
 
     // Rushs
     void addRush(Rush *rush, const QString& bin_name = "All");
+    void deleteRush(Rush *rush);
     Rush getRush(const QString& filename) const;
 
     // Bins

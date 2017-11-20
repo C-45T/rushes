@@ -116,29 +116,43 @@ void Renderer::run()
     if (!m_rush)
         return;
 
-    parser.openVideo(m_rush->file_name, *m_rush);
+    if (!m_rush->hasMetadata())
+        parser.openVideo(m_rush->file_name, *m_rush);
 
     if (!QPixmapCache::find(m_rush->file_name))
     {
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
+        QSettings settings("settings.ini", QSettings::IniFormat);
+
         QString output_dir = settings.value("App/thumbnailFolder", "").toString();
 
         QFileInfo file_info (m_rush->file_name);
-
-        QString output_file_name = QString("%1/%2_%3%4.png").arg(output_dir, file_info.baseName(), QString::number(m_rush->length), QString::number(m_rush->bitrate));
-
-        if (!QFile(output_file_name).exists())
+        if (file_info.isFile())
         {
-            QProcess *m_extract_process = FFMpegParser::extractFrame(m_rush->file_name, output_file_name, m_rush->length / 2 );
-            m_extract_process->waitForFinished(3000);
+            qDebug() << "Renderer::run" << m_rush << m_rush->file_name;
+
+            QString output_file_name = QString("%1/%2_%3%4.jpg").arg(output_dir, file_info.baseName(), QString::number(m_rush->length), QString::number(m_rush->bitrate));
+
+            if (!QFile(output_file_name).exists())
+            {
+                QProcess *m_extract_process = FFMpegParser::extractFrame(m_rush->file_name, output_file_name, m_rush->length / 2 );
+                m_extract_process->waitForFinished(3000);
+            }
+
+            QPixmap p(output_file_name);
+
+            if (!p.isNull()) {
+                qDebug() << "Renderer::run" << output_file_name << m_rush;
+                QPixmapCache::insert(m_rush->file_name, p);
+            }
+        }
+        else
+        {
+            QPixmap dummy_pixmap = QPixmap(256, 144);
+            dummy_pixmap.fill(QColor(88, 0, 0));
+            QPixmapCache::insert(m_rush->file_name, dummy_pixmap);
         }
 
-        QPixmap p(output_file_name);
 
-        //qDebug() << "loading" << output_dir << "/" << file_info.baseName() << ".png";
-
-        if (!p.isNull())
-            QPixmapCache::insert(m_rush->file_name, p);
     }
 
     emit next();

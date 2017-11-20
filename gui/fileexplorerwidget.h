@@ -15,6 +15,8 @@ public:
     FileExplorerWidget(Database &db, QWidget *parent = 0);
     ~FileExplorerWidget();
 
+    QString currentDirectory() const;
+
     ThumbnailView *view() const;
 
 protected:
@@ -29,6 +31,7 @@ private:
     ThumbnailView *m_thumbnail_view;
     QFileSystemModel *m_model;
     Database &m_db;
+    QDir m_current_dir;
 };
 
 #endif // FILEEXPLORERWIDGET_H

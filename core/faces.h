@@ -21,6 +21,7 @@ public:
 
     QStringList parseVideo(const QString& filepath);
     void setTrainingSamplesFolder(const QString& path);
+    void resetTrainingSamplesFolder();
 
     QMap<QString, QStringList> tagUnknwonFaces();
     QString whoIsThis(cv::Mat image, cv::Rect face);

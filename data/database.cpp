@@ -243,6 +243,42 @@ void Database::addRush(Rush *rush, const QString& bin_name)
 
 }
 
+void Database::deleteRush(Rush *rush)
+{
+    // retrieve rush id
+    qint64 rush_id = rush->database_id;
+
+    if (rush_id < 0)
+        return;
+
+    QSqlQuery query(m_database);
+    QString querystr;
+
+    // delete associated tags
+    querystr = QString("DELETE FROM Tag "
+                       " WHERE rush_id = %1")
+            .arg(QString::number(rush_id));
+    query.exec(querystr);
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+    // delete bin association
+    querystr = QString("DELETE FROM RushBin "
+                       " WHERE rush_id = %1")
+            .arg(QString::number(rush_id));
+    query.exec(querystr);
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+    // delete rush
+    querystr = QString("DELETE FROM Rush "
+                       " WHERE id = %1")
+            .arg(QString::number(rush_id));
+    query.exec(querystr);
+
+    rush->database_id = -1;
+
+    qDebug() << query.lastQuery() << query.lastError().text();
+}
+
 void Database::removeRushFromBin(const QString &bin_name, const Rush &rush)
 {
     int rush_id = getIdFromAttributeValue("Rush", "filename", rush.file_name);

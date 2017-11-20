@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <QDialog>
 #include <QTime>
+#include <QSettings>
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -30,7 +31,8 @@ Faces::Faces(QObject *parent) : QObject(parent)
     m_recognition_model = LBPHFaceRecognizer::create();
     m_strangers_recognition_model = LBPHFaceRecognizer::create();
 
-    setTrainingSamplesFolder("D:/Dev/Project/face_samples");
+    clear();
+    resetTrainingSamplesFolder();
 }
 
 
@@ -85,13 +87,40 @@ void Faces::setTrainingSamplesFolder(const QString &path)
 
     }
 
+    if (m_images.size() == 0)
+    {
+        m_samples_size = QSize(320, 320); // TODO : hardcoded value, fix this
+        return;
+    }
+
+
     m_samples_size = QSize(m_images[0].cols, m_images[0].rows);
 
     for (int i=0; i < m_peoples.size(); i++)
         qDebug() << m_peoples.keys()[i] << m_peoples.values()[i];
 
-    qDebug() << "train it" << m_samples_size.width() << m_samples_size.height();
+    qDebug() << "train it" << m_images.size() << m_samples_size.width() << m_samples_size.height();
     m_recognition_model->train(m_images, m_labels);
+}
+
+void Faces::resetTrainingSamplesFolder()
+{
+    QSettings settings("settings.ini", QSettings::IniFormat);
+
+    settings.beginGroup("Faces");
+    // check if thumbnail folder exists or create it at first start
+    QString face_sample_folder = settings.value("faceSampleFolder", "").toString();
+    if (face_sample_folder.isEmpty())
+    {
+        QDir path = QDir::currentPath();
+        // create path if not exists
+        path.mkdir("face_samples");
+        settings.setValue("faceSampleFolder", QDir::currentPath() + "/face_samples/");
+    }
+
+    settings.endGroup();
+
+    setTrainingSamplesFolder(face_sample_folder);
 }
 
 QMap<QString, QStringList> Faces::tagUnknwonFaces()
@@ -110,14 +139,16 @@ QMap<QString, QStringList> Faces::tagUnknwonFaces()
         {
             QPair<cv::Mat, cv::Rect> current_face = faces_iterator.value()[i];
 
-            int predictedLabel = -1;
-            double confidence = 0.0;
+            int predictedLabel = 0;
+            double confidence = 100.0;
             cv::Mat extracted_face = current_face.first(current_face.second);
             cv::Mat gray_face;
             cvtColor(extracted_face, gray_face, CV_BGR2GRAY);
             cv::Mat face_resized;
             cv::resize(gray_face, face_resized, Size(m_samples_size.width(), m_samples_size.height()), 1.0, 1.0, INTER_CUBIC);
-            m_recognition_model->predict(face_resized, predictedLabel, confidence);
+
+            if (m_images.size() > 0)
+                m_recognition_model->predict(face_resized, predictedLabel, confidence);
 
             qDebug() << "new prediction" << predictedLabel << confidence;
 
@@ -176,7 +207,7 @@ QString Faces::whoIsThis(Mat image, Rect face)
         //m_images.push_back(face_resized);
         //m_labels.push_back(m_peoples[widget->tag()]);
 
-        setTrainingSamplesFolder("D:/Dev/Project/face_samples"); // TODO : hardcoded value
+        resetTrainingSamplesFolder();
         //m_recognition_model->train(m_images, m_labels);
 
     }
@@ -290,8 +321,9 @@ QStringList Faces::parseVideo(const QString &filename)
 
                 // Now perform the prediction, see how easy that is:
                 int predictedLabel = -1;
-                double confidence = 0.0;
-                m_recognition_model->predict(face_resized, predictedLabel, confidence);
+                double confidence = 50.0;
+                if (m_images.size() > 0)
+                    m_recognition_model->predict(face_resized, predictedLabel, confidence);
 
                  qDebug() << timer.elapsed() << "prediction -" << predictedLabel << "confidence" << confidence;
 

@@ -4,6 +4,7 @@ Fixes :
 - valeurs de tables hardcodées dans CatalogModel::data
 - gestion memoire cv::Mat avec release en fin d'utilisation
 - gestion des noms de fichiers/dossiers avec espace
+- date des fichiers
 
 Objectif POC :
 - check cache integrity, rebuild thumbnail

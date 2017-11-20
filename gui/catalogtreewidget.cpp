@@ -29,6 +29,13 @@ CatalogTreeWidget::CatalogTreeWidget(Database *db, QWidget *parent)
     connect(m_tree, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(itemClicked(QTreeWidgetItem*,int)));
 }
 
+void CatalogTreeWidget::selectBin(const QString &bin_name)
+{
+    m_last_selected_item = bin_name;
+    emit binSelected(m_last_selected_item);
+    updateTree();
+}
+
 void CatalogTreeWidget::addBin()
 {
     QString catalog_name = QInputDialog::getText(this, "Enter Catalog name", "Name");

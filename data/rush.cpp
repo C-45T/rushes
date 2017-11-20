@@ -1,5 +1,8 @@
 #include "rush.h"
 
+#include <QFileInfo>
+#include <QDateTime>
+
 Rush::Rush()
     : QObject()
 {
@@ -64,6 +67,21 @@ Rush *Rush::getRush(const QString& file_name)
 
     Rush *rush = new Rush();
     rush->file_name = file_name;
+
+    QFileInfo file_info(rush->file_name);
+    if (file_info.isFile())
+        rush->utc_creation_time = qMin(file_info.created().toSecsSinceEpoch(), file_info.lastModified().toSecsSinceEpoch());
+
     m_rush_cache[file_name] = rush;
     return rush;
+}
+
+bool Rush::hasMetadata()
+{
+    return (width != -1 && fps != -1 && length != -1);
+}
+
+bool Rush::isInDatabase()
+{
+    return database_id >= 0;
 }

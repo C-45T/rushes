@@ -7,6 +7,8 @@ using namespace QtAV;
 
 PlayerWidget::PlayerWidget(QWidget *parent) : QWidget(parent)
 {
+    QtAV::Widgets::registerRenderers();
+
     m_unit = 1000;
     m_fps = 25;
 

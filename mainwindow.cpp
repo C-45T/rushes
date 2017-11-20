@@ -3,7 +3,6 @@
 #include <QVBoxLayout>
 #include <QFileDialog>
 #include <QDebug>
-#include <QTimer>
 #include <QMenuBar>
 #include <QMenu>
 #include <QInputDialog>
@@ -12,16 +11,17 @@
 #include <QStatusBar>
 #include <QStringList>
 #include <QApplication>
+#include <QMessageBox>
 
 #include "core/ffmpegparser.h"
 #include "core/exportjob.h"
-#include "core/importjob.h"
 #include "core/facedetectionjob.h"
 
 #include "gui/catalogfilterwidget.h"
 #include "gui/jobswidget.h"
 #include "gui/basedialog.h"
 #include "gui/fileexplorerwidget.h"
+#include "gui/aboutdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -109,7 +109,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::writeSettings()
 {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
+    QSettings settings("settings.ini", QSettings::IniFormat);
 
     settings.beginGroup("App");
     settings.setValue("currentCatalog", m_rush_filter->bin());
@@ -132,10 +132,10 @@ void MainWindow::writeSettings()
 
 void MainWindow::readSettings()
 {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "R2APPS", "aRticho");
+    QSettings settings("settings.ini", QSettings::IniFormat);
 
     settings.beginGroup("App");
-    m_rush_filter->setBin(settings.value("currentCatalog", "All").toString());
+    m_bin_tree_widget->selectBin(settings.value("currentCatalog", "All").toString());
     // check if thumbnail folder exists or create it at first start
     QString thumnbnail_folder = settings.value("thumbnailFolder", "").toString();
     if (thumnbnail_folder.isEmpty())
@@ -161,6 +161,10 @@ void MainWindow::readSettings()
     m_bottom_splitter->restoreState(settings.value("bottomSplitterWindowState").toByteArray());
     m_player->resize(settings.value("playerSize", QSize(320, 240)).toSize());
     settings.endGroup();
+
+    // crash test
+//    QVector<Rush*> v;
+//    v[2]->hasMetadata();
 }
 
 
@@ -258,7 +262,7 @@ void MainWindow::faceRecognition()
     }
 }
 
-void MainWindow::addRushToCatalog()
+void MainWindow::addRushToBin()
 {
     QString bin_name = QInputDialog::getText(this, "Add Rushs to Catalog", "catalog name");
     if (m_db.getIdFromAttributeValue("Bin", "name", bin_name) >= 0)
@@ -271,7 +275,7 @@ void MainWindow::addRushToCatalog()
     }
 }
 
-void MainWindow::removeRushFromCatalog()
+void MainWindow::removeRushFromBin()
 {
     if (m_rush_filter)
     {
@@ -281,6 +285,7 @@ void MainWindow::removeRushFromCatalog()
             m_db.removeRushFromBin(m_rush_filter->bin(), *rush);
         }
     }
+    m_rush_filter->querySelection();
 }
 
 void MainWindow::exportDatabase()
@@ -365,6 +370,12 @@ void MainWindow::refreshTheme()
     }
 }
 
+void MainWindow::about()
+{
+    AboutDialog dlg(this);
+    dlg.exec();
+}
+
 void MainWindow::createMenus()
 {
     QMenu *file_menu = menuBar()->addMenu(tr("&File"));
@@ -375,8 +386,9 @@ void MainWindow::createMenus()
     QMenu *edit_menu = menuBar()->addMenu(tr("&Edit"));
     QAction *tag_action = edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));
     QAction *facial_recognition_action = edit_menu->addAction("Facial Recognition", this, SLOT(faceRecognition()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_T));
-    QAction *add_rush_to_catalog = edit_menu->addAction("Add selected Rush(s) to Catalog", this, SLOT(addRushToCatalog()), QKeySequence(Qt::CTRL + Qt::Key_Plus));
-    QAction *remove_rush_from_catalog = edit_menu->addAction("Remove selected Rush(s) from Catalog", this, SLOT(removeRushFromCatalog()), QKeySequence(Qt::CTRL + Qt::Key_Delete));
+    QAction *add_rush_to_catalog = edit_menu->addAction("Add selected Rush(s) to Bin", this, SLOT(addRushToBin()), QKeySequence(Qt::CTRL + Qt::Key_Plus));
+    QAction *remove_rush_from_bin = edit_menu->addAction("Remove selected Rush(s) from Bin", this, SLOT(removeRushFromBin()), QKeySequence(Qt::CTRL + Qt::Key_Delete));
+    QAction *relink_rushs = edit_menu->addAction("Relink selected Rushs", this, SLOT(relinkRushs()));
 
     QMenu *view_menu = menuBar()->addMenu(tr("&View"));
     view_menu->addAction("Jobs Progress Window", this, SLOT(onShowJobsProgress()), QKeySequence(Qt::Key_F8));
@@ -385,13 +397,18 @@ void MainWindow::createMenus()
     tools_menu->addAction("Train face recognition algorithm", this, SLOT(onFaceRecognitionTraining()));
     tools_menu->addAction("Change theme", this, SLOT(refreshTheme()), QKeySequence(Qt::Key_F5));
 
+    QMenu *about_menu = menuBar()->addMenu(tr("&Help"));
+    about_menu->addAction(tr("About..."), this, SLOT(about()));
+
+
     if (m_view)
     {
         QMenu *context_menu = new QMenu(m_view);
         m_context_actions.append(tag_action);
         m_context_actions.append(facial_recognition_action);
         m_context_actions.append(add_rush_to_catalog);
-        m_context_actions.append(remove_rush_from_catalog);
+        m_context_actions.append(remove_rush_from_bin);
+        m_context_actions.append(relink_rushs);
         context_menu->addActions(m_context_actions);
         QMenu *transcode_menu = context_menu->addMenu(tr("&Transcode"));
         transcode_menu->addActions(m_transcode_actions);

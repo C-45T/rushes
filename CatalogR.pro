@@ -53,7 +53,6 @@ SOURCES += \
     core/ffmpegparser.cpp \
     core/jobsmaster.cpp \
     core/exportjob.cpp \
-    core/importjob.cpp \
     core/facedetectionjob.cpp \
     data/rush.cpp \
     gui/rushinfowidget.cpp \
@@ -65,7 +64,8 @@ SOURCES += \
     core/thumbnailrenderer.cpp \
     thirdParty/singleton.cpp \
     gui/mediagraphicitem.cpp \
-    gui/thumbnailscene.cpp
+    gui/thumbnailscene.cpp \
+    gui/aboutdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -82,7 +82,6 @@ HEADERS += \
     core/catalogfilter.h \
     core/faces.h \
     core/ffmpegparser.h \
-    core/importjob.h \
     core/facedetectionjob.h \
     core/jobsmaster.h \
     core/exportjob.h \
@@ -96,7 +95,9 @@ HEADERS += \
     core/thumbnailrenderer.h \
     thirdParty/singleton.h \
     gui/mediagraphicitem.h \
-    gui/thumbnailscene.h
+    gui/thumbnailscene.h \
+    gui/aboutdialog.h
+
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

@@ -16,6 +16,10 @@ public:
 
     static Rush* getRush(const QString &file_name);
 
+    bool hasMetadata();
+    bool isValid() { return !file_name.isEmpty(); }
+    bool isInDatabase();
+
 public:
 
     // TODO : move attributes to private
@@ -41,8 +45,6 @@ public:
     int sample_rate; // Hz
     QString channel;
     int audio_bitrate; // kb/s
-
-    bool isValid() { return !file_name.isEmpty(); }
 
     qint64 database_id; // TODO : move this to private
 

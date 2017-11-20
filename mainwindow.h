@@ -33,8 +33,9 @@ public slots:
     void addTags();
     void transcode(const QString& command_preset);
     void faceRecognition();
-    void addRushToCatalog();
-    void removeRushFromCatalog();
+    void relinkRushs();
+    void addRushToBin();
+    void removeRushFromBin();
     void exportDatabase();
     void importDatabase();
 
@@ -43,6 +44,8 @@ public slots:
     void onFaceRecognitionTraining();
 
     void refreshTheme();
+
+    void about();
 
 protected:
     void readSettings();
