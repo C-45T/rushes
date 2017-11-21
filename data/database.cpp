@@ -1,3 +1,23 @@
+/****************************************************************************
+ *
+ * Rushes! is a video cataloger application based on QtAv, OpenCV and FFMpeg.
+ * Copyright (C) %YEAR% Remy Ruttner
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ ****************************************************************************/
+
 #include "database.h"
 
 #include <QStringList>
@@ -23,8 +43,8 @@ Database::Database()
         qFatal("Failed to create writable directory at %s", qPrintable(writeDir.absolutePath()));
 
     // Ensure that we have a writable location on all devices.
-    //const QString fileName = writeDir.absolutePath() + "/catalogr_db.sqlite3";
-    const QString fileName = "./rr-catalog-database.sqlite3"; // TODO : hardcoded value
+    //const QString fileName = writeDir.absolutePath() + "/rushes_db.sqlite3";
+    const QString fileName = "./rushesdb.sqlite3"; // TODO : hardcoded value
 
     // When using the SQLite driver, open() will create the SQLite database if it doesn't exist.
     m_database.setDatabaseName(fileName);
@@ -442,6 +462,20 @@ Rush Database::getRush(const QString &filename) const
 
 
     return res;
+}
+
+void Database::changeSourceFileName(Rush *rush, const QString &new_file_name)
+{
+    // if rush not in database return
+    if (!rush || rush->database_id < 0)
+        return;
+
+    QSqlQuery rename_query(m_database);
+    QString querystr = QString("UPDATE Rush SET filename='%1' WHERE id=%2").arg(new_file_name, QString::number(rush->database_id));
+    if (rename_query.exec(querystr))
+        rush->file_name = new_file_name;
+
+    qDebug() << rename_query.lastQuery() << rename_query.lastError().text();
 }
 
 Rush Database::getRush(const QSqlRecord &record) const

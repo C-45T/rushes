@@ -1,3 +1,23 @@
+/****************************************************************************
+ *
+ * Rushes! is a video cataloger application based on QtAv, OpenCV and FFMpeg.
+ * Copyright (C) %YEAR% Remy Ruttner
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ ****************************************************************************/
+
 #ifndef DATABASE_H
 #define DATABASE_H
 
@@ -28,6 +48,7 @@ public:
     void addRush(Rush *rush, const QString& bin_name = "All");
     void deleteRush(Rush *rush);
     Rush getRush(const QString& filename) const;
+    void changeSourceFileName(Rush *rush, const QString& new_file_name);
 
     // Bins
     void addBin(const QString& bin_name, const QString& parent_name = "");

@@ -1,3 +1,23 @@
+/****************************************************************************
+ *
+ * Rushes! is a video cataloger application based on QtAv, OpenCV and FFMpeg.
+ * Copyright (C) %YEAR% Remy Ruttner
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ ****************************************************************************/
+
 #include "mainwindow.h"
 
 #include <QVBoxLayout>
@@ -26,6 +46,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    FFMpegParser::init();
+
     // database
     m_db.createBinTable();
     m_db.createRushTable();
@@ -259,6 +281,35 @@ void MainWindow::faceRecognition()
         m_job_master.addJob(job);
 
         connect(job, SIGNAL(finished()), m_view, SLOT(update()));
+    }
+}
+
+void MainWindow::relinkRushs()
+{
+    QString new_folder = QFileDialog::getExistingDirectory();
+    if (m_view && !new_folder.isEmpty())
+    {
+        foreach (Rush *rush, m_view->selectedRush())
+        {
+            // check if rush is in database
+            if (rush && rush->database_id >= 0)
+            {
+                // check if file exists in new folder :
+                QFileInfo old_file_info(rush->file_name);
+                QFileInfo new_file_info(QDir(new_folder).absoluteFilePath(old_file_info.fileName()));
+
+                // check if metadata match
+                // compare rushs length and bitrate (should we do more/less?)
+                if (new_file_info.exists())
+                {
+                    Rush new_rush;
+                    FFMpegParser::getMetaData(new_file_info.absoluteFilePath(), new_rush);
+
+                    if (new_rush.length == rush->length && new_rush.bitrate == rush->bitrate)
+                        m_db.changeSourceFileName(rush, new_file_info.absoluteFilePath());
+                }
+            }
+        }
     }
 }
 

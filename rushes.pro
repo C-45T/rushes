@@ -7,7 +7,7 @@
 #win32:VERSION = 1.2.3.4 # major.minor.patch.build
 #else:VERSION = 1.2.3    # major.minor.patch
 
-VERSION = 0.0.9
+VERSION = 0.1.0
 #QMAKE_TARGET_COMPANY = company
 #QMAKE_TARGET_PRODUCT = product
 #QMAKE_TARGET_DESCRIPTION = description
@@ -18,7 +18,7 @@ QT       += avwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = CatalogR
+TARGET = Rushes!
 TEMPLATE = app
 
 PKGCONFIG += opencv
@@ -109,5 +109,8 @@ LIBS += -lopencv_video330 -lopencv_core330 -lopencv_videoio330 -lopencv_imgproc3
 INCLUDEPATH += "D:/Dev/ThirdParty/ffmpeg-3.3.2-desktop-MINGW32/include"
 LIBS += -L"D:/Dev/ThirdParty/ffmpeg-3.3.2-desktop-MINGW32/lib"
 LIBS += -lavutil -lavformat -lavcodec
+
+DISTFILES += \
+    copyright.template
 
 
