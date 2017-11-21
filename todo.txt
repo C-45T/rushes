@@ -1,20 +1,17 @@
 Fixes :
 - suppression thumbnail en meme temps que bdd
-- suppression des associations rush <-> catalogu lors de la suppression de l'un ou l'autre
-- valeurs de tables hardcodées dans CatalogModel::data
-- gestion memoire cv::Mat avec release en fin d'utilisation
+- suppression des associations rush <-> bin lors de la suppression de l'un ou l'autre
+- valeurs hardcodées
 - gestion des noms de fichiers/dossiers avec espace
-- date des fichiers
 
 Objectif POC :
 - check cache integrity, rebuild thumbnail
-- chercher fichier manquant
-- fix chemin en dur pour les samples de face recognition
+
 
 Optimisation:
-- garder un cache en memoire de la bdd, refaire des requetes uniquement si modification de la bdd (signalé par un attribut en cas d'insert, delete, update)
 - Ajout index dans la bdd sur champs recherchés pour améliorer requetes
 - remplacer les 2 QMaps pour la definition des personnes de Face par une bimap boost
+- enregistrer les images en taille reelles si inferieur à taille de référence et resize au chargement
 
 Evol :
 - gestion reconnaissance des visages
@@ -24,7 +21,6 @@ Evol :
 - clone clip
 - selection in/out
 - ajout attribut "face recognation incomplete" quand visages non reconnus dans la video pour pouvoir reanalyser plus tard
-- enregistrer les images en taille reelles si inferieur à taille de référence et resize au chargement
 - définir image de référence pour afficher liste des personnes
 - ajout zoom in lors d'un clique sur l'image ssur faceTagWidget pour afficher le visage en gros plan
 - ajout sauvegarde et restauration du modele de reconnaissance facial (save et load au format yaml)
@@ -47,7 +43,7 @@ Evol :
 - traductions
 - rajouter un champ libre de commentaire sur les rushs
 - rajouter n° image courante sur lecteur video + temps écoulé, temps restant
-- option pour caché les video déjà dans un chutier
+- option pour cacher les video déjà dans un chutier
 
 Done :
 - transcode selection
@@ -83,3 +79,6 @@ Done :
 - ne pas rejouer les query a chaque changement de note
 - à l'import lire d'abord les fichiers et metadata puis dans un deuxième temps créer les images
 - Utilisation qpixmapcache pour affichage vignette ?
+- chercher fichier manquant
+- fix chemin en dur pour les samples de face recognition
+- garder un cache en memoire de la bdd, refaire des requetes uniquement si modification de la bdd 

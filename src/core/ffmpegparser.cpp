@@ -211,7 +211,7 @@ QProcess* FFMpegParser::transcode(const QString &input_filename, const QString &
 
 QProcess *FFMpegParser::extractFrame(const QString &input_filename, const QString &destination_file_name, int seconds)
 {
-    QString preset = "ffmpeg -ss %3 -i %1 -vframes 1 -s 256x144 %2";
+    QString preset = "ffmpeg -ss %3 -i ""%1"" -vframes 1 -s 256x144 %2";
 
     QTime length(0, 0, 0);
     length = length.addSecs(seconds);

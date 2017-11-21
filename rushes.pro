@@ -36,68 +36,69 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
-    data/database.cpp \
+        src/main.cpp \
+        src/mainwindow.cpp \
+    src/data/database.cpp \
     thirdParty/starrating.cpp \
-    gui/catalogfilterwidget.cpp \
-    gui/facetagwidget.cpp \
-    gui/playerwidget.cpp \
-    gui/tagswidget.cpp \
-    gui/jobswidget.cpp \
-    gui/jobstatuswidget.cpp \
-    gui/basedialog.cpp \
-    gui/catalogtreewidget.cpp \
-    core/catalogfilter.cpp \
-    core/faces.cpp \
-    core/ffmpegparser.cpp \
-    core/jobsmaster.cpp \
-    core/exportjob.cpp \
-    core/facedetectionjob.cpp \
-    data/rush.cpp \
-    gui/rushinfowidget.cpp \
-    data/bin.cpp \
+    src/gui/catalogfilterwidget.cpp \
+    src/gui/facetagwidget.cpp \
+    src/gui/playerwidget.cpp \
+    src/gui/tagswidget.cpp \
+    src/gui/jobswidget.cpp \
+    src/gui/jobstatuswidget.cpp \
+    src/gui/basedialog.cpp \
+    src/gui/catalogtreewidget.cpp \
+    src/core/catalogfilter.cpp \
+    src/core/faces.cpp \
+    src/core/ffmpegparser.cpp \
+    src/core/jobsmaster.cpp \
+    src/core/exportjob.cpp \
+    src/core/facedetectionjob.cpp \
+    src/data/rush.cpp \
+    src/gui/rushinfowidget.cpp \
+    src/data/bin.cpp \
     thirdParty/stareditor.cpp \
     thirdParty/flowlayout.cpp \
-    gui/fileexplorerwidget.cpp \
-    gui/thumbnailview.cpp \
-    core/thumbnailrenderer.cpp \
+    src/gui/fileexplorerwidget.cpp \
+    src/gui/thumbnailview.cpp \
+    src/core/thumbnailrenderer.cpp \
     thirdParty/singleton.cpp \
-    gui/mediagraphicitem.cpp \
-    gui/thumbnailscene.cpp \
-    gui/aboutdialog.cpp
+    src/gui/mediagraphicitem.cpp \
+    src/gui/thumbnailscene.cpp \
+    src/gui/aboutdialog.cpp
 
 HEADERS += \
-        mainwindow.h \
-    data/database.h \
+        src/mainwindow.h \
+    src/data/database.h \
     thirdParty/starrating.h \
-    gui/catalogfilterwidget.h \
-    gui/facetagwidget.h \
-    gui/playerwidget.h \
-    gui/tagswidget.h \
-    gui/jobswidget.h \
-    gui/jobstatuswidget.h \
-    gui/basedialog.h \
-    gui/catalogtreewidget.h \
-    core/catalogfilter.h \
-    core/faces.h \
-    core/ffmpegparser.h \
-    core/facedetectionjob.h \
-    core/jobsmaster.h \
-    core/exportjob.h \
-    data/rush.h \
-    gui/rushinfowidget.h \
-    data/bin.h \
+    src/gui/catalogfilterwidget.h \
+    src/gui/facetagwidget.h \
+    src/gui/playerwidget.h \
+    src/gui/tagswidget.h \
+    src/gui/jobswidget.h \
+    src/gui/jobstatuswidget.h \
+    src/gui/basedialog.h \
+    src/gui/catalogtreewidget.h \
+    src/core/catalogfilter.h \
+    src/core/faces.h \
+    src/core/ffmpegparser.h \
+    src/core/facedetectionjob.h \
+    src/core/jobsmaster.h \
+    src/core/exportjob.h \
+    src/data/rush.h \
+    src/gui/rushinfowidget.h \
+    src/data/bin.h \
     thirdParty/stareditor.h \
     thirdParty/flowlayout.h \
-    gui/fileexplorerwidget.h \
-    gui/thumbnailview.h \
-    core/thumbnailrenderer.h \
+    src/gui/fileexplorerwidget.h \
+    src/gui/thumbnailview.h \
+    src/core/thumbnailrenderer.h \
     thirdParty/singleton.h \
-    gui/mediagraphicitem.h \
-    gui/thumbnailscene.h \
-    gui/aboutdialog.h
+    src/gui/mediagraphicitem.h \
+    src/gui/thumbnailscene.h \
+    src/gui/aboutdialog.h
 
+INCLUDEPATH += src/
 
 # opencv
 INCLUDEPATH += "D:/Dev/ThirdParty/opencv-3.3.0/build/include"

@@ -148,12 +148,13 @@ void Renderer::run()
         {
             qDebug() << "Renderer::run" << m_rush << m_rush->file_name;
 
-            QString output_file_name = QString("%1/%2_%3%4.jpg").arg(output_dir, file_info.baseName(), QString::number(m_rush->length), QString::number(m_rush->bitrate));
+            QString output_file_name = QString("%1/%2_%3%4.jpg").arg(output_dir, file_info.baseName().replace(" ", "_"), QString::number(m_rush->length), QString::number(m_rush->bitrate));
 
             if (!QFile(output_file_name).exists())
             {
                 QProcess *m_extract_process = FFMpegParser::extractFrame(m_rush->file_name, output_file_name, m_rush->length / 2 );
                 m_extract_process->waitForFinished(3000);
+                qDebug() << m_extract_process->readAll();
             }
 
             QPixmap p(output_file_name);
