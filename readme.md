@@ -1,9 +1,11 @@
 # Rushes!
 
-Rushes! is a video cataloger application.
-It's main purpose is to reference all your rushes, and then add tags, rating, organize them into bins to be able to export them for futur sharing or editing in any format you want (h264, prores, ...).
+![Rushes! Screenshot](https://github.com/c-45t/rushes/raw/master/img/rushes_screenshot_0.1.png "Rushes! Screenshot")
 
-If I have time for it I'd like to add some advanced features :
+Rushes! is a video cataloger application.
+It's main purpose is to reference all your rushes, and then add tags, rating, organize them into bins to be able to export them for futur sharing or editing.
+
+Its incredible ambition is to integrate some advanced features :
 - aaf or xml export to add integration to video editing software such as Davinci Resolve, Premiere, Final Cut, etc.
 - video analysis to automaticly add tags to rushes, like face or scene recognition (portrait, landscape, season, movement type, ...)
 - generation of simple editing based on tags and ratings of rushes.
@@ -38,7 +40,7 @@ TODO...
 
 ## Authors
 
-* **Remy Ruttner** - *Initial work* - 
+* **Rémy Ruttner** - *Initial work* - 
 
 ## License
 
