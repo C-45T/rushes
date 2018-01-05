@@ -38,6 +38,11 @@ https://github.com/wang-bin/QtAV/wiki/Build-QtAV
 
 TODO...
 
+### Download
+
+Binaries can be downloaded on the [release page](https://github.com/C-45T/rushes/releases)
+
+
 ## Authors
 
 * **Rémy Ruttner** - *Initial work* - 
