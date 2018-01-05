@@ -60,7 +60,7 @@ ThumbnailView::ThumbnailView(Database &db, QWidget *parent)
     connect(ThumbnailRenderer::instance(), SIGNAL(thumbnailRendered()), this, SLOT(update()));
     connect(m_scene, SIGNAL(selectionChanged()), this, SLOT(onScrollToFocusedItem()));
     connect(m_scene, SIGNAL(selectionChanged()), this, SIGNAL(selectionChanged()));
-    connect(m_scene, SIGNAL(itemDoubleClicked(QString)), this, SIGNAL(itemDoubleClicked(QString)));
+    connect(m_scene, SIGNAL(itemDoubleClicked(MediaGraphicItem*)), this, SIGNAL(itemDoubleClicked(MediaGraphicItem*)));
 }
 
 void ThumbnailView::setContextMenu(QMenu *menu)
@@ -70,6 +70,8 @@ void ThumbnailView::setContextMenu(QMenu *menu)
 
 void ThumbnailView::setFiles(QStringList files, QDir path, bool prepend_path)
 {
+    qDebug() << "ThumbnailView::setFiles" << files;
+
     // delete previous items
     m_items.clear();
     m_scene->clear();
@@ -103,6 +105,72 @@ void ThumbnailView::setFiles(QStringList files, QDir path, bool prepend_path)
     placeItems();
 }
 
+void ThumbnailView::setExtracts(QStringList files, QList<qint64> extract_ids)
+{
+    qDebug() << "ThumbnailView::setExtracts" << files << extract_ids;
+
+    // delete previous items
+    m_items.clear();
+    m_scene->clear();
+
+    // create new ones
+    foreach (QString file, files)
+    {
+        QString file_path = file;
+        Rush *r = Rush::getRush(file_path);
+
+        qDebug() << "ThumbnailView::Rush" << r->file_name << r->database_id << r->width;
+
+        if (r->database_id == -1)
+        {
+            Rush db_rush = m_db.getRush(file_path);
+
+            if (db_rush.database_id != -1 && !r->hasMetadata())
+            {
+                *r = db_rush;
+            }
+        }
+
+        // retrieve extract
+        QList<qint64> db_extract_ids = m_db.getRushExtracts(r->database_id);
+        foreach (qint64 id, db_extract_ids)
+        {
+            // check if extract is to be displayed
+            if (extract_ids.contains(id))
+            {
+                // search cache
+                Extract *e = Extract::getExtract(id);
+
+                qDebug() << "ThumbnailView::Extract" << id << e->key_moment();
+
+                if (e->rush() == 0)
+                {
+                    // search db
+                    Extract db_extract = m_db.getExtract(id, r);
+                    *e = db_extract;
+                }
+
+                QGraphicsItem *item = new MediaGraphicItem(r, e);
+                m_scene->addItem(item);
+                m_items.append(item);
+            }
+
+        }
+
+        ThumbnailRenderer::instance()->getThumbnail(r);
+
+        if (extract_ids.isEmpty())
+        {
+            QGraphicsItem *item = new MediaGraphicItem(r);
+            m_scene->addItem(item);
+            m_items.append(item);
+        }
+    }
+
+    // arrange them
+    placeItems();
+}
+
 void ThumbnailView::onScrollToFocusedItem()
 {
     QGraphicsItem *focused_item = m_scene->focusItem();
@@ -124,6 +192,8 @@ void ThumbnailView::placeItems()
 
     int item_by_line = width() / (m_thumbnail_sizes[m_item_size] + MARGIN);
 
+    qDebug() << "ThumbnailView::placeItems" << item_by_line;
+
     foreach (QGraphicsItem *item, m_items)
     {
         item->setPos((x-1) * (ITEM_WIDTH + MARGIN), y * (ITEM_HEIGHT + MARGIN));
@@ -137,8 +207,6 @@ void ThumbnailView::placeItems()
 
     QRectF scene_rect = m_scene->itemsBoundingRect();
     scene_rect.setWidth(qMax(scene_rect.width(), qreal(item_by_line * (ITEM_WIDTH + MARGIN))));
-
-    qDebug() << scene_rect.width();
 
     setSceneRect(scene_rect);
 
@@ -157,8 +225,9 @@ void ThumbnailView::contextMenuEvent(QContextMenuEvent *event)
         m_context_menu->exec(event->globalPos());
 }
 
-void ThumbnailView::resizeEvent(QResizeEvent *)
+void ThumbnailView::resizeEvent(QResizeEvent *e)
 {
+    qDebug() << "ThumbnailView::resizeEvent" << e->size();
     placeItems();
 }
 
@@ -361,6 +430,26 @@ QList<Rush*> ThumbnailView::selectedRush() const
         if (thumbnail_item)
         {
             selection.append(thumbnail_item->rush());
+        }
+    }
+
+    return selection;
+}
+
+QList<Extract*> ThumbnailView::selectedExtract() const
+{
+    QList<Extract*> selection;
+
+    if (!m_scene)
+        return selection;
+
+    foreach (QGraphicsItem *item, m_scene->selectedItems())
+    {
+        MediaGraphicItem *thumbnail_item = qgraphicsitem_cast<MediaGraphicItem*>(item);
+        if (thumbnail_item)
+        {
+            if (thumbnail_item->extract() != 0)
+                selection.append(thumbnail_item->extract());
         }
     }
 

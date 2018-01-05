@@ -1,7 +1,7 @@
 /****************************************************************************
  *
  * Rushes! is a video cataloger application based on QtAv, OpenCV and FFMpeg.
- * Copyright (C) 2017 Remy Ruttner
+ * Copyright (C) 2018 Remy Ruttner
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,47 +17,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
-
-#ifndef CATALOGFILTER_H
-#define CATALOGFILTER_H
+#ifndef ONSETDETECTOR_H
+#define ONSETDETECTOR_H
 
 #include <QObject>
-#include <QString>
 
-#include "data/database.h"
-
-class CatalogFilter : public QObject
+class OnSetDetector : public QObject
 {
     Q_OBJECT
-
 public:
-    CatalogFilter(Database &db, QObject *parent);
+    OnSetDetector(const QString& file_name);
 
-    QString sqlRatingCondition() const;
-    QString sqlTagCondition() const;
-    QString bin() const;
+    QList<int> getOnsetTimes();
 
-public slots:
-    void setMinRating(int rating);
-    void setMaxRating(int rating);
-    void setBin(const QString& bin_name);
-
-    void setTagFilter(const QString& filter);
-
-    void querySelection();
-
-signals:
-    void valueChanged();
-    void selectionChanged(const QStringList& files, const QList<qint64>& extract_ids);
+protected:
+    int conformed_tick(float tick);
 
 private:
-    int m_min_rating;
-    int m_max_rating;
-
-    QString m_tag_filter;
-    QString m_bin_name;
-    Database &m_db;
-    int m_rows;
+    QString m_file_name;
 };
 
-#endif // CATALOGFILTER_H
+#endif // ONSETDETECTOR_H

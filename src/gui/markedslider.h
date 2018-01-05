@@ -1,7 +1,7 @@
 /****************************************************************************
  *
  * Rushes! is a video cataloger application based on QtAv, OpenCV and FFMpeg.
- * Copyright (C) 2017 Remy Ruttner
+ * Copyright (C) 2018 Remy Ruttner
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,47 +17,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
+#ifndef MARKEDSLIDER_H
+#define MARKEDSLIDER_H
 
-#ifndef CATALOGFILTER_H
-#define CATALOGFILTER_H
+#include <QSLider>
 
-#include <QObject>
-#include <QString>
+#include "data/extract.h"
 
-#include "data/database.h"
-
-class CatalogFilter : public QObject
+class MarkedSlider : public QSlider
 {
     Q_OBJECT
-
 public:
-    CatalogFilter(Database &db, QObject *parent);
+    explicit MarkedSlider(QWidget *parent = nullptr);
 
-    QString sqlRatingCondition() const;
-    QString sqlTagCondition() const;
-    QString bin() const;
+    void paintEvent(QPaintEvent *);
 
-public slots:
-    void setMinRating(int rating);
-    void setMaxRating(int rating);
-    void setBin(const QString& bin_name);
-
-    void setTagFilter(const QString& filter);
-
-    void querySelection();
+    void setExtract(Extract *extract);
 
 signals:
-    void valueChanged();
-    void selectionChanged(const QStringList& files, const QList<qint64>& extract_ids);
+
+public slots:
 
 private:
-    int m_min_rating;
-    int m_max_rating;
+    Extract *m_extract;
 
-    QString m_tag_filter;
-    QString m_bin_name;
-    Database &m_db;
-    int m_rows;
 };
 
-#endif // CATALOGFILTER_H
+#endif // MARKEDSLIDER_H

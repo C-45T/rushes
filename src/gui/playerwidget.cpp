@@ -29,6 +29,7 @@ PlayerWidget::PlayerWidget(QWidget *parent) : QWidget(parent)
 {
     QtAV::Widgets::registerRenderers();
 
+    m_extract = 0;
     m_unit = 1000;
     m_fps = 25;
 
@@ -42,8 +43,8 @@ PlayerWidget::PlayerWidget(QWidget *parent) : QWidget(parent)
     }
     m_player->setRenderer(m_vo);
 
-    vl->addWidget(m_vo->widget());
-    m_slider = new QSlider();
+    vl->addWidget(m_vo->widget(), 1);
+    m_slider = new MarkedSlider();
     m_slider->setOrientation(Qt::Horizontal);
     connect(m_slider, SIGNAL(sliderMoved(int)), SLOT(seekBySlider(int)));
     connect(m_slider, SIGNAL(sliderPressed()), SLOT(seekBySlider()));
@@ -51,6 +52,9 @@ PlayerWidget::PlayerWidget(QWidget *parent) : QWidget(parent)
     connect(m_player, SIGNAL(started()), SLOT(updateSlider()));  
 
     vl->addWidget(m_slider);
+
+    m_play_time = new QLabel();
+    vl->addWidget(m_play_time, 0);
 
     QFont volume_font("Tahoma", 20, QFont::Bold);
     QFontMetrics fm(volume_font);
@@ -79,6 +83,36 @@ void PlayerWidget::keyPressEvent(QKeyEvent *event)
     {
         qDebug() << "play pause";
         playPause();
+    }
+
+    if (event->key() == Qt::Key_K)
+    {
+        qDebug() << "PlayerWidget::keyPressEvent - K" << m_player->position();
+        if (m_extract)
+        {
+            m_extract->setKeyMoment(m_player->position());
+            emit keyTimeChanged(m_extract);
+        }
+    }
+
+    if (event->key() == Qt::Key_I)
+    {
+        qDebug() << "PlayerWidget::keyPressEvent - K" << m_player->position();
+        if (m_extract)
+        {
+            m_extract->setStart(m_player->position());
+            emit keyTimeChanged(m_extract);
+        }
+    }
+
+    if (event->key() == Qt::Key_O)
+    {
+        qDebug() << "PlayerWidget::keyPressEvent - K" << m_player->position();
+        if (m_extract)
+        {
+            m_extract->setStop(m_player->position());
+            emit keyTimeChanged(m_extract);
+        }
     }
 
     if (m_player->isPaused())
@@ -118,9 +152,29 @@ void PlayerWidget::mousePressEvent(QMouseEvent *)
 
 void PlayerWidget::openMedia(const QString& filename)
 {
+    m_extract = 0;
+    m_slider->setExtract(0);
     if (filename.isEmpty())
         return;
     m_player->play(filename);
+}
+
+void PlayerWidget::openMedia(Rush *rush)
+{
+    m_extract = 0;
+    m_slider->setExtract(0);
+    if (rush->file_name.isEmpty())
+        return;
+    m_player->play(rush->file_name);
+}
+
+void PlayerWidget::openMedia(Extract *extract)
+{
+    m_extract = extract;
+    m_slider->setExtract(extract);
+    if (extract->rush() == 0)
+        return;
+    m_player->play(extract->rush()->file_name);
 }
 
 void PlayerWidget::seekBySlider(int value)
@@ -148,6 +202,10 @@ void PlayerWidget::updateSlider(qint64 value)
 {
     m_slider->setRange(0, int(m_player->duration()/m_unit));
     m_slider->setValue(int(value/m_unit));
+
+    m_play_time->setText(QString("%1:%2.%3").arg(m_player->position()/60000, 2, 10, QChar('0'))
+                         .arg(m_player->position()/1000, 2, 10, QChar('0'))
+                         .arg(m_player->position() % 1000, 2, 10, QChar('0')));
 }
 
 void PlayerWidget::updateSlider()
@@ -166,4 +224,14 @@ void PlayerWidget::onVolumeChanged()
     m_volume_label->show();
     m_volume_label->setText("Volume : " + QString::number(m_player->audio()->volume()*100));
     m_hide_volume_label_timer.start(2000);
+}
+
+Extract *PlayerWidget::extract() const
+{
+    return m_extract;
+}
+
+void PlayerWidget::setExtract(Extract *extract)
+{
+    m_extract = extract;
 }

@@ -147,6 +147,26 @@ void Database::createRushTable()
     }
 }
 
+void Database::createExtractTable()
+{
+    QSqlQuery query(m_database);
+    if (!query.exec(
+                "CREATE TABLE IF NOT EXISTS 'Extract' ("
+                "'id' INTEGER NOT NULL PRIMARY KEY,"
+                "'rush_id' INTEGER NOT NULL,"
+                "'thumbnail' TEXT NOT NULL,"
+                "'start_time' INTEGER NOT NULL," // ms
+                "'stop_time' INTEGER NOT NULL," // ms
+                "'key_moment' INTEGER NOT NULL," // ms
+                "'rating' INTEGER NOT NULL DEFAULT 0,"
+                "'comment' TEXT,"
+                "FOREIGN KEY('rush_id') REFERENCES Rush ( id )"
+                ")")) {
+        qDebug() << query.lastQuery();
+        qFatal("Failed to query database: %s", qPrintable(query.lastError().text()));
+    }
+}
+
 void Database::addBin(const QString &bin_name, const QString &parent_name)
 {
     // Get parent_id
@@ -237,7 +257,7 @@ void Database::addRushToBin(Rush *rush, const QString &bin_name)
 
 }
 
-void Database::addRush(Rush *rush, const QString& bin_name)
+void Database::addRush(Rush *rush)
 {
     QSqlQuery query(m_database);
     QString querystr = QString("INSERT INTO Rush (filename, thumbnail, "
@@ -257,7 +277,10 @@ void Database::addRush(Rush *rush, const QString& bin_name)
                                                     QString::number(rush->audio_bitrate),
                                                     QString::number(rush->utc_creation_time));
     if (query.exec(querystr))
+    {
         rush->database_id = getIdFromAttributeValue("Rush", "filename", rush->file_name);
+        addExtract(rush->extract());
+    }
 
     qDebug() << query.lastQuery() << query.lastError().text();
 
@@ -437,6 +460,22 @@ qint64 Database::getIdFromAttributeValue(const QString &table_name, const QStrin
     return obj_id;
 }
 
+QString Database::getAttributeValueFromId(const QString &table_name, const QString &attr_name, qint64 id) const
+{
+    QString attr_value = "";
+    QSqlQuery query;
+    query.exec(QString("SELECT %1 FROM %2 WHERE id=%3 LIMIT 1").arg(attr_name, table_name, QString::number(id)));
+    qDebug() << query.lastQuery() << query.lastError().text();
+    if (query.lastError().isValid())
+        qDebug() << "error on" <<query.lastQuery() << query.lastError().text();
+    else {
+        if (query.first())
+            attr_value = query.value(0).toString();
+    }
+
+    return attr_value;
+}
+
 Rush Database::getRush(const QString &filename) const
 {
     Rush res;
@@ -464,6 +503,86 @@ Rush Database::getRush(const QString &filename) const
     return res;
 }
 
+QList<qint64> Database::getRushExtracts(qint64 rush_id) const
+{
+    // if no video id return empty list
+    if (rush_id < 0)
+        return QList<qint64>();
+
+    QList<qint64> extract_ids;
+    QSqlQuery get_ids_query(m_database);
+    get_ids_query.exec(QString("SELECT distinct id FROM Extract WHERE rush_id=%1").arg(rush_id));
+    if (get_ids_query.lastError().isValid()) {
+            qDebug() << "error on" <<get_ids_query.lastQuery() << get_ids_query.lastError().text();
+    }
+    else {
+        while (get_ids_query.next()) {
+            extract_ids.append(get_ids_query.value(0).toInt());
+        }
+    }
+
+    return extract_ids;
+}
+
+Extract Database::getExtract(int64_t &id, Rush *rush) const
+{
+    Extract res;
+    QSqlQuery query(m_database);
+
+    //    "'id' INTEGER NOT NULL PRIMARY KEY,"
+    //    "'rush_id' INTEGER NOT NULL,"
+    //    "'thumbnail' TEXT NOT NULL,"
+    //    "'start_time' INTEGER NOT NULL," // ms
+    //    "'stop_time' INTEGER NOT NULL," // ms
+    //    "'key_moment' INTEGER NOT NULL," // ms
+    //    "'rating' INTEGER NOT NULL DEFAULT 0,"
+    //    "'comment' TEXT,"
+
+    // build query
+    QString querystr = QString("SELECT id, rush_id, thumbnail, "
+                               "start_time, stop_time, key_moment, rating, comment "
+                               "FROM Extract "
+                               "WHERE id = %1 "
+                               "LIMIT 1").arg(id);
+
+    query.exec(querystr);
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+    // execute and get result
+    if (query.first())
+    {
+        return getExtract(query.record(), rush);
+    }
+
+
+    return res;
+}
+
+void Database::updateExtract(Extract *extract)
+{
+    QSqlQuery query(m_database);
+
+    //    "'id' INTEGER NOT NULL PRIMARY KEY,"
+    //    "'rush_id' INTEGER NOT NULL,"
+    //    "'thumbnail' TEXT NOT NULL,"
+    //    "'start_time' INTEGER NOT NULL," // ms
+    //    "'stop_time' INTEGER NOT NULL," // ms
+    //    "'key_moment' INTEGER NOT NULL," // ms
+    //    "'rating' INTEGER NOT NULL DEFAULT 0,"
+    //    "'comment' TEXT,"
+
+    // build query
+    QString querystr = QString("UPDATE Extract "
+                               "SET start_time=%1, stop_time=%2, key_moment=%3, rating=%4, comment='%5' "
+                               "WHERE id = %6 "
+                               "").arg(QString::number(extract->start()), QString::number(extract->stop()),
+                                       QString::number(extract->key_moment()), QString::number(extract->rating()),
+                                       extract->comment(), QString::number(extract->database_id()));
+
+    query.exec(querystr);
+    qDebug() << query.lastQuery() << query.lastError().text();
+}
+
 void Database::changeSourceFileName(Rush *rush, const QString &new_file_name)
 {
     // if rush not in database return
@@ -476,6 +595,35 @@ void Database::changeSourceFileName(Rush *rush, const QString &new_file_name)
         rush->file_name = new_file_name;
 
     qDebug() << rename_query.lastQuery() << rename_query.lastError().text();
+}
+
+void Database::addExtract(Extract *extract)
+{
+//    "'id' INTEGER NOT NULL PRIMARY KEY,"
+//    "'rush_id' INTEGER NOT NULL,"
+//    "'thumbnail' TEXT NOT NULL,"
+//    "'start_time' INTEGER NOT NULL," // ms
+//    "'stop_time' INTEGER NOT NULL," // ms
+//    "'key_moment' INTEGER NOT NULL," // ms
+//    "'rating' INTEGER NOT NULL DEFAULT 0,"
+//    "'comment' TEXT,"
+
+    QSqlQuery query(m_database);
+    QString querystr = QString("INSERT INTO Extract (rush_id, thumbnail, "
+                               "start_time, stop_time, key_moment, rating, "
+                               "comment)"
+                               " VALUES (%1, '%2', %3, "
+                               "%4, %5, %6, '%7')")
+            .arg(QString::number(extract->rush()->database_id), extract->rush()->thumbnail_file_name,
+                 QString::number(extract->start()), QString::number(extract->stop()), QString::number(extract->key_moment()),
+                 QString::number(extract->rating()), extract->comment());
+
+    if (query.exec(querystr)) {
+        //QString id = query.value(0).toString();
+        //extract->setDatabase_id(id.toInt());
+    }
+
+    qDebug() << query.lastQuery() << query.lastError().text();
 }
 
 Rush Database::getRush(const QSqlRecord &record) const
@@ -499,6 +647,21 @@ Rush Database::getRush(const QSqlRecord &record) const
     rush.rating = record.value("rating").toInt();
 
     return rush;
+}
+
+Extract Database::getExtract(const QSqlRecord &record, Rush *rush) const
+{
+    Extract extract(rush);
+
+    extract.setDatabase_id(record.value("id").toLongLong());
+    extract.setThumbnail(record.value("thumbnail").toString());
+    extract.setStart(record.value("start_time").toInt());
+    extract.setStop(record.value("stop_time").toInt());
+    extract.setKeyMoment(record.value("key_moment").toInt());
+    extract.setRating(record.value("rating").toInt());
+    extract.setComment(record.value("comment").toString());
+
+    return extract;
 }
 
 void Database::exportToCsv(const QString &output_file_name)

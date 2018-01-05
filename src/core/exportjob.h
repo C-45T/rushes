@@ -43,7 +43,7 @@ private:
     QString m_command_line;
 
     QProcess *m_export_process;
-    int m_total_fps;
+    int m_total_frames;
 };
 
 #endif // EXPORTJOB_H

@@ -31,14 +31,14 @@ ExportJob::ExportJob(const Rush &rush, const QString &output_folder, const QStri
 {
     setDescription(QString("Export %1 to Prores. Output to %2").arg(rush.file_name, output_folder));
     m_export_process = 0;
-    m_total_fps = rush.fps * rush.length;
+    m_total_frames = rush.fps * (rush.length / 1000); // approximate but its ok
     setStatus(Job::PENDING);
 }
 
 void ExportJob::run()
 {
     setStatus(Job::STARTED);
-    emit progress(0, m_total_fps);
+    emit progress(0, m_total_frames);
     m_export_process = FFMpegParser::transcode(m_rush.file_name, m_output_folder, m_command_line);
 
     connect(m_export_process, SIGNAL(readyReadStandardOutput()), this, SLOT(checkProgress()));
@@ -47,7 +47,7 @@ void ExportJob::run()
     m_export_process->waitForFinished();
 
     // emit progress complete
-    emit progress(m_total_fps, m_total_fps);
+    emit progress(m_total_frames, m_total_frames);
     setStatus(Job::FINISHED);
 }
 
@@ -66,7 +66,7 @@ void ExportJob::checkProgress()
     QRegularExpressionMatch match = re.match(output);
 
     if (match.captured(1).toInt() > 0)
-        emit progress(match.captured(1).toInt(), m_total_fps);
+        emit progress(match.captured(1).toInt(), m_total_frames);
 
     qDebug() << output;
 }

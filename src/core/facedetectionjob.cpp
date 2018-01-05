@@ -29,14 +29,14 @@ FaceDetectionJob::FaceDetectionJob(Database& db, Faces& f, const Rush& rush)
       m_faces(f)
 {
     setDescription(QString("Detect face in file %1").arg(rush.file_name));
-    m_total_fps = rush.fps * rush.length;
+    m_total_frames = rush.fps * (rush.length / 1000); // approximate but its ok
     setStatus(Job::PENDING);
 }
 
 void FaceDetectionJob::run()
 {
     setStatus(Job::STARTED);
-    emit progress(0, m_total_fps);
+    emit progress(0, m_total_frames);
 
     connect(&m_faces, SIGNAL(progress(int)), this, SLOT(onProgress(int)));
 
@@ -58,12 +58,12 @@ void FaceDetectionJob::run()
     disconnect(&m_faces, SIGNAL(progress(int)), this, SLOT(onProgress(int)));
 
     // emit progress complete
-    emit progress(m_total_fps, m_total_fps);
+    emit progress(m_total_frames, m_total_frames);
     setStatus(Job::FINISHED);
 }
 
 void FaceDetectionJob::onProgress(int frame)
 {
-    emit progress(frame, m_total_fps);
+    emit progress(frame, m_total_frames);
 }
 

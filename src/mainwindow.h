@@ -25,6 +25,7 @@
 #include <QSplitter>
 
 #include "data/database.h"
+#include "data/extract.h"
 
 #include "core/catalogfilter.h"
 #include "core/jobsmaster.h"
@@ -35,6 +36,7 @@
 #include "gui/playerwidget.h"
 #include "gui/tagswidget.h"
 #include "gui/catalogtreewidget.h"
+#include "gui/mediagraphicitem.h"
 
 class MainWindow : public QMainWindow
 {
@@ -49,8 +51,10 @@ public:
 public slots:
     void addVideo();
     void playVideo(const QString& filepath);
+    void playMedia(MediaGraphicItem* item);
 
     void addTags();
+    void exportSelectionToFCPXml();
     void transcode(const QString& command_preset);
     void faceRecognition();
     void relinkRushs();
@@ -58,6 +62,7 @@ public slots:
     void removeRushFromBin();
     void exportDatabase();
     void importDatabase();
+    void updateExtract(Extract *extract);
 
     void onSelectionChanged();
     void onShowJobsProgress();
@@ -96,7 +101,6 @@ private:
     QSplitter *m_bottom_splitter;
 
     JobsMaster m_job_master;
-
 };
 
 #endif // MAINWINDOW_H

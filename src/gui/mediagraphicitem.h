@@ -25,20 +25,23 @@
 
 #include "thirdParty/starrating.h"
 #include "data/rush.h"
+#include "data/extract.h"
 
 class MediaGraphicItem : public QGraphicsItem
 {
 public:
-    MediaGraphicItem(Rush *rush);
+    MediaGraphicItem(Rush *rush, Extract *extract = 0);
     ~MediaGraphicItem();
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
 
     Rush *rush();
+    Extract *extract();
 
 private:
     Rush *m_rush;
+    Extract *m_extract;
     StarRating m_rating;
 };
 

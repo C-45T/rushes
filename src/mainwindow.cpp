@@ -36,6 +36,8 @@
 #include "core/ffmpegparser.h"
 #include "core/exportjob.h"
 #include "core/facedetectionjob.h"
+#include "core/fcpxmlexporter.h"
+#include "core/onsetdetector.h"
 
 #include "gui/catalogfilterwidget.h"
 #include "gui/jobswidget.h"
@@ -53,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_db.createRushTable();
     m_db.createTagTable();
     m_db.createRushBinTable();
+    m_db.createExtractTable();
 
     // layout
     //QWidget *mainWidget = new QWidget(this);
@@ -110,10 +113,12 @@ MainWindow::MainWindow(QWidget *parent)
     createMenus();
 
     // signals
-    connect(explorer->view(), SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
-    connect(m_rush_filter, SIGNAL(selectionChanged(QStringList)), m_view, SLOT(setFiles(QStringList)));
-    connect(m_view, SIGNAL(itemDoubleClicked(QString)), this, SLOT(playVideo(const QString&)));
+    connect(explorer->view(), SIGNAL(itemDoubleClicked(MediaGraphicItem*)), this, SLOT(playMedia(MediaGraphicItem*)));
+    //connect(m_rush_filter, SIGNAL(selectionChanged(QStringList, QList<qint64>)), m_view, SLOT(setFiles(QStringList)));
+    connect(m_rush_filter, SIGNAL(selectionChanged(QStringList, QList<qint64>)), m_view, SLOT(setExtracts(QStringList,QList<qint64>)));
+    connect(m_view, SIGNAL(itemDoubleClicked(MediaGraphicItem*)), this, SLOT(playMedia(MediaGraphicItem*)));
     connect(m_view, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
+    connect(m_player, SIGNAL(keyTimeChanged(Extract*)), this, SLOT(updateExtract(Extract*)));
     m_rush_filter->querySelection();
 
     connect(m_bin_tree_widget, SIGNAL(binSelected(const QString&)), m_rush_filter, SLOT(setBin(const QString&)));
@@ -241,8 +246,17 @@ void MainWindow::addVideo()
 
 void MainWindow::playVideo(const QString &filepath)
 {
-    qDebug() << "play" << filepath;
+    qDebug() << "MainWindow::playVideo" << filepath;
     m_player->openMedia(filepath);
+}
+
+void MainWindow::playMedia(MediaGraphicItem *item)
+{
+    qDebug() << "MainWindow::playMedia";
+    if (item->extract() != 0)
+        m_player->openMedia(item->extract());
+    else if (item->rush() != 0)
+        m_player->openMedia(item->rush());
 }
 
 void MainWindow::addTags()
@@ -257,6 +271,12 @@ void MainWindow::addTags()
             onSelectionChanged();
         }
     }
+}
+
+void MainWindow::exportSelectionToFCPXml()
+{
+    FCPXmlExporter exp;
+    exp.exportTo("test_fcp.xml", m_view->selectedExtract());
 }
 
 void MainWindow::transcode(const QString &command_preset)
@@ -361,6 +381,11 @@ void MainWindow::importDatabase()
     m_rush_filter->setBin("All"); // TODO : hardcoded value
 }
 
+void MainWindow::updateExtract(Extract *extract)
+{
+    m_db.updateExtract(extract);
+}
+
 void MainWindow::onSelectionChanged()
 {
     Rush *rush;
@@ -440,6 +465,7 @@ void MainWindow::createMenus()
     QAction *add_rush_to_catalog = edit_menu->addAction("Add selected Rush(s) to Bin", this, SLOT(addRushToBin()), QKeySequence(Qt::CTRL + Qt::Key_Plus));
     QAction *remove_rush_from_bin = edit_menu->addAction("Remove selected Rush(s) from Bin", this, SLOT(removeRushFromBin()), QKeySequence(Qt::CTRL + Qt::Key_Delete));
     QAction *relink_rushs = edit_menu->addAction("Relink selected Rushs", this, SLOT(relinkRushs()));
+    QAction *export_to_fcp_xml = edit_menu->addAction("Export to FCPXML", this, SLOT(exportSelectionToFCPXml()));
 
     QMenu *view_menu = menuBar()->addMenu(tr("&View"));
     view_menu->addAction("Jobs Progress Window", this, SLOT(onShowJobsProgress()), QKeySequence(Qt::Key_F8));
@@ -460,6 +486,7 @@ void MainWindow::createMenus()
         m_context_actions.append(add_rush_to_catalog);
         m_context_actions.append(remove_rush_from_bin);
         m_context_actions.append(relink_rushs);
+        m_context_actions.append(export_to_fcp_xml);
         context_menu->addActions(m_context_actions);
         QMenu *transcode_menu = context_menu->addMenu(tr("&Transcode"));
         transcode_menu->addActions(m_transcode_actions);

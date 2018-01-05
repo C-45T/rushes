@@ -112,9 +112,10 @@ void CatalogFilter::querySelection()
     if (m_bin_name != "All" and !m_bin_name.isEmpty())
         filterBinStr = QString(" AND rb.bin_id IN ('%1')").arg(m_db.getBinChildren(bin_id).join("','"));
 
-    QString select_part = "SELECT DISTINCT r.filename ";
+    QString select_part = "SELECT DISTINCT r.filename, e.id ";
     QString from_part = "FROM Rush r "
-                        "LEFT JOIN Tag t ON (r.id = t.rush_id) ";
+                        "LEFT JOIN Tag t ON (r.id = t.rush_id) "
+                        "JOIN Extract e ON (e.rush_id = r.id) ";
 
    if (!filterBinStr.isEmpty())
        from_part += "LEFT JOIN RushBin rb ON (r.id = rb.rush_id) ";
@@ -123,7 +124,7 @@ void CatalogFilter::querySelection()
     QString order_part = " ORDER BY r.utc_creation_time" + filterRatingStr + filterTagStr;
 
     QSqlQuery countQuery(m_db.sqlDatabase());
-    countQuery.exec("SELECT count(DISTINCT r.id) " + from_part + cond_part );
+    countQuery.exec("SELECT count(DISTINCT e.id) " + from_part + cond_part );
     if (countQuery.lastError().isValid()) {
         qDebug() << "error on" <<countQuery.lastQuery() << countQuery.lastError().text();
         m_rows = 0;
@@ -143,10 +144,19 @@ void CatalogFilter::querySelection()
     {
         qDebug() << "CatalogFilter::querySelection()" << m_rows <<selectQuery.lastQuery() << selectQuery.lastError().text();
         QStringList selection;
+        QList<qint64> extract_selection;
         while (selectQuery.next())
-            selection.append(selectQuery.value(0).toString());
+        {
+            QString rush_file_name = selectQuery.value(0).toString();
+            qint64 extract_id = selectQuery.value(1).toInt();
 
-        emit selectionChanged(selection);
+            if (!selection.contains(rush_file_name))
+                selection.append(rush_file_name);
+
+            extract_selection.append(extract_id);
+        }
+
+        emit selectionChanged(selection, extract_selection);
     }
 }
 

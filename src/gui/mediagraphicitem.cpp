@@ -26,10 +26,11 @@
 
 #include "core/thumbnailrenderer.h"
 
-MediaGraphicItem::MediaGraphicItem(Rush *rush)
+MediaGraphicItem::MediaGraphicItem(Rush *rush, Extract *extract)
     : QGraphicsItem()
 {
     m_rush = rush;
+    m_extract = extract;
     m_rating.setMaxStarCount(5);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsFocusable, true);
@@ -53,8 +54,10 @@ void MediaGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     {
         if (m_rush->isInDatabase())
             painter->fillRect(option->rect, QColor(53, 53, 53));
-        else
+        else if (m_extract == 0)
             painter->fillRect(option->rect, QColor(103, 103, 103));
+        else
+            painter->fillRect(option->rect, QColor(103, 143, 103));
     }
 
     if (m_rush->file_name.isEmpty())
@@ -86,4 +89,9 @@ void MediaGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 Rush *MediaGraphicItem::rush()
 {
      return m_rush;
+}
+
+Extract *MediaGraphicItem::extract()
+{
+    return m_extract;
 }

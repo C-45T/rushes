@@ -40,7 +40,7 @@ protected slots:
 
 private:
     Rush m_rush;
-    int m_total_fps;
+    int m_total_frames;
     Database& m_db;
     Faces& m_faces;
 };

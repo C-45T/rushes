@@ -24,8 +24,6 @@
 #include <QApplication>
 #include <QGraphicsSceneMouseEvent>
 
-#include "gui/mediagraphicitem.h"
-
 // TODO :  set as class attributes ?
 #define ITEMS_WIDTH 480
 #define ITEMS_HEIGHT 320
@@ -59,7 +57,7 @@ void ThumbnailScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
     MediaGraphicItem *thumbnail_item = qgraphicsitem_cast<MediaGraphicItem*>(focusItem());
     if (thumbnail_item)
     {
-        emit itemDoubleClicked(thumbnail_item->rush()->file_name);
+        emit itemDoubleClicked(thumbnail_item);
     }
 
 }

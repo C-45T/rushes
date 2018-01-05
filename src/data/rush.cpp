@@ -19,6 +19,7 @@
  ****************************************************************************/
 
 #include "rush.h"
+#include "extract.h"
 
 #include <QFileInfo>
 #include <QDateTime>
@@ -37,7 +38,7 @@ Rush::Rush()
     rating = -1;
 
     // video data
-    length = -1; // seconds
+    length = -1; // mseconds
     width = -1;
     height = -1;
     fps = -1;
@@ -94,6 +95,12 @@ Rush *Rush::getRush(const QString& file_name)
 
     m_rush_cache[file_name] = rush;
     return rush;
+}
+
+Extract *Rush::extract()
+{
+    Extract* extract = new Extract(this);
+    return extract;
 }
 
 bool Rush::hasMetadata()

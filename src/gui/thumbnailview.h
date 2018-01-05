@@ -37,11 +37,13 @@ public:
     void setContextMenu(QMenu *menu);
 
     QList<Rush *> selectedRush() const;
+    QList<Extract *> selectedExtract() const;
     Rush *focusedItem() const;
 
 public slots:
     void onScrollToFocusedItem();
     void setFiles(QStringList files, QDir path = QDir(), bool prepend_path = false);
+    void setExtracts(QStringList files, QList<qint64> extract_ids);
 
 protected:
     void placeItems();
@@ -56,7 +58,7 @@ protected:
     void shiftSelect(QGraphicsItem *item);
 
 signals:
-    void itemDoubleClicked(QString);
+    void itemDoubleClicked(MediaGraphicItem*);
     void selectionChanged();
 
 private:

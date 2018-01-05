@@ -65,7 +65,11 @@ SOURCES += \
     thirdParty/singleton.cpp \
     src/gui/mediagraphicitem.cpp \
     src/gui/thumbnailscene.cpp \
-    src/gui/aboutdialog.cpp
+    src/gui/aboutdialog.cpp \
+    src/core/fcpxmlexporter.cpp \
+    src/core/onsetdetector.cpp \
+    src/data/extract.cpp \
+    src/gui/markedslider.cpp
 
 HEADERS += \
         src/mainwindow.h \
@@ -96,7 +100,11 @@ HEADERS += \
     thirdParty/singleton.h \
     src/gui/mediagraphicitem.h \
     src/gui/thumbnailscene.h \
-    src/gui/aboutdialog.h
+    src/gui/aboutdialog.h \
+    src/core/fcpxmlexporter.h \
+    src/core/onsetdetector.h \
+    src/data/extract.h \
+    src/gui/markedslider.h
 
 INCLUDEPATH += src/
 
@@ -110,6 +118,12 @@ LIBS += -lopencv_video330 -lopencv_core330 -lopencv_videoio330 -lopencv_imgproc3
 INCLUDEPATH += "D:/Dev/ThirdParty/ffmpeg-3.3.2-desktop-MINGW32/include"
 LIBS += -L"D:/Dev/ThirdParty/ffmpeg-3.3.2-desktop-MINGW32/lib"
 LIBS += -lavutil -lavformat -lavcodec
+
+# essentia
+INCLUDEPATH += "D:/Dev/ThirdParty/essentia-2.1_beta3/src"
+LIBS += -L"D:/Dev/ThirdParty/essentia-2.1_beta3/build/src"
+LIBS += -lessentia
+
 
 DISTFILES += \
     copyright.template

@@ -59,7 +59,7 @@ void RushInfoWidget::setRush(const Rush &rush)
 
     QFileInfo file_info = QFileInfo(rush.file_name);
     QTime length(0, 0, 0);
-    length = length.addSecs(rush.length);
+    length = length.addSecs(rush.length / 1000);
 
     QDateTime creation_date = QDateTime::fromSecsSinceEpoch(rush.utc_creation_time);
 

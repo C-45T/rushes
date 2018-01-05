@@ -111,7 +111,7 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, Rush& ru
         mins %= 60;
 
         //qDebug() << "duration :" << hours << ":" << mins << ":" << secs;
-        rush.length = duration / AV_TIME_BASE;
+        rush.length = ((duration / AV_TIME_BASE) * 1000) + (us / 1000);
     }
 
     if (context->bit_rate)
@@ -138,9 +138,15 @@ void FFMpegParser::metadata(AVFormatContext *context, AVCodecContext *, Rush& ru
             continue;
 
         if (avctx->codec_type == AVMEDIA_TYPE_VIDEO)
+        {
+            qDebug() << context->start_time << context->start_time_realtime << avctx->delay << avctx->timecode_frame_start;
+
             rush.video_codec = QString(/*av_get_media_type_string(avctx->codec_type)) + " " +*/ avcodec_get_name(avctx->codec_id)) + "(" + avcodec_profile_name(avctx->codec_id, avctx->profile) + ")";
+        }
         else if (avctx->codec_type == AVMEDIA_TYPE_AUDIO)
+        {
             rush.audio_codec = QString(/*av_get_media_type_string(avctx->codec_type)) + " " +*/ avcodec_get_name(avctx->codec_id));
+        }
 
 //        if (avctx->field_order != AV_FIELD_UNKNOWN) {
 //            const char *field_order = "progressive";

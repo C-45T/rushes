@@ -23,6 +23,7 @@
 
 #include <QGraphicsScene>
 #include "data/rush.h"
+#include "gui/mediagraphicitem.h"
 
 class ThumbnailScene : public QGraphicsScene
 {
@@ -40,7 +41,7 @@ public slots:
     QGraphicsItem *lastSelectedItem() const;
 
 signals:
-    void itemDoubleClicked(QString);
+    void itemDoubleClicked(MediaGraphicItem*);
 
 private:
     int m_scene_width;

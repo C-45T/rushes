@@ -27,6 +27,7 @@
 #include <QTextStream>
 
 #include "rush.h"
+#include "extract.h"
 
 class Database
 { 
@@ -43,12 +44,19 @@ public:
     void createBinTable();
     void createTagTable();
     void createRushBinTable();
+    void createExtractTable();
 
     // Rushs
-    void addRush(Rush *rush, const QString& bin_name = "All");
+    void addRush(Rush *rush);
     void deleteRush(Rush *rush);
     Rush getRush(const QString& filename) const;
+    QList<qint64> getRushExtracts(qint64 rush_id) const;
     void changeSourceFileName(Rush *rush, const QString& new_file_name);
+
+    // Extract
+    void addExtract(Extract *extract);
+    Extract getExtract(int64_t &id, Rush *rush) const;
+    void updateExtract(Extract *extract);
 
     // Bins
     void addBin(const QString& bin_name, const QString& parent_name = "");
@@ -69,6 +77,7 @@ public:
 
     // generic : TODO : move to private
     qint64 getIdFromAttributeValue(const QString& table_name, const QString& attr_name, const QString& attr_value) const;
+    QString getAttributeValueFromId(const QString& table_name, const QString& attr_name, qint64 id) const;
 
     // import/export
     void exportToCsv(const QString& output_file_name);
@@ -76,6 +85,7 @@ public:
 
 protected:
     Rush getRush(const QSqlRecord& record) const;
+    Extract getExtract(const QSqlRecord& record, Rush *rush) const;
 
 private:
     QSqlDatabase m_database;

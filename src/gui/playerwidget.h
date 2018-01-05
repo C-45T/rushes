@@ -22,12 +22,15 @@
 #define PLAYERWIDGET_H
 
 #include <QWidget>
-#include <QSlider>
 #include <QLabel>
 #include <QTimer>
 
 #include <QtAV>
 #include <QtAVWidgets>
+
+#include "gui/markedslider.h"
+
+#include "data/extract.h"
 
 class PlayerWidget : public QWidget
 {
@@ -40,10 +43,16 @@ public:
     void wheelEvent(QWheelEvent *event);
     void mousePressEvent(QMouseEvent *event);
 
+    Extract *extract() const;
+    void setExtract(Extract *extract);
+
 signals:
+    void keyTimeChanged(Extract *extract);
 
 public slots:
     void openMedia(const QString& filename);
+    void openMedia(Extract *extract);
+    void openMedia(Rush *rush);
     void seekBySlider(int value);
     void seekBySlider();
     void playPause();
@@ -57,12 +66,15 @@ private slots:
 private:
     QtAV::VideoOutput *m_vo;
     QtAV::AVPlayer *m_player;
-    QSlider *m_slider;
+    MarkedSlider *m_slider;
     int m_unit;
     int m_fps;
 
+    QLabel *m_play_time;
     QLabel *m_volume_label;
     QTimer m_hide_volume_label_timer;
+
+    Extract *m_extract;
 };
 
 #endif // PLAYERWIDGET_H

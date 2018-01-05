@@ -24,6 +24,8 @@
 #include <QObject>
 #include <QHash>
 
+class Extract;
+
 class Rush : public QObject
 {
     friend class Database;
@@ -35,6 +37,8 @@ public:
     Rush& operator=(const Rush& other);
 
     static Rush* getRush(const QString &file_name);
+
+    Extract *extract();
 
     bool hasMetadata();
     bool isValid() { return !file_name.isEmpty(); }
@@ -53,10 +57,11 @@ public:
     int rating;
 
     // video data
-    int length; // seconds
+    int length; // mseconds
     int width;
     int height;
     int fps;
+    int total_frames;
     int64_t bitrate; // Kb/s
     QString video_codec;
 

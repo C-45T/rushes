@@ -17,47 +17,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
-
-#ifndef CATALOGFILTER_H
-#define CATALOGFILTER_H
+#ifndef FCPXMLEXPORTER_H
+#define FCPXMLEXPORTER_H
 
 #include <QObject>
-#include <QString>
+#include <QXmlStreamWriter>
+#include <QList>
+#include <QMap>
 
-#include "data/database.h"
+#include "data/extract.h"
 
-class CatalogFilter : public QObject
+class FCPXmlExporter : public QObject
 {
     Q_OBJECT
-
 public:
-    CatalogFilter(Database &db, QObject *parent);
+    explicit FCPXmlExporter(QObject *parent = nullptr);
 
-    QString sqlRatingCondition() const;
-    QString sqlTagCondition() const;
-    QString bin() const;
-
-public slots:
-    void setMinRating(int rating);
-    void setMaxRating(int rating);
-    void setBin(const QString& bin_name);
-
-    void setTagFilter(const QString& filter);
-
-    void querySelection();
+    void exportTo(const QString &file_name, QList<Extract *> extracts);
 
 signals:
-    void valueChanged();
-    void selectionChanged(const QStringList& files, const QList<qint64>& extract_ids);
+
+public slots:
 
 private:
-    int m_min_rating;
-    int m_max_rating;
+    void writeRessources(QXmlStreamWriter &stream, QList<Extract *> extracts);
+    void writeSequence(QXmlStreamWriter &stream, QList<Extract *> extracts);
+    void writeSyncedSequence(QXmlStreamWriter &stream, QList<Extract *> extracts);
 
-    QString m_tag_filter;
-    QString m_bin_name;
-    Database &m_db;
-    int m_rows;
+    QMap<QString,int> m_format_indexes;
+    QList<int> m_onset_times;
 };
 
-#endif // CATALOGFILTER_H
+#endif // FCPXMLEXPORTER_H

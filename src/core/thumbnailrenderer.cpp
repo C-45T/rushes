@@ -137,7 +137,10 @@ void Renderer::run()
     if (!m_rush->hasMetadata())
         FFMpegParser::getMetaData(m_rush->file_name, *m_rush);
 
-    if (!QPixmapCache::find(m_rush->file_name))
+    m_mutex.lock();
+    QPixmap *cache_pixmap = QPixmapCache::find(m_rush->file_name);
+    m_mutex.unlock();
+    if (!cache_pixmap)
     {
         QSettings settings("settings.ini", QSettings::IniFormat);
 
@@ -152,23 +155,27 @@ void Renderer::run()
 
             if (!QFile(output_file_name).exists())
             {
-                QProcess *m_extract_process = FFMpegParser::extractFrame(m_rush->file_name, output_file_name, m_rush->length / 2 );
+                QProcess *m_extract_process = FFMpegParser::extractFrame(m_rush->file_name, output_file_name, m_rush->length / 2000 ); // extract mid-duration frame
                 m_extract_process->waitForFinished(3000);
-                qDebug() << m_extract_process->readAll();
+                qDebug() << "Renderer::run" << m_extract_process->readAll();
             }
 
             QPixmap p(output_file_name);
 
             if (!p.isNull()) {
                 qDebug() << "Renderer::run" << output_file_name << m_rush;
+                m_mutex.lock();
                 QPixmapCache::insert(m_rush->file_name, p);
+                m_mutex.unlock();
             }
         }
         else
         {
             QPixmap dummy_pixmap = QPixmap(256, 144);
             dummy_pixmap.fill(QColor(88, 0, 0));
+            m_mutex.lock();
             QPixmapCache::insert(m_rush->file_name, dummy_pixmap);
+            m_mutex.unlock();
         }
 
 
