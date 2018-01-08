@@ -275,8 +275,13 @@ void MainWindow::addTags()
 
 void MainWindow::exportSelectionToFCPXml()
 {
+    QString file_name = QFileDialog::getOpenFileName(this, "Pick a song");
+
+    if (file_name.isEmpty())
+         return;
+
     FCPXmlExporter exp;
-    exp.exportTo("test_fcp.xml", m_view->selectedExtract());
+    exp.exportTo("test_fcp_v2.xml", m_view->selectedExtract(), file_name);
 }
 
 void MainWindow::transcode(const QString &command_preset)

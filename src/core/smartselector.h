@@ -17,32 +17,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
-#ifndef ONSETDETECTOR_H
-#define ONSETDETECTOR_H
+#ifndef SMARTSELECTOR_H
+#define SMARTSELECTOR_H
 
-#include <QObject>
-#include <QSet>
+#include <QMap>
 
-class OnSetDetector : public QObject
+#include "data/extract.h"
+
+class SmartSelector
 {
-    Q_OBJECT
 public:
-    OnSetDetector(const QString& file_name);
+    SmartSelector(QList<int> onset_times, QList<Extract*> extracts);
 
-    QList<int> getOnsetTimes();
+    QList<Extract*> getEditing();
+    void setShortestSequenceDuration(int duration);
 
-    QSet<int> computeRythmTicks();
-    QSet<int> computeOnsetRateTicks();
+    QList<int> getOnsetTimes() const;
 
 protected:
-    int conformed_tick(float tick);
+    QPair<int, int> getMaxUnaffectedDuration();
+    QPair<int, int> getMaxLengthExtractIndexAndDuration();
+    QList<int> getCandidatesIndexes(QPair<int, int> onset_time);
+    int getBestCandidate(QList<int> extract_indexes);
+
+    void removeShortestDuration();
+    void computeDurations();
 
 private:
-    QString m_file_name;
-
-    QSet<int> m_rythm_ticks_set;
-    QSet<int> m_onset_ticks_set;
-    int m_bpm;
+    QList<Extract*> m_extracts;
+    QList<int> m_onset_times;
+    QMap<int,int> m_durations;
+    QMap<int, int> m_onset_extract;
+    int m_shortest_duration_index;
 };
 
-#endif // ONSETDETECTOR_H
+#endif // SMARTSELECTOR_H

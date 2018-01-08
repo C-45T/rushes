@@ -69,7 +69,9 @@ SOURCES += \
     src/core/fcpxmlexporter.cpp \
     src/core/onsetdetector.cpp \
     src/data/extract.cpp \
-    src/gui/markedslider.cpp
+    src/gui/markedslider.cpp \
+    src/core/smartselector.cpp \
+    src/core/autoeditjob.cpp
 
 HEADERS += \
         src/mainwindow.h \
@@ -104,7 +106,9 @@ HEADERS += \
     src/core/fcpxmlexporter.h \
     src/core/onsetdetector.h \
     src/data/extract.h \
-    src/gui/markedslider.h
+    src/gui/markedslider.h \
+    src/core/smartselector.h \
+    src/core/autoeditjob.h
 
 INCLUDEPATH += src/
 

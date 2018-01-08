@@ -305,6 +305,13 @@ void ThumbnailView::keyPressEvent(QKeyEvent *event)
     {
         foreach (Rush *rush, selectedRush())
             m_db.setRushRating(rush, event->text().toInt());
+
+        foreach (Extract *extract, selectedExtract())
+        {
+            extract->setRating(event->text().toInt());
+            m_db.updateExtract(extract);
+        }
+
         update();
         break;
     }

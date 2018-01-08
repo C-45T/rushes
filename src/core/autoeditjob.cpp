@@ -17,32 +17,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
-#ifndef ONSETDETECTOR_H
-#define ONSETDETECTOR_H
+#include "autoeditjob.h"
 
-#include <QObject>
-#include <QSet>
-
-class OnSetDetector : public QObject
+AutoEditJob::AutoEditJob(const QString &xml_output_file_name, QList<Extract *> extracts, const QString &music_file_name)
+    : m_extracts(extracts)
+    , m_music_file_name(music_file_name)
+    , m_xml_output_file_name(xml_output_file_name)
 {
-    Q_OBJECT
-public:
-    OnSetDetector(const QString& file_name);
+//    // Get onset times
+//    OnSetDetector test(music_file_name);
+//    m_onset_times = test.getOnsetTimes();
 
-    QList<int> getOnsetTimes();
+//    // build smart editing
+//    SmartSelector edition(m_onset_times, extracts);
+//    edition.setShortestSequenceDuration(500);
+//    m_extracts = edition.getEditing();
+    //    m_onset_times = edition.getOnsetTimes();
+}
 
-    QSet<int> computeRythmTicks();
-    QSet<int> computeOnsetRateTicks();
+void AutoEditJob::run()
+{
 
-protected:
-    int conformed_tick(float tick);
-
-private:
-    QString m_file_name;
-
-    QSet<int> m_rythm_ticks_set;
-    QSet<int> m_onset_ticks_set;
-    int m_bpm;
-};
-
-#endif // ONSETDETECTOR_H
+}

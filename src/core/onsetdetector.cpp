@@ -21,7 +21,6 @@
 
 #include <QProcess>
 #include <QDebug>
-#include <QSet>
 
 OnSetDetector::OnSetDetector(const QString &file_name)
 {
@@ -30,19 +29,37 @@ OnSetDetector::OnSetDetector(const QString &file_name)
 
 QList<int> OnSetDetector::getOnsetTimes()
 {
+    computeOnsetRateTicks();
+    computeRythmTicks();
+
+    // get intersection of rythm and onset ticks
+    m_onset_ticks_set.intersect(m_rythm_ticks_set);
+
+    // copy to a list and order it
+    QList<int> ordered_ticks = m_onset_ticks_set.toList();
+    ordered_ticks.prepend(0);
+    std::sort(ordered_ticks.begin(), ordered_ticks.end());
+
+    qDebug() << "inersected :" << ordered_ticks;
+
+    return ordered_ticks;
+}
+
+QSet<int> OnSetDetector::computeRythmTicks()
+{
     QProcess *m_detection_process = new QProcess();
 
     m_detection_process->start("streaming_rhythmextractor_multifeature.exe", QStringList() << m_file_name);
     if (!m_detection_process->waitForStarted())
     {
         qDebug() << "streaming_rhythmextractor_multifeature error starting" << m_detection_process->readAll();
-        return QList<int>();
+        return QSet<int>();
     }
 
     if (!m_detection_process->waitForFinished(120000))
     {
         qDebug() << "streaming_rhythmextractor_multifeature error waiting" << m_detection_process->readAll();
-        return QList<int>();
+        return QSet<int>();
     }
 
     QByteArray result = m_detection_process->readAll();
@@ -54,6 +71,9 @@ QList<int> OnSetDetector::getOnsetTimes()
 
     int confidence_index = 0;
     confidence_index = result.lastIndexOf("confidence");
+
+    int bpm_index = 0;
+    bpm_index = result.indexOf("bpm:");
 
     left_bracket = result.indexOf("[", result.indexOf("ticks"));
     right_bracket = result.indexOf("]", left_bracket);
@@ -68,53 +88,59 @@ QList<int> OnSetDetector::getOnsetTimes()
     QByteArray bpmintervals = result.mid(left_bracket+1, right_bracket-left_bracket-1);
 
     QString confidence = result.mid(confidence_index, result.indexOf('\n', confidence_index) - confidence_index).trimmed();
+
+    QString bpm = result.mid(bpm_index, result.indexOf('\n', bpm_index) - bpm_index).trimmed();
+
     //qDebug() << "confidence" << confidence.split(':').last().trimmed();
     qDebug() << "ticks" << ticks.split(',').size() << ticks;
+    qDebug() << "bpm" << bpm;
     //qDebug() << "estimates" << estimates.split(',').size() << estimates;
     //qDebug() << "bpmintervals" << bpmintervals.split(',').size() << bpmintervals;
 
-    QSet<int> ticks_set;
+    m_rythm_ticks_set.clear();
     foreach (QString tick, ticks.split(','))
     {
-        ticks_set.insert(conformed_tick(tick.trimmed().toFloat()));
+        m_rythm_ticks_set.insert(conformed_tick(tick.trimmed().toFloat()));
     }
 
+    m_bpm = bpm.toInt();
 
+    return m_rythm_ticks_set;
+}
+
+QSet<int> OnSetDetector::computeOnsetRateTicks()
+{
+    QProcess *m_detection_process = new QProcess();
 
     m_detection_process->start("standard_onsetrate.exe", QStringList() << m_file_name);
     if (!m_detection_process->waitForStarted())
     {
         qDebug() << "standard_onsetrate error starting" << m_detection_process->readAll();
-        return QList<int>();
+        return QSet<int>();
     }
 
     if (!m_detection_process->waitForFinished(120000))
     {
         qDebug() << "standard_onsetrate error waiting" << m_detection_process->readAll();
-        return QList<int>();
+        return QSet<int>();
     }
 
-    result = m_detection_process->readAll();
+    QByteArray result = m_detection_process->readAll();
+
+    int left_bracket = 0;
+    int right_bracket = 0;
 
     left_bracket = result.indexOf("[", result.indexOf("onsetTimes"));
     right_bracket = result.indexOf("]", left_bracket);
     QByteArray onset_times = result.mid(left_bracket+1, right_bracket-left_bracket);
 
-    QSet<int> onset_set;
+    m_onset_ticks_set.clear();
     foreach (QString onset_time, onset_times.split(','))
     {
-        onset_set.insert(conformed_tick(onset_time.trimmed().toFloat()));
+        m_onset_ticks_set.insert(conformed_tick(onset_time.trimmed().toFloat()));
     }
 
-    onset_set.intersect(ticks_set);
-
-    QList<int> ordered_ticks = onset_set.toList();
-    ordered_ticks.prepend(0);
-    std::sort(ordered_ticks.begin(), ordered_ticks.end());
-
-    qDebug() << "inersected :" << ordered_ticks;
-
-    return ordered_ticks;
+    return m_onset_ticks_set;
 }
 
 /*

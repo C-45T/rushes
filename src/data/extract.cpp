@@ -82,7 +82,7 @@ void Extract::setStart(int start_time)
     m_start = start_time;
 
     if (m_key_moment < m_start)
-        setKeyMoment(m_start);
+        setKeyMoment((m_stop + m_start) / 2);
 
     if (m_start > m_stop)
         setStop(m_rush->length);
@@ -95,7 +95,7 @@ void Extract::setStop(int stop_time)
     m_stop = stop_time;
 
     if (m_key_moment > m_stop)
-        setKeyMoment(m_stop);
+        setKeyMoment((m_stop + m_start) / 2);
 
     if (m_stop < m_start)
         setStart(0);

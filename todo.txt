@@ -44,6 +44,10 @@ Evol :
 - rajouter un champ libre de commentaire sur les rushs
 - rajouter n° image courante sur lecteur video + temps écoulé, temps restant
 - option pour cacher les video déjà dans un chutier
+- Analyse rush : note qualité (basé sur resolution 720p, 1080p, 4k + débit) + flou vidéo ?
+- Montage auto : selection des rushs de meilleures qualités
+- Montage auto : courbe de selection (crescendo, moyen) pour selection des meilleurs rush à la fin, à intervalle régulier, au milieu, ...)
+- Montage auto : reconnaissance visage pour disséminer durant le clip et ne pas mettre tous les plans d'une personne concentrés au meme moment
 
 Done :
 - transcode selection

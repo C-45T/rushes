@@ -33,19 +33,23 @@ class FCPXmlExporter : public QObject
 public:
     explicit FCPXmlExporter(QObject *parent = nullptr);
 
-    void exportTo(const QString &file_name, QList<Extract *> extracts);
+    void exportTo(const QString &file_name, QList<Extract *> extracts, const QString &music_file_name);
+
+    void setExtracts(const QList<Extract *> &extracts);
+    void setOnset_times(const QList<int> &onset_times);
 
 signals:
 
 public slots:
 
 private:
-    void writeRessources(QXmlStreamWriter &stream, QList<Extract *> extracts);
+    void writeRessources(QXmlStreamWriter &stream, QList<Extract *> extracts, const QString& audio_file_name = "");
     void writeSequence(QXmlStreamWriter &stream, QList<Extract *> extracts);
-    void writeSyncedSequence(QXmlStreamWriter &stream, QList<Extract *> extracts);
+    void writeSyncedSequence(QXmlStreamWriter &stream, QList<Extract *> extracts, const QString& audio_file_name = "");
 
     QMap<QString,int> m_format_indexes;
     QList<int> m_onset_times;
+    QList<Extract*> m_extracts;
 };
 
 #endif // FCPXMLEXPORTER_H
