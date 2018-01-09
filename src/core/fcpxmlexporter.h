@@ -24,6 +24,7 @@
 #include <QXmlStreamWriter>
 #include <QList>
 #include <QMap>
+#include <QDir>
 
 #include "data/extract.h"
 
@@ -33,10 +34,11 @@ class FCPXmlExporter : public QObject
 public:
     explicit FCPXmlExporter(QObject *parent = nullptr);
 
-    void exportTo(const QString &file_name, QList<Extract *> extracts, const QString &music_file_name);
+    void exportTo(const QString &file_name, const QString &music_file_name = "");
 
     void setExtracts(const QList<Extract *> &extracts);
-    void setOnset_times(const QList<int> &onset_times);
+    void setOnsetTimes(const QList<int> &onset_times);
+    void useTranscodedFiles(bool use);
 
 signals:
 
@@ -50,6 +52,8 @@ private:
     QMap<QString,int> m_format_indexes;
     QList<int> m_onset_times;
     QList<Extract*> m_extracts;
+    bool m_use_transcoded_files;
+    QDir m_output_folder;
 };
 
 #endif // FCPXMLEXPORTER_H

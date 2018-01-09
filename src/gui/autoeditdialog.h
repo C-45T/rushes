@@ -17,27 +17,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
-#ifndef AUTOEDITJOB_H
-#define AUTOEDITJOB_H
+#ifndef AUTOEDITDIALOG_H
+#define AUTOEDITDIALOG_H
 
-#include "core/jobsmaster.h"
+#include <QDialog>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QCheckBox>
 
-#include "data/extract.h"
-
-class AutoEditJob : public Job
+class AutoEditDialog : public QDialog
 {
     Q_OBJECT
-
 public:
-    AutoEditJob(const QString &xml_output_file_name, QList<Extract*> extracts, const QString& music_file_name, bool prores_export = false);
+    explicit AutoEditDialog(QWidget *parent = nullptr);
 
-    void run();
+    bool exportProres() const;
+    QString exportFolder() const;
+    QString exportFileName() const;
+    QString musicFileName() const;
+
+signals:
+
+protected slots:
+    void chooseExportFolder();
+    void chooseMusicFile();
 
 private:
-    QList<Extract*> m_extracts;
-    QString m_music_file_name;
-    QString m_xml_output_file_name;
-    bool m_prores_export;
+    QPushButton *m_export_folder_btn;
+    QPushButton *m_music_file_btn;
+    QLineEdit *m_export_file_name;
+    QLineEdit *m_min_duration_time;
+    QCheckBox *m_match_music_length;
+    QCheckBox *m_export_prores;
 };
 
-#endif // AUTOEDITJOB_H
+#endif // AUTOEDITDIALOG_H

@@ -29,9 +29,10 @@
 
 FCPXmlExporter::FCPXmlExporter(QObject *parent) : QObject(parent)
 {
+    m_use_transcoded_files = false;
 }
 
-void FCPXmlExporter::exportTo(const QString &file_name, QList<Extract*> extracts, const QString& music_file_name)
+void FCPXmlExporter::exportTo(const QString &file_name, const QString& music_file_name)
 {
     QFileInfo file_info(file_name);
     qDebug() << "FCPXmlExporter - export file" << file_info.absoluteFilePath();
@@ -40,15 +41,7 @@ void FCPXmlExporter::exportTo(const QString &file_name, QList<Extract*> extracts
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return;
 
-    // Get onset times
-    OnSetDetector test(music_file_name);
-    m_onset_times = test.getOnsetTimes();
-
-    // build smart editing
-    SmartSelector edition(m_onset_times, extracts);
-    edition.setShortestSequenceDuration(500);
-    m_extracts = edition.getEditing();
-    m_onset_times = edition.getOnsetTimes();
+    m_output_folder = file_info.absoluteDir();
 
     QXmlStreamWriter stream(&file);
     stream.setAutoFormatting(true);
@@ -143,12 +136,20 @@ void FCPXmlExporter::writeRessources(QXmlStreamWriter &stream, QList<Extract*> e
         if (rush == 0)
             continue;
 
-        qDebug() << "FCPXmlExporter::writeRessources - write asset" << rush->file_name;
+        QString rush_file_name = rush->file_name;
+
+        if (m_use_transcoded_files)
+        {
+            QFileInfo info(rush_file_name);
+            rush_file_name = m_output_folder.absoluteFilePath(info.baseName() + ".mov");
+        }
+
+        qDebug() << "FCPXmlExporter::writeRessources - write asset" << m_use_transcoded_files << m_output_folder.absolutePath() << rush_file_name;
 
         Rush dummy;
-        FFMpegParser::getMetaData(rush->file_name, dummy);
+        FFMpegParser::getMetaData(rush_file_name, dummy);
 
-        QFileInfo file_info(rush->file_name);
+        QFileInfo file_info(rush_file_name);
         QString format_key = QString("%1-%2").arg(QString::number(rush->height), QString::number(rush->fps));
 
         qDebug() << rush->length << rush->fps << float(rush->length * rush->fps) << float(rush->length * rush->fps) / 1000.0;
@@ -221,9 +222,17 @@ void FCPXmlExporter::writeSequence(QXmlStreamWriter &stream, QList<Extract *> ex
         if (rush == 0)
             continue;
 
-        qDebug() << "FCPXmlExporter::writeSequence - write clip" << rush->file_name;
+        QString rush_file_name = rush->file_name;
 
-        QFileInfo file_info(rush->file_name);
+        if (m_use_transcoded_files)
+        {
+            QFileInfo info(rush_file_name);
+            rush_file_name = m_output_folder.absoluteFilePath(info.baseName() + ".mov");
+        }
+
+        qDebug() << "FCPXmlExporter::writeSequence - write clip" << rush_file_name;
+
+        QFileInfo file_info(rush_file_name);
         QString format_key = QString("%1-%2").arg(QString::number(rush->height), QString::number(rush->fps));
 
         //int total_frames = (float(rush->length * rush->fps) / 1000.0);
@@ -285,9 +294,17 @@ void FCPXmlExporter::writeSyncedSequence(QXmlStreamWriter &stream, QList<Extract
         if (rush == 0)
             continue;
 
-        qDebug() << "FCPXmlExporter::writeSequence - write clip" << rush->file_name;
+        QString rush_file_name = rush->file_name;
 
-        QFileInfo file_info(rush->file_name);
+        if (m_use_transcoded_files)
+        {
+            QFileInfo info(rush_file_name);
+            rush_file_name = m_output_folder.absoluteFilePath(info.baseName() + ".mov");
+        }
+
+        qDebug() << "FCPXmlExporter::writeSequence - write clip" << rush_file_name;
+
+        QFileInfo file_info(rush_file_name);
         QString format_key = QString("%1-%2").arg(QString::number(rush->height), QString::number(rush->fps));
 
         int sequence_length = extract->max_length();
@@ -381,9 +398,14 @@ void FCPXmlExporter::writeSyncedSequence(QXmlStreamWriter &stream, QList<Extract
      stream.writeEndElement(); // sequence
 }
 
-void FCPXmlExporter::setOnset_times(const QList<int> &onset_times)
+void FCPXmlExporter::setOnsetTimes(const QList<int> &onset_times)
 {
     m_onset_times = onset_times;
+}
+
+void FCPXmlExporter::useTranscodedFiles(bool use)
+{
+    m_use_transcoded_files = use;
 }
 
 void FCPXmlExporter::setExtracts(const QList<Extract *> &extracts)

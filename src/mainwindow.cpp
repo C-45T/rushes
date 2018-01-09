@@ -35,6 +35,7 @@
 
 #include "core/ffmpegparser.h"
 #include "core/exportjob.h"
+#include "core/autoeditjob.h"
 #include "core/facedetectionjob.h"
 #include "core/fcpxmlexporter.h"
 #include "core/onsetdetector.h"
@@ -44,6 +45,7 @@
 #include "gui/basedialog.h"
 #include "gui/fileexplorerwidget.h"
 #include "gui/aboutdialog.h"
+#include "gui/autoeditdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -202,23 +204,23 @@ void MainWindow::createTranscodingActions()
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
-    QMap<QString,QString> presets;
+    m_transcoding_presets.clear();
     while (!file.atEnd()) {
         QString line = file.readLine();
         QStringList args = line.split("::");
         if (args.size() == 2)
         {
-            presets[args[0]]=args[1];
+            m_transcoding_presets[args[0]]=args[1];
         }
     }
 
     QSignalMapper *signal_mapper = new QSignalMapper(this);
-    for (int i=0; i<presets.size(); i++)
+    for (int i=0; i<m_transcoding_presets.size(); i++)
     {
-        QString preset_key = presets.keys()[i];
+        QString preset_key = m_transcoding_presets.keys()[i];
         QAction *action = new QAction(preset_key, this);
         connect(action, SIGNAL(triggered()), signal_mapper, SLOT(map()));
-        signal_mapper->setMapping(action, presets[preset_key]);
+        signal_mapper->setMapping(action, m_transcoding_presets[preset_key]);
         m_transcode_actions.append(action);
     }
 
@@ -275,13 +277,27 @@ void MainWindow::addTags()
 
 void MainWindow::exportSelectionToFCPXml()
 {
-    QString file_name = QFileDialog::getOpenFileName(this, "Pick a song");
+    AutoEditDialog dlg(this);
+    if (dlg.exec() != QDialog::Accepted )
+        return;
 
-    if (file_name.isEmpty())
-         return;
+    if (dlg.exportProres())
+    {
+        if (m_transcoding_presets.contains("PRORES"))
+        {
+            QString command_preset = m_transcoding_presets["PRORES"];
+            foreach (Rush *rush, m_view->selectedRush())
+            {
+                ExportJob *job = new ExportJob(*rush, dlg.exportFolder(), command_preset);
+                m_job_master.addJob(job);
+            }
+        }
+        else
+            qDebug() << "no PRORES preset found - skipping transcoding";
+    }
 
-    FCPXmlExporter exp;
-    exp.exportTo("test_fcp_v2.xml", m_view->selectedExtract(), file_name);
+    AutoEditJob *job = new AutoEditJob(dlg.exportFileName(), m_view->selectedExtract(), dlg.musicFileName(), dlg.exportProres());
+    m_job_master.addJob(job);
 }
 
 void MainWindow::transcode(const QString &command_preset)

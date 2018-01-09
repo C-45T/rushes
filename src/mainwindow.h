@@ -23,6 +23,7 @@
 
 #include <QMainWindow>
 #include <QSplitter>
+#include <QMap>
 
 #include "data/database.h"
 #include "data/extract.h"
@@ -101,6 +102,8 @@ private:
     QSplitter *m_bottom_splitter;
 
     JobsMaster m_job_master;
+
+    QMap<QString,QString> m_transcoding_presets;
 };
 
 #endif // MAINWINDOW_H
