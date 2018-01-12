@@ -303,9 +303,6 @@ void ThumbnailView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_4:
     case Qt::Key_5:
     {
-        foreach (Rush *rush, selectedRush())
-            m_db.setRushRating(rush, event->text().toInt());
-
         foreach (Extract *extract, selectedExtract())
         {
             extract->setRating(event->text().toInt());
@@ -463,7 +460,7 @@ QList<Extract*> ThumbnailView::selectedExtract() const
     return selection;
 }
 
-Rush *ThumbnailView::focusedItem() const
+MediaGraphicItem *ThumbnailView::focusedItem() const
 {
     return m_scene->focusedItem();
 }

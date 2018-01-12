@@ -47,14 +47,14 @@ public:
     void createExtractTable();
 
     // Rushs
-    void addRush(Rush *rush);
+    void addRush(Rush *rush, bool create_extract = true);
     void deleteRush(Rush *rush);
-    Rush getRush(const QString& filename) const;
+    Rush getRush(const QString& file_name) const;
     QList<qint64> getRushExtracts(qint64 rush_id) const;
     void changeSourceFileName(Rush *rush, const QString& new_file_name);
 
     // Extract
-    void addExtract(Extract *extract);
+    void addExtract(Extract *extract, qint64 rush_id = -1);
     Extract getExtract(int64_t &id, Rush *rush) const;
     void updateExtract(Extract *extract);
 
@@ -70,6 +70,8 @@ public:
 
     // Tags
     void addTagToRush(const Rush& rush, QStringList tags);
+    void addTagToExtract(const Extract& extract, QStringList tags);
+    QStringList getExtractTags(qint64 extract_id) const;
     QStringList getRushTags(qint64 rush_id) const;
 
     // Rating

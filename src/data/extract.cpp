@@ -37,6 +37,8 @@ Extract::Extract()
     m_stop = -1; // mseconds
     m_key_moment = -1;
     m_max_length = -1;
+    m_comment = "";
+    m_thumbnail = "";
 }
 
 Extract::Extract(Rush* rush)
@@ -105,6 +107,9 @@ void Extract::setStop(int stop_time)
 
 void Extract::setKeyMoment(int key_time)
 {
+    if (key_time < 0)
+        return;
+
     m_key_moment = key_time;
 
     if (m_key_moment < m_start)

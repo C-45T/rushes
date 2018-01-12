@@ -23,45 +23,76 @@
 #include <QApplication>
 #include <QDebug>
 #include <QSettings>
-#include <QPalette>
 
-//#include <signal.h>     // ::signal, ::raise
-//#include <boost/stacktrace.hpp>
-//#include <boost/filesystem.hpp>
+#include <QtGlobal>
+#include <stdio.h>
+#include <stdlib.h>
 
-//void my_signal_handler(int signum) {
-//    ::signal(signum, SIG_DFL);
-//    boost::stacktrace::safe_dump_to("./backtrace.dump");
-//    ::raise(SIGABRT);
-//}
-////]
+QString _log_file_name = "";
 
-//void setup_handlers() {
-////[getting_started_setup_handlers
-//    ::signal(SIGSEGV, &my_signal_handler);
-//    ::signal(SIGABRT, &my_signal_handler);
-////]
-//}
+void myMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QByteArray localMsg = msg.toLocal8Bit();
+
+    FILE *stream = stderr;
+    QFile log_file(_log_file_name);
+
+    if (!log_file.open(QFile::Append | QFile::WriteOnly))
+    {
+        QByteArray timestamp = QDateTime::currentDateTime().toString("hh:mm:ss.zzz").toLocal8Bit();
+        switch (type) {
+        case QtDebugMsg:
+            fprintf(stream, "[D %s] %s (%s %s:%u)\n", timestamp.constData(), localMsg.constData(), context.function, context.file, context.line);
+            break;
+        case QtInfoMsg:
+            fprintf(stream, "[I %s] %s (%s %s:%u)\n", timestamp.constData(), localMsg.constData(), context.function, context.file, context.line);
+            break;
+        case QtWarningMsg:
+            fprintf(stream, "[W %s] %s (%s %s:%u)\n", timestamp.constData(), localMsg.constData(), context.function, context.file, context.line);
+            break;
+        case QtCriticalMsg:
+            fprintf(stream, "[C %s] %s (%s %s:%u)\n", timestamp.constData(), localMsg.constData(), context.function, context.file, context.line);
+            break;
+        case QtFatalMsg:
+            fprintf(stream, "[F %s] %s (%s %s:%u)\n", timestamp.constData(), localMsg.constData(), context.function, context.file, context.line);
+            abort();
+        }
+
+        return;
+    }
+
+    QTextStream out(&log_file);
+    switch (type) {
+    case QtDebugMsg:
+        out << "[D]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        break;
+    case QtInfoMsg:
+        out << "[I]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        break;
+    case QtWarningMsg:
+        out << "[W]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        break;
+    case QtCriticalMsg:
+        out << "[C]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        break;
+    case QtFatalMsg:
+        out << "[F]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        abort();
+    }
+
+    log_file.flush();
+}
 
 
 int main(int argc, char *argv[])
 {
-//    setup_handlers();
-
-//    if (boost::filesystem::exists("./backtrace.dump")) {
-//        // there is a backtrace
-//        std::ifstream ifs("./backtrace.dump");
-
-//        boost::stacktrace::stacktrace st = boost::stacktrace::stacktrace::from_dump(ifs);
-//        std::cout << "Previous run crashed:\n" << st << std::endl;
-
-//        // cleaning up
-//        ifs.close();
-//        boost::filesystem::remove("./backtrace.dump");
-//    }
-
     QApplication app(argc, argv);
     app.setApplicationName("Rushes!");
+
+#ifndef QT_DEBUG
+    _log_file_name = "rushes_log_" + QDateTime::currentDateTime().toString("yyyy_MM_dd") + ".log";
+    qInstallMessageHandler(myMessageHandler);
+#endif
 
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, QApplication::applicationDirPath());
 

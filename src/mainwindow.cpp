@@ -129,6 +129,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_main_splitter->show();
 
     readSettings();
+
+    this->statusBar()->showMessage(tr("Ready"));
 }
 
 MainWindow::~MainWindow()
@@ -266,10 +268,10 @@ void MainWindow::addTags()
     QString tags = QInputDialog::getText(this, "Add Tags", "tags (separates with commas (,))");
     if (!tags.isEmpty())
     {
-        foreach (Rush *rush, m_view->selectedRush())
+        foreach (Extract *extract, m_view->selectedExtract())
         {
             qDebug() << tags;
-            m_db.addTagToRush(*rush, tags.split(","));
+            m_db.addTagToExtract(*extract, tags.split(","));
             onSelectionChanged();
         }
     }
@@ -409,19 +411,21 @@ void MainWindow::updateExtract(Extract *extract)
 
 void MainWindow::onSelectionChanged()
 {
-    Rush *rush;
-
     if (m_view->selectedRush().isEmpty())
         return;
 
-    rush = m_view->focusedItem();
+    MediaGraphicItem *item = m_view->focusedItem();
 
-    if (rush == 0)
+    if (item == 0 || item->rush() == 0)
         return;
 
-    m_media_info->setRush(*rush);
+    m_media_info->setRush(*item->rush());
 
-    m_tag_widget->setTags(m_db.getRushTags(rush->database_id));
+    if (item->extract())
+        m_tag_widget->setTags(m_db.getExtractTags(item->extract()->database_id()));
+
+    QString msg = QString("%1 file(s) selected").arg(QString::number(m_view->selectedExtract().size()));
+    this->statusBar()->showMessage(msg);
 }
 
 void MainWindow::onShowJobsProgress()

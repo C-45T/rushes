@@ -43,7 +43,7 @@ QString CatalogFilter::sqlRatingCondition() const
     if ((m_min_rating == 0) && (m_max_rating == Database::MAX_RATING))
         return "";
 
-    return QString("((rating >= %1) AND (rating <= %2))").arg(QString::number(m_min_rating), QString::number(m_max_rating));
+    return QString("((e.rating >= %1) AND (e.rating <= %2))").arg(QString::number(m_min_rating), QString::number(m_max_rating));
 }
 
 QString CatalogFilter::sqlTagCondition() const
@@ -112,10 +112,10 @@ void CatalogFilter::querySelection()
     if (m_bin_name != "All" and !m_bin_name.isEmpty())
         filterBinStr = QString(" AND rb.bin_id IN ('%1')").arg(m_db.getBinChildren(bin_id).join("','"));
 
-    QString select_part = "SELECT DISTINCT r.filename, e.id ";
+    QString select_part = "SELECT DISTINCT r.file_name, e.id ";
     QString from_part = "FROM Rush r "
-                        "LEFT JOIN Tag t ON (r.id = t.rush_id) "
-                        "JOIN Extract e ON (e.rush_id = r.id) ";
+                        "JOIN Extract e ON (e.rush_id = r.id) "
+                        "LEFT JOIN Tag t ON (e.id = t.extract_id) ";
 
    if (!filterBinStr.isEmpty())
        from_part += "LEFT JOIN RushBin rb ON (r.id = rb.rush_id) ";

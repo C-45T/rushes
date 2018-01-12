@@ -38,7 +38,7 @@ public:
 
     QList<Rush *> selectedRush() const;
     QList<Extract *> selectedExtract() const;
-    Rush *focusedItem() const;
+    MediaGraphicItem *focusedItem() const;
 
 public slots:
     void onScrollToFocusedItem();

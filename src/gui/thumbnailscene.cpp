@@ -62,18 +62,18 @@ void ThumbnailScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
 
 }
 
-Rush *ThumbnailScene::focusedItem() const
+MediaGraphicItem *ThumbnailScene::focusedItem() const
 {
     MediaGraphicItem *thumbnail_item = qgraphicsitem_cast<MediaGraphicItem*>(focusItem());
     if (thumbnail_item)
     {
-        return thumbnail_item->rush();
+        return thumbnail_item;
     }
     else
     {
         MediaGraphicItem *old_item = qgraphicsitem_cast<MediaGraphicItem*>(m_last_selected_item);
         if (old_item)
-            return old_item->rush();
+            return old_item;
     }
 
     return 0;

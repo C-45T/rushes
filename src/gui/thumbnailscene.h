@@ -37,7 +37,7 @@ public slots:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
-    Rush* focusedItem() const;
+    MediaGraphicItem* focusedItem() const;
     QGraphicsItem *lastSelectedItem() const;
 
 signals:

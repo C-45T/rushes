@@ -82,7 +82,10 @@ void MediaGraphicItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 //    }
 
     // draw stars
-    m_rating.setStarCount(m_rush->rating);
+    if (m_extract != 0)
+        m_rating.setStarCount(m_extract->rating());
+	else
+		m_rating.setStarCount(0);
     m_rating.paint(painter, option->rect.adjusted(5, 0, 0, -134), option->palette, StarRating::ReadOnly);
 }
 
