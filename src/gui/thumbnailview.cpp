@@ -50,6 +50,8 @@ ThumbnailView::ThumbnailView(Database &db, QWidget *parent)
 
     m_context_menu = 0;
 
+    m_selected_bin = "";
+
     m_scene = new ThumbnailScene(this);
     setScene(m_scene);
 
@@ -317,9 +319,11 @@ void ThumbnailView::keyPressEvent(QKeyEvent *event)
         foreach (QGraphicsItem *item, m_scene->selectedItems())
         {
             MediaGraphicItem *thumbnail_item = qgraphicsitem_cast<MediaGraphicItem*>(item);
-            if (thumbnail_item)
+            if (thumbnail_item && thumbnail_item->extract())
             {
-                m_db.deleteRush(thumbnail_item->rush());
+                if (m_selected_bin != "")
+                    m_db.removeExtractFromBin(m_selected_bin, thumbnail_item->extract());
+                selectNearItem(1, 0);
                 m_scene->removeItem(thumbnail_item);
                 delete thumbnail_item;
                 m_items.removeOne(thumbnail_item);
@@ -419,6 +423,11 @@ void ThumbnailView::shiftSelect(QGraphicsItem *item)
             item->setSelected(true);
         }
     }
+}
+
+void ThumbnailView::setSelectedBin(const QString &bin_selected)
+{
+    m_selected_bin = bin_selected;
 }
 
 QList<Rush*> ThumbnailView::selectedRush() const

@@ -110,7 +110,7 @@ void CatalogFilter::querySelection()
         filterTagStr.prepend(" AND t.name IN ");
 
     if (m_bin_name != "All" and !m_bin_name.isEmpty())
-        filterBinStr = QString(" AND rb.bin_id IN ('%1')").arg(m_db.getBinChildren(bin_id).join("','"));
+        filterBinStr = QString(" AND eb.bin_id IN ('%1')").arg(m_db.getBinChildren(bin_id).join("','"));
 
     QString select_part = "SELECT DISTINCT r.file_name, e.id ";
     QString from_part = "FROM Rush r "
@@ -118,7 +118,7 @@ void CatalogFilter::querySelection()
                         "LEFT JOIN Tag t ON (e.id = t.extract_id) ";
 
    if (!filterBinStr.isEmpty())
-       from_part += "LEFT JOIN RushBin rb ON (r.id = rb.rush_id) ";
+       from_part += "LEFT JOIN ExtractBin eb ON (e.id = eb.extract_id) ";
 
     QString cond_part = "WHERE 1=1" + filterRatingStr + filterTagStr + filterBinStr;
     QString order_part = " ORDER BY r.utc_creation_time" + filterRatingStr + filterTagStr;

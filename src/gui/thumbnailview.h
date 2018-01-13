@@ -44,6 +44,7 @@ public slots:
     void onScrollToFocusedItem();
     void setFiles(QStringList files, QDir path = QDir(), bool prepend_path = false);
     void setExtracts(QStringList files, QList<qint64> extract_ids);
+    void setSelectedBin(const QString &bin_selected);
 
 protected:
     void placeItems();
@@ -70,6 +71,8 @@ private:
     QVector<int> m_thumbnail_sizes;
 
     QMenu *m_context_menu;
+
+    QString m_selected_bin;
 };
 
 #endif // THUMBNAILVIEW_H

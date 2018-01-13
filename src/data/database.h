@@ -43,18 +43,19 @@ public:
     void createRushTable();
     void createBinTable();
     void createTagTable();
-    void createRushBinTable();
+    void createExtractBinTable();
     void createExtractTable();
 
     // Rushs
-    void addRush(Rush *rush, bool create_extract = true);
+    void addRush(Rush *rush);
     void deleteRush(Rush *rush);
     Rush getRush(const QString& file_name) const;
     QList<qint64> getRushExtracts(qint64 rush_id) const;
     void changeSourceFileName(Rush *rush, const QString& new_file_name);
 
     // Extract
-    void addExtract(Extract *extract, qint64 rush_id = -1);
+    int addExtract(Extract *extract, qint64 rush_id = -1);
+    void deleteExtract(Extract *extract);
     Extract getExtract(int64_t &id, Rush *rush) const;
     void updateExtract(Extract *extract);
 
@@ -65,8 +66,8 @@ public:
     QStringList bins(const QString& parent_name) const;
 
     // Rush Bin link
-    void removeRushFromBin(const QString& bin_name, const Rush& rush);
-    void addRushToBin(Rush *rush, const QString& bin_name = "All");
+    void removeExtractFromBin(const QString& bin_name, Extract *extract);
+    void addExtractToBin(Extract *extract, const QString& bin_name = "All");
 
     // Tags
     void addTagToRush(const Rush& rush, QStringList tags);

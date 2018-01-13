@@ -56,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_db.createBinTable();
     m_db.createRushTable();
     m_db.createTagTable();
-    m_db.createRushBinTable();
+    m_db.createExtractBinTable();
     m_db.createExtractTable();
 
     // layout
@@ -124,6 +124,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_rush_filter->querySelection();
 
     connect(m_bin_tree_widget, SIGNAL(binSelected(const QString&)), m_rush_filter, SLOT(setBin(const QString&)));
+    connect(m_bin_tree_widget, SIGNAL(binSelected(const QString&)), m_view, SLOT(setSelectedBin(const QString&)));
 
     // display
     m_main_splitter->show();
@@ -242,7 +243,8 @@ void MainWindow::addVideo()
 {
     foreach (Rush* rush, m_explorer_view->selectedRush())
     {
-        m_db.addRushToBin(rush, m_rush_filter->bin());
+        Extract e(rush);
+        m_db.addExtractToBin(&e, m_rush_filter->bin());
     }
 
     m_rush_filter->querySelection();
@@ -275,6 +277,22 @@ void MainWindow::addTags()
             onSelectionChanged();
         }
     }
+}
+
+void MainWindow::cloneExtract()
+{
+    foreach (Extract *extract, m_view->selectedExtract())
+    {
+        int extract_id = m_db.addExtract(extract);
+        if (extract_id != -1)
+        {
+            Extract new_extract(extract->rush());
+            new_extract.setDatabase_id(extract_id);
+            m_db.addExtractToBin(&new_extract, m_rush_filter->bin());
+        }
+    }
+
+     m_rush_filter->querySelection();
 }
 
 void MainWindow::exportSelectionToFCPXml()
@@ -358,25 +376,25 @@ void MainWindow::relinkRushs()
 
 void MainWindow::addRushToBin()
 {
-    QString bin_name = QInputDialog::getText(this, "Add Rushs to Catalog", "catalog name");
+    QString bin_name = QInputDialog::getText(this, "Add Rushs to Bin", "bin name");
     if (m_db.getIdFromAttributeValue("Bin", "name", bin_name) >= 0)
     {
         //QStringList files_to_update = selectedFiles();
-        foreach (Rush *rush, m_view->selectedRush())
+        foreach (Extract *extract, m_view->selectedExtract())
         {
-            m_db.addRushToBin(rush, bin_name);
+            m_db.addExtractToBin(extract, bin_name);
         }
     }
 }
 
-void MainWindow::removeRushFromBin()
+void MainWindow::removeExtractFromBin()
 {
     if (m_rush_filter)
     {
         //QStringList files_to_update = selectedFiles();
-        foreach (Rush *rush, m_view->selectedRush())
+        foreach (Extract *extract, m_view->selectedExtract())
         {
-            m_db.removeRushFromBin(m_rush_filter->bin(), *rush);
+            m_db.removeExtractFromBin(m_rush_filter->bin(), extract);
         }
     }
     m_rush_filter->querySelection();
@@ -486,9 +504,10 @@ void MainWindow::createMenus()
 
     QMenu *edit_menu = menuBar()->addMenu(tr("&Edit"));
     QAction *tag_action = edit_menu->addAction("Add Tags to selection", this, SLOT(addTags()), QKeySequence(Qt::CTRL + Qt::Key_T));
+    QAction *clone_action = edit_menu->addAction("Clone extract", this, SLOT(cloneExtract()), QKeySequence(Qt::CTRL + Qt::Key_D));
     QAction *facial_recognition_action = edit_menu->addAction("Facial Recognition", this, SLOT(faceRecognition()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_T));
     QAction *add_rush_to_catalog = edit_menu->addAction("Add selected Rush(s) to Bin", this, SLOT(addRushToBin()), QKeySequence(Qt::CTRL + Qt::Key_Plus));
-    QAction *remove_rush_from_bin = edit_menu->addAction("Remove selected Rush(s) from Bin", this, SLOT(removeRushFromBin()), QKeySequence(Qt::CTRL + Qt::Key_Delete));
+    QAction *remove_rush_from_bin = edit_menu->addAction("Remove selected Rush(s) from Bin", this, SLOT(removeExtractFromBin()), QKeySequence(Qt::CTRL + Qt::Key_Delete));
     QAction *relink_rushs = edit_menu->addAction("Relink selected Rushs", this, SLOT(relinkRushs()));
     QAction *export_to_fcp_xml = edit_menu->addAction("Export to FCPXML", this, SLOT(exportSelectionToFCPXml()));
 
@@ -507,6 +526,7 @@ void MainWindow::createMenus()
     {
         QMenu *context_menu = new QMenu(m_view);
         m_context_actions.append(tag_action);
+        m_context_actions.append(clone_action);
         m_context_actions.append(facial_recognition_action);
         m_context_actions.append(add_rush_to_catalog);
         m_context_actions.append(remove_rush_from_bin);

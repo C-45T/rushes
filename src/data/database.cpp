@@ -107,21 +107,20 @@ void Database::createTagTable()
     }
 }
 
-void Database::createRushBinTable()
+void Database::createExtractBinTable()
 {
     QSqlQuery query(m_database);
     if (!query.exec(
-                "CREATE TABLE IF NOT EXISTS 'RushBin' ("
-                "'rush_id' INTEGER NOT NULL,"
+                "CREATE TABLE IF NOT EXISTS 'ExtractBin' ("
+                "'extract_id' INTEGER NOT NULL,"
                 "'bin_id' INTEGER NOT NULL,"
-                "PRIMARY KEY(rush_id, bin_id),"
-                "FOREIGN KEY('rush_id') REFERENCES Rush ( id ),"
+                "PRIMARY KEY(extract_id, bin_id),"
+                "FOREIGN KEY('extract_id') REFERENCES Extract ( id ),"
                 "FOREIGN KEY('bin_id') REFERENCES Bin ( id )"
                 ")")) {
         qFatal("Failed to query database: %s", qPrintable(query.lastError().text()));
     }
 }
-
 
 void Database::createRushTable()
 {
@@ -233,25 +232,33 @@ QStringList Database::getBinChildren(int bin_id)
     return res;
 }
 
-void Database::addRushToBin(Rush *rush, const QString &bin_name)
+void Database::addExtractToBin(Extract *extract, const QString &bin_name)
 {
     int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
 
     if (bin_id < 0)
         return;
 
-    // if rush not in db, add it
-    if (rush->database_id < 0)
-        addRush(rush);
+    // if rush not in db, add rush
+    if (extract->rush() != 0 && extract->rush()->database_id < 0)
+        addRush(extract->rush());
+
+    // if rush in db but not extract, add extract
+    if (extract->database_id() < 0)
+        addExtract(extract);
 
     // if database_id is still not set insertion failed, leave
-    if (rush->database_id < 0)
+    if (extract->database_id() < 0)
+        return;
+
+    // don't create link with main bin named "All" // TODO : remove hardcoded value
+    if (bin_name == "All")
         return;
 
     QSqlQuery query(m_database);
-    QString querystr = QString("INSERT INTO RushBin (rush_id, bin_id) "
+    QString querystr = QString("INSERT INTO ExtractBin (extract_id, bin_id) "
                                " VALUES (%1, %2) ")
-            .arg(QString::number(rush->database_id), QString::number(bin_id));
+            .arg(QString::number(extract->database_id()), QString::number(bin_id));
 
     query.exec(querystr);
 
@@ -259,7 +266,7 @@ void Database::addRushToBin(Rush *rush, const QString &bin_name)
 
 }
 
-void Database::addRush(Rush *rush, bool create_extract)
+void Database::addRush(Rush *rush)
 {
     QSqlQuery query(m_database);
     QString querystr = QString("INSERT INTO Rush (file_name, thumbnail, "
@@ -281,8 +288,6 @@ void Database::addRush(Rush *rush, bool create_extract)
     if (query.exec(querystr))
     {
         rush->database_id = getIdFromAttributeValue("Rush", "file_name", rush->file_name);
-        if (create_extract)
-            addExtract(rush->extract());
     }
 
     qDebug() << query.lastQuery() << query.lastError().text();
@@ -332,18 +337,18 @@ void Database::deleteRush(Rush *rush)
     qDebug() << query.lastQuery() << query.lastError().text();
 }
 
-void Database::removeRushFromBin(const QString &bin_name, const Rush &rush)
+void Database::removeExtractFromBin(const QString& bin_name, Extract *extract)
 {
-    int rush_id = getIdFromAttributeValue("Rush", "file_name", rush.file_name);
+    int extract_id = extract->database_id();
     int bin_id = getIdFromAttributeValue("Bin", "name", bin_name);
 
-    if (rush_id < 0 || bin_id < 0)
+    if (extract_id < 0 || bin_id < 0)
         return;
 
     QSqlQuery query(m_database);
-    QString querystr = QString("DELETE FROM RushBin "
-                               " WHERE rush_id = %1 AND bin_id = %2")
-            .arg(QString::number(rush_id), QString::number(bin_id));
+    QString querystr = QString("DELETE FROM ExtractBin "
+                               " WHERE extract_id = %1 AND bin_id = %2")
+            .arg(QString::number(extract_id), QString::number(bin_id));
 
     query.exec(querystr);
 
@@ -667,7 +672,7 @@ void Database::changeSourceFileName(Rush *rush, const QString &new_file_name)
     qDebug() << rename_query.lastQuery() << rename_query.lastError().text();
 }
 
-void Database::addExtract(Extract *extract, qint64 rush_id)
+int Database::addExtract(Extract *extract, qint64 rush_id)
 {
 //    "'id' INTEGER NOT NULL PRIMARY KEY,"
 //    "'rush_id' INTEGER NOT NULL,"
@@ -680,10 +685,12 @@ void Database::addExtract(Extract *extract, qint64 rush_id)
 
     int rush_db_id = rush_id;
     if (extract->rush() != 0)
+    {
         rush_db_id = extract->rush()->database_id;
+    }
 
     if (rush_db_id < 0)
-        return;
+        return -1;
 
     QSqlQuery query(m_database);
     QString querystr = QString("INSERT INTO Extract (rush_id, thumbnail, "
@@ -698,11 +705,45 @@ void Database::addExtract(Extract *extract, qint64 rush_id)
                  QString::number(extract->rating()), extract->comment());
 
     if (query.exec(querystr)) {
-        //QString id = query.value(0).toString();
+        int extract_id = query.lastInsertId().toInt();
+        if (extract->database_id() < 0)
+            extract->setDatabase_id(extract_id);
+        qDebug() << "inserted extract" << extract_id;
+        return extract_id;
         //extract->setDatabase_id(id.toInt());
     }
 
     qDebug() << query.lastQuery() << query.lastError().text();
+
+    return -1;
+}
+
+void Database::deleteExtract(Extract *extract)
+{
+    // retrieve rush id
+    qint64 extract_id = extract->database_id();
+
+    if (extract_id < 0)
+        return;
+
+    QSqlQuery query(m_database);
+    QString querystr;
+
+    // delete associated tags
+    querystr = QString("DELETE FROM Tag "
+                       " WHERE extract_id = %1")
+            .arg(QString::number(extract_id));
+    query.exec(querystr);
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+    // delete extract
+    querystr = QString("DELETE FROM Extract "
+                       " WHERE id = %1")
+            .arg(QString::number(extract_id));
+    query.exec(querystr);
+    qDebug() << query.lastQuery() << query.lastError().text();
+
+    // TODO : clear rush if no extract left
 }
 
 Rush Database::getRush(const QSqlRecord &record) const
@@ -878,7 +919,7 @@ void Database::importFromCsv(const QString &input_file_name)
                 r.utc_creation_time = line.split(";")[headers.indexOf("utc_creation_time")].toLongLong();
 
                 // add rush but don't create an extract, they will be created after
-                addRush(&r, false);
+                addRush(&r);
 
                 qDebug() << "importing rush" << r.file_name;
 
@@ -893,7 +934,7 @@ void Database::importFromCsv(const QString &input_file_name)
                     // get associated bins
                     QStringList bins = line.split(";")[headers.indexOf("bins")].split(",");
                     foreach (QString bin, bins)
-                        addRushToBin(&r, bin);
+                        ; // TODO - replace addExtractToBin(&r, bin);
                 }
             }
 

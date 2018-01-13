@@ -62,21 +62,22 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext &context, const Q
     }
 
     QTextStream out(&log_file);
+    QString timestamp = QDateTime::currentDateTime().toString("hh:mm::ss.zzz");
     switch (type) {
     case QtDebugMsg:
-        out << "[D]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        out << timestamp << " [D]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
         break;
     case QtInfoMsg:
-        out << "[I]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        out << timestamp << " [I]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
         break;
     case QtWarningMsg:
-        out << "[W]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        out << timestamp << " [W]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
         break;
     case QtCriticalMsg:
-        out << "[C]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        out << timestamp << " [C]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
         break;
     case QtFatalMsg:
-        out << "[F]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
+        out << timestamp << " [F]" << localMsg.constData() << " (" << context.function << " " << context.file << ":" << context.line << ")\n";
         abort();
     }
 

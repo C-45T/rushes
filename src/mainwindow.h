@@ -55,12 +55,13 @@ public slots:
     void playMedia(MediaGraphicItem* item);
 
     void addTags();
+    void cloneExtract();
     void exportSelectionToFCPXml();
     void transcode(const QString& command_preset);
     void faceRecognition();
     void relinkRushs();
     void addRushToBin();
-    void removeRushFromBin();
+    void removeExtractFromBin();
     void exportDatabase();
     void importDatabase();
     void updateExtract(Extract *extract);
