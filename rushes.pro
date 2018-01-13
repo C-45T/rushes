@@ -7,7 +7,7 @@
 #win32:VERSION = 1.2.3.4 # major.minor.patch.build
 #else:VERSION = 1.2.3    # major.minor.patch
 
-VERSION = 0.2.0
+VERSION = 0.3.0
 #QMAKE_TARGET_COMPANY = company
 #QMAKE_TARGET_PRODUCT = product
 #QMAKE_TARGET_DESCRIPTION = description

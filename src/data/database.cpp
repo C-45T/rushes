@@ -814,8 +814,6 @@ void Database::exportToCsv(const QString &output_file_name)
     if (query.exec("SELECT r.*, group_concat(t.name, ',') as tags, group_concat(b.name, ',') as bins "
                "FROM Rush r "
                "LEFT JOIN Tag t on (t.rush_id = r.id) "
-               "LEFT JOIN RushBin rb on (rb.rush_id = r.id) "
-               "LEFT JOIN Bin b on (b.id = rb.bin_id) "
                "GROUP BY r.id "))
         exportQuery(query, out);
     else
@@ -827,6 +825,8 @@ void Database::exportToCsv(const QString &output_file_name)
                "FROM Extract e "
                "JOIN Rush r on (r.id = e.rush_id) "
                "LEFT JOIN Tag t on (t.extract_id = e.id) "
+               "LEFT JOIN ExtractBin eb on (eb.extract_id = r.id) "
+               "LEFT JOIN Bin b on (b.id = eb.bin_id) "
                "GROUP BY e.id "))
         exportQuery(query, out);
     else
@@ -930,11 +930,6 @@ void Database::importFromCsv(const QString &input_file_name)
                     // get tags
                     QStringList tags = line.split(";")[headers.indexOf("tags")].split(",");
                     addTagToRush(r, tags);
-
-                    // get associated bins
-                    QStringList bins = line.split(";")[headers.indexOf("bins")].split(",");
-                    foreach (QString bin, bins)
-                        ; // TODO - replace addExtractToBin(&r, bin);
                 }
             }
 
@@ -975,6 +970,14 @@ void Database::importFromCsv(const QString &input_file_name)
                     // get tags
                     QStringList tags = line.split(";")[headers.indexOf("tags")].split(",");
                     addTagToExtract(e, tags);
+
+                    if (headers.indexOf("bins") >= 0)
+                    {
+                        // get associated bins
+                        QStringList bins = line.split(";")[headers.indexOf("bins")].split(",");
+                        foreach (QString bin, bins)
+                            addExtractToBin(&e, bin);
+                    }
                 }
             }
 
